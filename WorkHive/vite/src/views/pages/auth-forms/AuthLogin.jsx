@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 // material-ui
 import Alert from '@mui/material/Alert';
@@ -25,6 +26,7 @@ import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 export default function AuthLogin() {
+  const [searchParams] = useSearchParams();
   const [checked, setChecked] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -34,6 +36,8 @@ export default function AuthLogin() {
     email: '',
     password: ''
   });
+
+  const isExistingCompany = searchParams.get('tipo') === 'empresa';
 
   const handleChange = (event) => {
     setError('');
@@ -59,7 +63,7 @@ export default function AuthLogin() {
 
   const redirectByRole = (role) => {
     if (role === 'CANDIDATE') {
-      window.location.href = '/free/dashboard/default';
+      window.location.href = '/free';
       return;
     }
 
@@ -133,11 +137,13 @@ export default function AuthLogin() {
 
           <Box>
             <Typography variant="subtitle1" color="primary.dark">
-              Plataforma de empleo y reclutamiento
+              {isExistingCompany ? 'Acceso para empresas existentes' : 'Plataforma de empleo y reclutamiento'}
             </Typography>
 
             <Typography variant="body2" color="text.secondary">
-              Ingresa para gestionar postulaciones, ofertas y perfiles.
+              {isExistingCompany
+                ? 'Inicia sesión con tu cuenta de reclutador para administrar ofertas y candidatos.'
+                : 'Ingresa para gestionar postulaciones, ofertas y perfiles.'}
             </Typography>
           </Box>
         </Stack>
@@ -204,6 +210,7 @@ export default function AuthLogin() {
           color="secondary"
           onClick={handleLogin}
           disabled={loading}
+          sx={{ textTransform: 'none' }}
         >
           {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
         </Button>

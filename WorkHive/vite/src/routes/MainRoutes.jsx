@@ -4,10 +4,17 @@ import { lazy } from 'react';
 import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 
-// dashboard routing
+// dashboard routing kept for non-candidate role access
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
 
 const RolePage = Loadable(lazy(() => import('views/workhive/RolePage')));
+import {
+  CandidateApplicationsPage,
+  CandidateJobsPage,
+  CandidateNotificationsPage,
+  CandidateProfilePage,
+  CandidateResumePage
+} from 'views/workhive/CandidatePages';
 
 const workHiveRoutes = [
   { path: 'usuarios', title: 'Usuarios', description: 'Gestion de usuarios registrados en WorkHive.' },
@@ -16,11 +23,6 @@ const workHiveRoutes = [
   { path: 'candidatos', title: 'Candidatos', description: 'Consulta de candidatos disponibles en la plataforma.' },
   { path: 'reportes-estadisticas', title: 'Reportes / Estadisticas', description: 'Resumen de indicadores y reportes del sistema.' },
   { path: 'configuracion', title: 'Configuracion', description: 'Ajustes generales de WorkHive.' },
-  { path: 'buscar-empleos', title: 'Buscar empleos', description: 'Explora ofertas laborales disponibles en El Salvador.' },
-  { path: 'mis-postulaciones', title: 'Mis postulaciones', description: 'Seguimiento de aplicaciones realizadas por el candidato.' },
-  { path: 'mi-perfil', title: 'Mi perfil', description: 'Informacion personal y profesional del candidato.' },
-  { path: 'cv-hoja-de-vida', title: 'CV / Hoja de vida', description: 'Gestion de curriculum y documentos profesionales.' },
-  { path: 'notificaciones', title: 'Notificaciones', description: 'Avisos recientes sobre empleos, postulaciones y mensajes.' },
   { path: 'publicar-oferta', title: 'Publicar oferta', description: 'Crea una nueva oferta de empleo para candidatos.' },
   { path: 'mis-ofertas', title: 'Mis ofertas', description: 'Gestion de ofertas publicadas por la empresa.' },
   { path: 'postulantes', title: 'Postulantes', description: 'Revision de candidatos que aplicaron a tus ofertas.' },
@@ -36,8 +38,13 @@ const MainRoutes = {
   children: [
     {
       path: '/',
-      element: <DashboardDefault />
+      element: <CandidateJobsPage />
     },
+    { path: 'buscar-empleos', element: <CandidateJobsPage /> },
+    { path: 'mis-postulaciones', element: <CandidateApplicationsPage /> },
+    { path: 'mi-perfil', element: <CandidateProfilePage /> },
+    { path: 'cv-hoja-de-vida', element: <CandidateResumePage /> },
+    { path: 'notificaciones', element: <CandidateNotificationsPage /> },
     {
       path: 'dashboard',
       children: [

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 // material-ui
 import Alert from '@mui/material/Alert';
@@ -245,6 +246,20 @@ export default function AuthRegister() {
         </Stack>
       </Paper>
 
+      {!isCandidate && (
+        <Button
+          component={Link}
+          to="/pages/login?tipo=empresa"
+          fullWidth
+          variant="outlined"
+          color="secondary"
+          size="large"
+          sx={{ textTransform: 'none' }}
+        >
+          Soy una empresa existente
+        </Button>
+      )}
+
       {message.text && <Alert severity={message.type}>{message.text}</Alert>}
 
       <FormControl fullWidth>
@@ -343,6 +358,7 @@ export default function AuthRegister() {
           color="secondary"
           onClick={handleRegister}
           disabled={loading}
+          sx={{ textTransform: 'none' }}
         >
           {loading ? 'Creando cuenta...' : isCandidate ? 'Crear cuenta de candidato' : 'Crear cuenta de empresa'}
         </Button>

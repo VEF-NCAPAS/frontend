@@ -5,7 +5,6 @@ import {
   IconBuilding,
   IconChartBar,
   IconClipboardList,
-  IconDashboard,
   IconFileText,
   IconListDetails,
   IconSearch,
@@ -46,22 +45,12 @@ export const getCurrentUserRole = () => {
   return normalizeRole(storedRole || mockRole);
 };
 
-const dashboardItem = {
-  id: 'dashboard',
-  title: 'Dashboard',
-  type: 'item',
-  url: '/dashboard/default',
-  icon: IconDashboard,
-  breadcrumbs: false
-};
-
 const workHiveMenus = {
   [USER_ROLES.ADMIN]: {
     id: 'workhive-admin',
     title: 'WorkHive',
     type: 'group',
     children: [
-      dashboardItem,
       {
         id: 'admin-users',
         title: 'Usuarios',
@@ -117,12 +106,11 @@ const workHiveMenus = {
     title: 'WorkHive',
     type: 'group',
     children: [
-      dashboardItem,
       {
         id: 'candidate-search-jobs',
         title: 'Buscar empleos',
         type: 'item',
-        url: '/buscar-empleos',
+        url: '/',
         icon: IconSearch,
         breadcrumbs: false
       },
@@ -165,7 +153,6 @@ const workHiveMenus = {
     title: 'WorkHive',
     type: 'group',
     children: [
-      dashboardItem,
       {
         id: 'recruiter-publish-job',
         title: 'Publicar oferta',
