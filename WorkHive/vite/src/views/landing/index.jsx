@@ -166,7 +166,8 @@ export default function LandingPage() {
                 fontSize: { xs: '2.5rem', md: '3.75rem' },
                 lineHeight: 1.2,
                 mb: 2,
-                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                color: 'white',
+                textShadow: '0 2px 4px rgba(122, 122, 122, 0.3)',
                 fontFamily: 'Poppins, sans-serif'
               }}
             >
