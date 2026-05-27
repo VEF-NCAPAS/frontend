@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 
+// Logo
+import logoCapas from 'assets/images/icons/logoCapas.png';
+
 // Material-UI imports
 import {
   AppBar,
@@ -59,7 +62,7 @@ export default function LandingPage() {
 
   return (
     <Box sx={{ bgcolor: 'background.paper', minHeight: '100vh', overflowX: 'hidden' }}>
-      
+
       {/* ==================== NAVBAR ==================== */}
       <AppBar
         position="sticky"
@@ -68,54 +71,29 @@ export default function LandingPage() {
           background: 'rgba(255, 255, 255, 0.85)',
           backdropFilter: 'blur(8px)',
           borderBottom: `1px solid ${theme.palette.divider}`,
-          py: 0.5,
+
+          height: '90px',
           zIndex: theme.zIndex.drawer + 1
         }}
       >
         <Container maxWidth="lg">
           <Toolbar disableGutters sx={{ display: 'flex', justifyContent: 'space-between' }}>
             {/* Logo */}
-            <Stack direction="row" alignItems="center" spacing={1} component={RouterLink} to="/" sx={{ textDecoration: 'none' }}>
-              <Avatar
-                sx={{
-                  bgcolor: theme.palette.primary.main,
-                  width: 40,
-                  height: 40,
-                  fontWeight: 'bold',
-                  boxShadow: `0 4px 10px rgba(33, 150, 243, 0.3)`
+            <Box component={RouterLink} to="/" sx={{ textDecoration: 'none', display: 'flex', alignItems: 'center', height: '100%' }}>
+              <img
+                src={logoCapas}
+                alt="WorkHive Logo"
+                style={{
+                  height: '4.5rem',
+                  width: '11rem',
+                  objectFit: 'contain',
+                  display: 'block'
                 }}
-              >
-                WH
-              </Avatar>
-              <Typography
-                variant="h3"
-                sx={{
-                  fontWeight: 800,
-                  background: `linear-gradient(45deg, ${theme.palette.primary.dark} 30%, ${theme.palette.secondary.main} 90%)`,
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  fontFamily: 'Poppins, sans-serif',
-                  letterSpacing: '0.5px'
-                }}
-              >
-                WorkHive
-              </Typography>
-            </Stack>
+              />
+            </Box>
 
-            {/* Middle Nav Links (Desktop) */}
-            {!isMobile && (
-              <Stack direction="row" spacing={3}>
-                <Button component={RouterLink} to="/buscar-empleos" sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.95rem', '&:hover': { color: 'primary.main' } }}>
-                  Buscar Ofertas
-                </Button>
-                <Button component={RouterLink} to="/publicar-oferta" sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.95rem', '&:hover': { color: 'primary.main' } }}>
-                  Publicar Ofertas
-                </Button>
-                <Button sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.95rem', '&:hover': { color: 'primary.main' } }}>
-                  Sobre Nosotros
-                </Button>
-              </Stack>
-            )}
+
+
 
             {/* Auth Buttons */}
             <Stack direction="row" spacing={1.5} alignItems="center">
@@ -317,7 +295,6 @@ export default function LandingPage() {
             position: 'absolute',
             bottom: -1,
             left: 0,
-            width: '100%',
             lineHeight: 0,
             zIndex: 2
           }}
