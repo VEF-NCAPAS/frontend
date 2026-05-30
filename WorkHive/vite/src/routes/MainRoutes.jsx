@@ -14,7 +14,7 @@ import {
   CandidateNotificationsPage,
   CandidateProfilePage,
   CandidateResumePage
-} from 'views/workhive/CandidatePages';
+} from 'views/workhive/candidate';
 
 const workHiveRoutes = [
   { path: 'usuarios', title: 'Usuarios', description: 'Gestion de usuarios registrados en WorkHive.' },

@@ -192,7 +192,7 @@ export default function AuthRegister() {
       });
 
       setTimeout(() => {
-        window.location.href = '/free/pages/login';
+        window.location.href = '/pages/login';
       }, 1000);
     } catch (err) {
       setMessage({
