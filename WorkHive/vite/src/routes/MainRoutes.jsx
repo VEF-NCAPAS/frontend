@@ -7,7 +7,8 @@ import Loadable from 'ui-component/Loadable';
 // dashboard routing kept for non-candidate role access
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
 
-const RolePage = Loadable(lazy(() => import('views/workhive/RolePage')));
+const RolePage = Loadable(lazy(() => import('views/workhive/admin/RolePage')));
+const AdminPage = Loadable(lazy(() => import('views/workhive/admin/AdminPage')));
 import {
   CandidateApplicationsPage,
   CandidateAccountSettingsPage,
@@ -55,6 +56,10 @@ const MainRoutes = {
           element: <DashboardDefault />
         }
       ]
+    },
+    {
+      path: 'admin',
+      element: <AdminPage />
     },
     ...workHiveRoutes.map((route) => ({
       path: route.path,
