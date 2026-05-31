@@ -10,6 +10,7 @@ const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')))
 const RolePage = Loadable(lazy(() => import('views/workhive/RolePage')));
 import {
   CandidateApplicationsPage,
+  CandidateAccountSettingsPage,
   CandidateJobsPage,
   CandidateNotificationsPage,
   CandidateProfilePage,
@@ -45,6 +46,7 @@ const MainRoutes = {
     { path: 'mi-perfil', element: <CandidateProfilePage /> },
     { path: 'cv-hoja-de-vida', element: <CandidateResumePage /> },
     { path: 'notificaciones', element: <CandidateNotificationsPage /> },
+    { path: 'configuracion-cuenta', element: <CandidateAccountSettingsPage /> },
     {
       path: 'dashboard',
       children: [

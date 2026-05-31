@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -6,12 +7,10 @@ import Avatar from '@mui/material/Avatar';
 import Chip from '@mui/material/Chip';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
 import Divider from '@mui/material/Divider';
-import InputAdornment from '@mui/material/InputAdornment';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import OutlinedInput from '@mui/material/OutlinedInput';
 import Paper from '@mui/material/Paper';
 import Popper from '@mui/material/Popper';
 import Stack from '@mui/material/Stack';
@@ -24,8 +23,7 @@ import Transitions from 'ui-component/extended/Transitions';
 import useConfig from 'hooks/useConfig';
 
 // assets
-import profileIcon from 'assets/images/users/profile-icon.jpg';
-import { IconLogout, IconSearch, IconSettings } from '@tabler/icons-react';
+import { IconLogout, IconSettings, IconUser } from '@tabler/icons-react';
 
 // ==============================|| PROFILE MENU ||============================== //
 
@@ -35,7 +33,6 @@ export default function ProfileSection() {
     state: { borderRadius }
   } = useConfig();
 
-  const [value, setValue] = useState('');
   const [open, setOpen] = useState(false);
 
   /**
@@ -71,23 +68,21 @@ export default function ProfileSection() {
         sx={{ ml: 2, height: '48px', alignItems: 'center', borderRadius: '27px' }}
         icon={
           <Avatar
-            src={profileIcon}
             alt="Perfil de usuario"
             sx={{
               typography: 'mediumAvatar',
               margin: '8px 0 8px 8px !important',
               cursor: 'pointer',
-              bgcolor: 'common.white',
-              '& img': {
-                objectFit: 'cover',
-                objectPosition: 'center'
-              }
+              bgcolor: 'secondary.light',
+              color: 'secondary.main'
             }}
             ref={anchorRef}
             aria-controls={open ? 'menu-list-grow' : undefined}
             aria-haspopup="true"
             color="inherit"
-          />
+          >
+            <IconUser stroke={1.5} size="22px" />
+          </Avatar>
         }
         label={<IconSettings stroke={1.5} size="24px" />}
         ref={anchorRef}
@@ -129,21 +124,7 @@ export default function ProfileSection() {
                         </Stack>
                         <Typography variant="subtitle2">Panel de usuario</Typography>
                       </Stack>
-                      <OutlinedInput
-                        sx={{ width: '100%', pr: 1, pl: 2, my: 2 }}
-                        id="input-search-profile"
-                        value={value}
-                        onChange={(e) => setValue(e.target.value)}
-                        placeholder="Buscar opciones"
-                        startAdornment={
-                          <InputAdornment position="start">
-                            <IconSearch stroke={1.5} size="16px" />
-                          </InputAdornment>
-                        }
-                        aria-describedby="search-helper-text"
-                        slotProps={{ input: { 'aria-label': 'weight' } }}
-                      />
-                      <Divider />
+                      <Divider sx={{ mt: 2 }} />
                     </Box>
                     <Box
                       sx={{
@@ -165,7 +146,7 @@ export default function ProfileSection() {
                           '& .MuiListItemButton-root': { mt: 0.5 }
                         }}
                       >
-                        <ListItemButton sx={{ borderRadius: `${borderRadius}px` }}>
+                        <ListItemButton component={Link} to="/configuracion-cuenta" sx={{ borderRadius: `${borderRadius}px` }}>
                           <ListItemIcon>
                             <IconSettings stroke={1.5} size="20px" />
                           </ListItemIcon>

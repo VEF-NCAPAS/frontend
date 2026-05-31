@@ -1,3 +1,4 @@
+export { default as CandidateAccountSettingsPage } from './pages/AccountSettingsPage';
 export { default as CandidateApplicationsPage } from './pages/ApplicationsPage';
 export { default as CandidateJobsPage } from './pages/JobsPage';
 export { default as CandidateNotificationsPage } from './pages/NotificationsPage';

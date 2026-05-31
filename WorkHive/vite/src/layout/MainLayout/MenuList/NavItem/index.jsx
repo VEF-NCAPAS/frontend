@@ -122,15 +122,15 @@ export default function NavItem({ item, level, isParents = false, setSelectedID 
         {(drawerOpen || (!drawerOpen && level !== 1)) && (
           <Tooltip title={item.title} disableHoverListener={!hoverStatus}>
             <ListItemText
+              sx={{ minWidth: 0, pr: 1 }}
               primary={
                 <Typography
                   ref={ref}
-                  noWrap
                   variant={isSelected ? 'h5' : 'body1'}
                   sx={{
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    width: 102,
+                    whiteSpace: 'normal',
+                    overflowWrap: 'break-word',
+                    lineHeight: 1.35,
                     color: 'inherit'
                   }}
                 >

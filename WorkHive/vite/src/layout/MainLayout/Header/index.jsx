@@ -26,8 +26,16 @@ export default function Header() {
   return (
     <>
       {/* logo & toggler button */}
-      <Box sx={{ width: downMD ? 'auto' : 228, display: 'flex' }}>
-        <Box component="span" sx={{ display: { xs: 'none', md: 'block' }, flexGrow: 1 }}>
+      <Box
+        sx={{
+          width: downMD ? 'auto' : 228,
+          display: 'flex',
+          flexDirection: { xs: 'row', md: 'column' },
+          alignItems: { xs: 'center', md: 'flex-start' },
+          gap: { xs: 0, md: 1 }
+        }}
+      >
+        <Box component="span" sx={{ display: { xs: 'none', md: 'block' } }}>
           <LogoSection />
         </Box>
         <Avatar
@@ -36,9 +44,10 @@ export default function Header() {
             ...theme.typography.commonAvatar,
             ...theme.typography.mediumAvatar,
             overflow: 'hidden',
-            transition: 'all .2s ease-in-out',
+            transition: 'none',
             color: theme.vars.palette.secondary.dark,
             background: theme.vars.palette.secondary.light,
+            flexShrink: 0,
             '&:hover': {
               color: theme.vars.palette.secondary.light,
               background: theme.vars.palette.secondary.dark

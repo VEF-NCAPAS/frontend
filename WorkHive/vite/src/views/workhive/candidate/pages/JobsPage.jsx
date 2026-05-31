@@ -82,16 +82,6 @@ export default function CandidateJobsPage() {
 
         <Grid size={{ xs: 12, lg: 4 }}>
           <Stack spacing={3}>
-            <MainCard title="Tu busqueda" border>
-              <Stack spacing={2}>
-                <Typography variant="body2" color="text.secondary">
-                  Recibe alertas cuando se publiquen empleos relacionados con frontend y diseno.
-                </Typography>
-                <Button fullWidth variant="outlined" color="secondary" sx={buttonSX}>
-                  Crear alerta de empleo
-                </Button>
-              </Stack>
-            </MainCard>
             <MainCard title="Perfil destacado" border>
               <Stack spacing={1.5}>
                 <Stack direction="row" justifyContent="space-between">
