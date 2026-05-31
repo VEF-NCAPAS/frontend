@@ -3,8 +3,6 @@ import { useEffect, useRef, useState } from 'react';
 // material-ui
 import { useTheme } from '@mui/material/styles';
 import Avatar from '@mui/material/Avatar';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import Chip from '@mui/material/Chip';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
 import Divider from '@mui/material/Divider';
@@ -17,7 +15,6 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import Paper from '@mui/material/Paper';
 import Popper from '@mui/material/Popper';
 import Stack from '@mui/material/Stack';
-import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 
@@ -27,8 +24,8 @@ import Transitions from 'ui-component/extended/Transitions';
 import useConfig from 'hooks/useConfig';
 
 // assets
-import User1 from 'assets/images/users/user-round.svg';
-import { IconLogout, IconSearch, IconSettings, IconUser } from '@tabler/icons-react';
+import profileIcon from 'assets/images/users/profile-icon.jpg';
+import { IconLogout, IconSearch, IconSettings } from '@tabler/icons-react';
 
 // ==============================|| PROFILE MENU ||============================== //
 
@@ -38,9 +35,7 @@ export default function ProfileSection() {
     state: { borderRadius }
   } = useConfig();
 
-  const [sdm, setSdm] = useState(true);
   const [value, setValue] = useState('');
-  const [notification, setNotification] = useState(false);
   const [open, setOpen] = useState(false);
 
   /**
@@ -76,9 +71,18 @@ export default function ProfileSection() {
         sx={{ ml: 2, height: '48px', alignItems: 'center', borderRadius: '27px' }}
         icon={
           <Avatar
-            src={User1}
-            alt="user-images"
-            sx={{ typography: 'mediumAvatar', margin: '8px 0 8px 8px !important', cursor: 'pointer' }}
+            src={profileIcon}
+            alt="Perfil de usuario"
+            sx={{
+              typography: 'mediumAvatar',
+              margin: '8px 0 8px 8px !important',
+              cursor: 'pointer',
+              bgcolor: 'common.white',
+              '& img': {
+                objectFit: 'cover',
+                objectPosition: 'center'
+              }
+            }}
             ref={anchorRef}
             aria-controls={open ? 'menu-list-grow' : undefined}
             aria-haspopup="true"
@@ -151,21 +155,6 @@ export default function ProfileSection() {
                         '&::-webkit-scrollbar': { width: 5 }
                       }}
                     >
-                      <Card sx={{ bgcolor: 'primary.light', my: 2 }}>
-                        <CardContent>
-                          <Stack sx={{ gap: 3 }}>
-                            <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
-                              <Typography variant="subtitle1">Modo no molestar</Typography>
-                              <Switch color="primary" checked={sdm} onChange={(e) => setSdm(e.target.checked)} name="sdm" size="small" />
-                            </Stack>
-                            <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
-                              <Typography variant="subtitle1">Permitir notificaciones</Typography>
-                              <Switch checked={notification} onChange={(e) => setNotification(e.target.checked)} name="sdm" size="small" />
-                            </Stack>
-                          </Stack>
-                        </CardContent>
-                      </Card>
-                      <Divider />
                       <List
                         component="nav"
                         sx={{
@@ -181,27 +170,6 @@ export default function ProfileSection() {
                             <IconSettings stroke={1.5} size="20px" />
                           </ListItemIcon>
                           <ListItemText primary={<Typography variant="body2">Configuracion de cuenta</Typography>} />
-                        </ListItemButton>
-                        <ListItemButton sx={{ borderRadius: `${borderRadius}px` }}>
-                          <ListItemIcon>
-                            <IconUser stroke={1.5} size="20px" />
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={
-                              <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Typography variant="body2">Perfil</Typography>
-                                <Chip
-                                  slotProps={{
-                                    label: { sx: { mt: 0.25 } }
-                                  }}
-                                  label="02"
-                                  variant="filled"
-                                  size="small"
-                                  color="warning"
-                                />
-                              </Stack>
-                            }
-                          />
                         </ListItemButton>
                         <ListItemButton sx={{ borderRadius: `${borderRadius}px` }}>
                           <ListItemIcon>
