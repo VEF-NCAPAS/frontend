@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
@@ -5,56 +7,78 @@ import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
 
+import { useLocalStorage } from 'hooks/useLocalStorage';
 import MainCard from 'ui-component/cards/MainCard';
 
 import PageHeading from '../components/PageHeading';
 import { buttonSX } from '../data/candidateData';
 
-import { IconCamera, IconKey, IconLogout, IconMailOff } from '@tabler/icons-react';
-
-const accountOptions = [
-  {
-    title: 'Cambiar contrasena',
-    description: 'Actualiza tu clave de acceso para mantener segura tu cuenta.',
-    icon: IconKey,
-    action: (
-      <Button variant="outlined" color="secondary" sx={buttonSX}>
-        Cambiar
-      </Button>
-    )
-  },
-  {
-    title: 'Ocultar mi correo',
-    description: 'Evita que las empresas vean tu correo hasta que aceptes compartirlo.',
-    icon: IconMailOff,
-    action: <Switch color="secondary" />
-  },
-  {
-    title: 'Cambiar fotografia',
-    description: 'Sube una nueva imagen para tu perfil de candidato.',
-    icon: IconCamera,
-    action: (
-      <Button variant="outlined" color="secondary" sx={buttonSX}>
-        Subir foto
-      </Button>
-    )
-  },
-  {
-    title: 'Cerrar sesion',
-    description: 'Finaliza tu sesion actual en WorkHive.',
-    icon: IconLogout,
-    action: (
-      <Button variant="contained" color="secondary" sx={buttonSX}>
-        Cerrar sesion
-      </Button>
-    )
-  }
-];
+import { IconCamera, IconKey, IconLogout, IconShieldCheck } from '@tabler/icons-react';
 
 export default function CandidateAccountSettingsPage() {
+  const navigate = useNavigate();
+  const { state: settings, setState: setSettings } = useLocalStorage('candidate-account-settings', {
+    hideProfile: false
+  });
+
+  const accountOptions = useMemo(
+    () => [
+      {
+        title: 'Cambiar contraseña',
+        description: 'Actualiza tu clave de acceso para mantener segura tu cuenta.',
+        icon: IconKey,
+        action: (
+          <Button variant="outlined" color="secondary" sx={buttonSX} onClick={() => navigate('/configuracion-cuenta/cambiar-contrasena')}>
+            Cambiar
+          </Button>
+        )
+      },
+      {
+        title: 'Ocultar mi perfil',
+        description: 'Activa el modo privado para hacer tu perfil invisible temporalmente.',
+        icon: IconShieldCheck,
+        action: (
+          <Switch
+            checked={settings.hideProfile}
+            onChange={() => setSettings((prev) => ({ ...prev, hideProfile: !prev.hideProfile }))}
+            sx={{
+              '& .MuiSwitch-switchBase.Mui-checked': {
+                color: 'success.main'
+              },
+              '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                backgroundColor: 'success.main'
+              }
+            }}
+          />
+        )
+      },
+      {
+        title: 'Cambiar fotografía',
+        description: 'Sube una nueva imagen para tu perfil de candidato.',
+        icon: IconCamera,
+        action: (
+          <Button variant="outlined" color="secondary" sx={buttonSX} onClick={() => navigate('/configuracion-cuenta/cambiar-foto')}>
+            Subir foto
+          </Button>
+        )
+      },
+      {
+        title: 'Cerrar sesión',
+        description: 'Finaliza tu sesión actual en WorkHive.',
+        icon: IconLogout,
+        action: (
+          <Button variant="contained" color="secondary" sx={buttonSX}>
+            Cerrar sesión
+          </Button>
+        )
+      }
+    ],
+    [navigate, settings.hideProfile, setSettings]
+  );
+
   return (
     <>
-      <PageHeading title="Configuracion de cuenta" description="Administra la seguridad y privacidad de tu perfil." />
+      <PageHeading title="Configuración de cuenta" description="Administra la seguridad y privacidad de tu perfil." />
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, md: 8 }}>
           <Stack spacing={2}>
