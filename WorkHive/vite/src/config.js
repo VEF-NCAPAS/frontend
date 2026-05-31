@@ -1,10 +1,10 @@
-export const DASHBOARD_PATH = '/dashboard/default';
+export const DEFAULT_PATH = '/buscar-empleos';
 export const DEFAULT_THEME_MODE = 'system';
 
 export const CSS_VAR_PREFIX = '';
 
 const config = {
-  defaultPath: DASHBOARD_PATH,
+  defaultPath: DEFAULT_PATH,
   fontFamily: `'Roboto', sans-serif`,
   borderRadius: 8
 };

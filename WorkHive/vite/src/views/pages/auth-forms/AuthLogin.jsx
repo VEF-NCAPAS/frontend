@@ -59,16 +59,16 @@ export default function AuthLogin() {
 
   const redirectByRole = (role) => {
     if (role === 'CANDIDATE') {
-      window.location.href = '/free/dashboard/default';
+      window.location.href = '/buscar-empleos';
       return;
     }
 
     if (role === 'RECRUITER') {
-      window.location.href = '/free/dashboard/default';
+      window.location.href = '/publicar-oferta';
       return;
     }
 
-    window.location.href = '/free/dashboard/default';
+    window.location.href = '/usuarios';
   };
 
   const handleLogin = async () => {

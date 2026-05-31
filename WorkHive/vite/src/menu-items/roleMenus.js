@@ -5,7 +5,6 @@ import {
   IconBuilding,
   IconChartBar,
   IconClipboardList,
-  IconDashboard,
   IconFileText,
   IconListDetails,
   IconSearch,
@@ -37,23 +36,12 @@ const normalizeRole = (role) => {
 };
 
 export const getCurrentUserRole = () => {
+  const mockRole = import.meta.env.VITE_MOCK_ROLE;
   const storedRole = localStorage.getItem('role');
 
-  // Mock temporal para probar el sidebar mientras el backend no entregue rol.
-  // Cambia VITE_MOCK_ROLE en .env o localStorage.role por: ADMIN, CANDIDATE o RECRUITER.
-  const mockRole = import.meta.env.VITE_MOCK_ROLE || USER_ROLES.CANDIDATE;
-
-  return normalizeRole(storedRole || mockRole);
+  return normalizeRole(mockRole || storedRole || USER_ROLES.CANDIDATE);
 };
 
-const dashboardItem = {
-  id: 'dashboard',
-  title: 'Dashboard',
-  type: 'item',
-  url: '/dashboard/default',
-  icon: IconDashboard,
-  breadcrumbs: false
-};
 
 const workHiveMenus = {
   [USER_ROLES.ADMIN]: {
@@ -61,7 +49,6 @@ const workHiveMenus = {
     title: 'WorkHive',
     type: 'group',
     children: [
-      dashboardItem,
       {
         id: 'admin-users',
         title: 'Usuarios',
@@ -117,7 +104,6 @@ const workHiveMenus = {
     title: 'WorkHive',
     type: 'group',
     children: [
-      dashboardItem,
       {
         id: 'candidate-search-jobs',
         title: 'Buscar empleos',
@@ -165,7 +151,6 @@ const workHiveMenus = {
     title: 'WorkHive',
     type: 'group',
     children: [
-      dashboardItem,
       {
         id: 'recruiter-publish-job',
         title: 'Publicar oferta',
@@ -188,6 +173,14 @@ const workHiveMenus = {
         type: 'item',
         url: '/postulantes',
         icon: IconUsers,
+        breadcrumbs: false
+      },
+      {
+        id: 'recruiter-search-candidates',
+        title: 'Buscar candidatos',
+        type: 'item',
+        url: '/buscar-candidatos',
+        icon: IconSearch,
         breadcrumbs: false
       },
       {
