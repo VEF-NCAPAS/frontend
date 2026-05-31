@@ -28,11 +28,11 @@ export default function Header() {
       {/* logo & toggler button */}
       <Box
         sx={{
-          width: downMD ? 'auto' : 228,
           display: 'flex',
-          flexDirection: { xs: 'row', md: 'column' },
-          alignItems: { xs: 'center', md: 'flex-start' },
-          gap: { xs: 0, md: 1 }
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 1,
+          width: 'auto'
         }}
       >
         <Box component="span" sx={{ display: { xs: 'none', md: 'block' } }}>
