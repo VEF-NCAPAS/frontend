@@ -43,10 +43,17 @@ export default function JobItem({ job }) {
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} justifyContent="space-between" alignItems={{ sm: 'center' }}>
           <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
             {job.tags.map((tag) => (
-              <Chip key={tag} size="small" label={tag} variant="outlined" color="secondary" />
+              <Chip
+                key={tag}
+                size="small"
+                label={tag}
+                variant="outlined"
+                color="info"
+                sx={{ borderColor: 'info.light', color: 'info.dark' }}
+              />
             ))}
           </Stack>
-          <Typography variant="subtitle1" color="secondary.dark">
+          <Typography variant="subtitle1" sx={{ color: 'success.dark', fontWeight: 600 }}>
             {job.salary}
           </Typography>
         </Stack>
