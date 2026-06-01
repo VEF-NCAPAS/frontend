@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -8,6 +10,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
+import { useLocalStorage } from 'hooks/useLocalStorage';
 import MainCard from 'ui-component/cards/MainCard';
 
 import PageHeading from '../components/PageHeading';
@@ -15,20 +18,41 @@ import { buttonSX } from '../data/candidateData';
 
 import { IconPencil, IconUser } from '@tabler/icons-react';
 
-const professionalInfo = [
-  ['Correo', 'ana.martinez@correo.com'],
-  ['Ubicacion', 'San Salvador, El Salvador'],
-  ['Experiencia', '3 anos']
-];
+const defaultProfile = {
+  firstName: 'Ana',
+  lastName: 'Martinez',
+  experience: '3 años',
+  skills: 'React, JavaScript, TypeScript, Material UI',
+  available: true
+};
 
 export default function CandidateProfilePage() {
+  const { state: profile } = useLocalStorage('candidate-profile', defaultProfile);
+  const navigate = useNavigate();
+  const skills = useMemo(
+    () => profile.skills.split(',').map((skill) => skill.trim()).filter(Boolean),
+    [profile.skills]
+  );
+
+  const professionalInfo = [
+    ['Correo', 'ana.martinez@correo.com'],
+    ['Ubicacion', 'San Salvador, El Salvador'],
+    ['Experiencia', profile.experience]
+  ];
+
   return (
     <>
       <PageHeading
         title="Mi perfil"
         description="Manten actualizada tu informacion para destacar ante las empresas."
         action={
-          <Button variant="contained" color="secondary" startIcon={<IconPencil size={18} />} sx={buttonSX}>
+          <Button
+            variant="contained"
+            color="secondary"
+            startIcon={<IconPencil size={18} />}
+            sx={buttonSX}
+            onClick={() => navigate('/mi-perfil/editar')}
+          >
             Editar perfil
           </Button>
         }
@@ -41,12 +65,16 @@ export default function CandidateProfilePage() {
                 <IconUser size={44} />
               </Avatar>
               <Box>
-                <Typography variant="h3">Ana Martinez</Typography>
+                <Typography variant="h3">{`${profile.firstName} ${profile.lastName}`}</Typography>
                 <Typography variant="body2" color="text.secondary">
                   Desarrolladora Frontend
                 </Typography>
               </Box>
-              <Chip label="Disponible para trabajar" color="success" variant="outlined" />
+              <Chip
+                label={profile.available ? 'Disponible para trabajar' : 'No disponible para trabajar'}
+                color={profile.available ? 'success' : 'warning'}
+                variant="outlined"
+              />
               <Divider flexItem />
               <Box sx={{ width: '100%' }}>
                 <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
@@ -78,8 +106,14 @@ export default function CandidateProfilePage() {
             </MainCard>
             <MainCard title="Habilidades" border>
               <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-                {['React', 'JavaScript', 'TypeScript', 'Material UI', 'Git', 'Figma'].map((skill) => (
-                  <Chip key={skill} label={skill} color="secondary" variant="outlined" />
+                {skills.map((skill) => (
+                  <Chip
+                    key={skill}
+                    label={skill}
+                    variant="outlined"
+                    color="info"
+                    sx={{ borderColor: 'info.light', color: 'info.dark' }}
+                  />
                 ))}
               </Stack>
             </MainCard>
