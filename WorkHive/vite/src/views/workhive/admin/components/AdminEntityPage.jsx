@@ -199,7 +199,10 @@ export default function AdminEntityPage({ title, description, entityName, storag
                   required={field.required !== false}
                   value={form[field.name]}
                   onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.value }))}
-                  slotProps={field.type === 'password' ? { htmlInput: { minLength: 6 } } : undefined}
+                  slotProps={{
+                    inputLabel: { shrink: true },
+                    ...(field.type === 'password' ? { htmlInput: { minLength: 6 } } : {})
+                  }}
                 >
                   {field.options?.map((option) => (
                     <MenuItem key={option} value={option}>
