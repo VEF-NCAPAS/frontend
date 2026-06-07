@@ -21,6 +21,7 @@ import Box from '@mui/material/Box';
 import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
 import useConfig from 'hooks/useConfig';
+import { getCurrentUserRole, USER_ROLES } from 'menu-items/roleMenus';
 
 // assets
 import { IconLogout, IconSettings, IconUser } from '@tabler/icons-react';
@@ -34,6 +35,7 @@ export default function ProfileSection() {
   } = useConfig();
 
   const [open, setOpen] = useState(false);
+  const isAdmin = getCurrentUserRole() === USER_ROLES.ADMIN;
 
   /**
    * anchorRef is used on different components and specifying one type leads to other components throwing an error
@@ -146,12 +148,14 @@ export default function ProfileSection() {
                           '& .MuiListItemButton-root': { mt: 0.5 }
                         }}
                       >
-                        <ListItemButton component={Link} to="/configuracion-cuenta" sx={{ borderRadius: `${borderRadius}px` }}>
-                          <ListItemIcon>
-                            <IconSettings stroke={1.5} size="20px" />
-                          </ListItemIcon>
-                          <ListItemText primary={<Typography variant="body2">Configuracion de cuenta</Typography>} />
-                        </ListItemButton>
+                        {!isAdmin && (
+                          <ListItemButton component={Link} to="/configuracion-cuenta" sx={{ borderRadius: `${borderRadius}px` }}>
+                            <ListItemIcon>
+                              <IconSettings stroke={1.5} size="20px" />
+                            </ListItemIcon>
+                            <ListItemText primary={<Typography variant="body2">Configuracion de cuenta</Typography>} />
+                          </ListItemButton>
+                        )}
                         <ListItemButton sx={{ borderRadius: `${borderRadius}px` }}>
                           <ListItemIcon>
                             <IconLogout stroke={1.5} size="20px" />
