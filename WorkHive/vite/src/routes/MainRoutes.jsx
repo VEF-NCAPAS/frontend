@@ -7,8 +7,15 @@ import Loadable from 'ui-component/Loadable';
 // dashboard routing kept for non-candidate role access
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
 
-const RolePage = Loadable(lazy(() => import('views/workhive/admin/RolePage')));
-const AdminPage = Loadable(lazy(() => import('views/workhive/admin/AdminPage')));
+import {
+  AdminCandidatesPage,
+  AdminCompaniesPage,
+  AdminDashboardPage,
+  AdminJobsPage,
+  AdminReportsPage,
+  AdminRolePage,
+  AdminUsersPage
+} from 'views/workhive/admin';
 import {
   CandidateApplicationsPage,
   CandidateAccountSettingsPage,
@@ -27,7 +34,6 @@ const workHiveRoutes = [
   { path: 'ofertas-empleo', title: 'Ofertas de empleo', description: 'Control y revision de ofertas publicadas.' },
   { path: 'candidatos', title: 'Candidatos', description: 'Consulta de candidatos disponibles en la plataforma.' },
   { path: 'reportes-estadisticas', title: 'Reportes / Estadisticas', description: 'Resumen de indicadores y reportes del sistema.' },
-  { path: 'configuracion', title: 'Configuracion', description: 'Ajustes generales de WorkHive.' },
   { path: 'publicar-oferta', title: 'Publicar oferta', description: 'Crea una nueva oferta de empleo para candidatos.' },
   { path: 'mis-ofertas', title: 'Mis ofertas', description: 'Gestion de ofertas publicadas por la empresa.' },
   { path: 'postulantes', title: 'Postulantes', description: 'Revision de candidatos que aplicaron a tus ofertas.' },
@@ -65,12 +71,24 @@ const MainRoutes = {
     },
     {
       path: 'admin',
-      element: <AdminPage />
+      element: <AdminDashboardPage />
     },
-    ...workHiveRoutes.map((route) => ({
-      path: route.path,
-      element: <RolePage title={route.title} description={route.description} />
-    }))
+    ...workHiveRoutes.map((route) => {
+      if (route.path === 'reportes-estadisticas') {
+        return {
+          path: route.path,
+          element: <AdminReportsPage />
+        };
+      }
+      if (route.path === 'usuarios') return { path: route.path, element: <AdminUsersPage /> };
+      if (route.path === 'empresas') return { path: route.path, element: <AdminCompaniesPage /> };
+      if (route.path === 'ofertas-empleo') return { path: route.path, element: <AdminJobsPage /> };
+      if (route.path === 'candidatos') return { path: route.path, element: <AdminCandidatesPage /> };
+      return {
+        path: route.path,
+        element: <AdminRolePage title={route.title} description={route.description} />
+      };
+    })
   ]
 };
 

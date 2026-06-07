@@ -8,7 +8,6 @@ import {
   IconFileText,
   IconListDetails,
   IconSearch,
-  IconSettings,
   IconSquarePlus,
   IconUserCheck,
   IconUserCircle,
@@ -89,14 +88,6 @@ const workHiveMenus = {
         type: 'item',
         url: '/reportes-estadisticas',
         icon: IconChartBar,
-        breadcrumbs: false
-      },
-      {
-        id: 'admin-settings',
-        title: 'Configuracion',
-        type: 'item',
-        url: '/configuracion',
-        icon: IconSettings,
         breadcrumbs: false
       }
     ]
