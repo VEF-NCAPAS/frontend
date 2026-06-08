@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -29,13 +29,14 @@ import { IconLogout, IconSettings, IconUser } from '@tabler/icons-react';
 // ==============================|| PROFILE MENU ||============================== //
 
 export default function ProfileSection() {
+  const { pathname } = useLocation();
   const theme = useTheme();
   const {
     state: { borderRadius }
   } = useConfig();
 
   const [open, setOpen] = useState(false);
-  const isAdmin = getCurrentUserRole() === USER_ROLES.ADMIN;
+  const isCandidate = getCurrentUserRole(pathname) === USER_ROLES.CANDIDATE;
 
   /**
    * anchorRef is used on different components and specifying one type leads to other components throwing an error
@@ -148,8 +149,12 @@ export default function ProfileSection() {
                           '& .MuiListItemButton-root': { mt: 0.5 }
                         }}
                       >
-                        {!isAdmin && (
-                          <ListItemButton component={Link} to="/configuracion-cuenta" sx={{ borderRadius: `${borderRadius}px` }}>
+                        {isCandidate && (
+                          <ListItemButton
+                            component={Link}
+                            to="/candidato/configuracion-cuenta"
+                            sx={{ borderRadius: `${borderRadius}px` }}
+                          >
                             <ListItemIcon>
                               <IconSettings stroke={1.5} size="20px" />
                             </ListItemIcon>

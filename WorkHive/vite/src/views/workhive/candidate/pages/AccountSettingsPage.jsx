@@ -28,7 +28,12 @@ export default function CandidateAccountSettingsPage() {
         description: 'Actualiza tu clave de acceso para mantener segura tu cuenta.',
         icon: IconKey,
         action: (
-          <Button variant="outlined" color="secondary" sx={buttonSX} onClick={() => navigate('/configuracion-cuenta/cambiar-contrasena')}>
+          <Button
+            variant="outlined"
+            color="secondary"
+            sx={buttonSX}
+            onClick={() => navigate('/candidato/configuracion-cuenta/cambiar-contrasena')}
+          >
             Cambiar
           </Button>
         )
@@ -57,7 +62,7 @@ export default function CandidateAccountSettingsPage() {
         description: 'Sube una nueva imagen para tu perfil de candidato.',
         icon: IconCamera,
         action: (
-          <Button variant="outlined" color="secondary" sx={buttonSX} onClick={() => navigate('/configuracion-cuenta/cambiar-foto')}>
+          <Button variant="outlined" color="secondary" sx={buttonSX} onClick={() => navigate('/candidato/configuracion-cuenta/cambiar-foto')}>
             Subir foto
           </Button>
         )

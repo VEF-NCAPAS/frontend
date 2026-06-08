@@ -24,7 +24,7 @@ export default function CandidateJobsPage() {
         title="Buscar empleos"
         description="Encuentra oportunidades que coincidan con tu experiencia en El Salvador."
         action={
-          <Button component={Link} to="/mi-perfil" variant="outlined" color="secondary" sx={buttonSX}>
+          <Button component={Link} to="/candidato/mi-perfil" variant="outlined" color="secondary" sx={buttonSX}>
             Completar mi perfil
           </Button>
         }

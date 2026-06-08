@@ -1,4 +1,5 @@
 import { Activity, memo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';
@@ -15,9 +16,10 @@ import { useGetMenuMaster } from 'api/menu';
 // ==============================|| SIDEBAR MENU LIST ||============================== //
 
 function MenuList() {
+  const { pathname } = useLocation();
   const { menuMaster } = useGetMenuMaster();
   const drawerOpen = menuMaster.isDashboardDrawerOpened;
-  const menuItems = getMenuItemsByRole(getCurrentUserRole());
+  const menuItems = getMenuItemsByRole(getCurrentUserRole(pathname));
 
   const [selectedID, setSelectedID] = useState('');
 

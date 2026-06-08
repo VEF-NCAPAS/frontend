@@ -7,7 +7,6 @@ import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 
 import MainCard from 'ui-component/cards/MainCard';
 
@@ -63,7 +62,7 @@ export default function CandidateChangePasswordPage() {
       <Box sx={{ mb: 2 }}>
         <IconButton
           color="secondary"
-          onClick={() => navigate('/configuracion-cuenta')}
+          onClick={() => navigate('/candidato/configuracion-cuenta')}
           sx={{ p: 1.5, bgcolor: 'secondary.lighter', '&:hover': { bgcolor: 'secondary.light' } }}
         >
           <IconArrowLeft size={24} />

@@ -34,7 +34,20 @@ const normalizeRole = (role) => {
   return USER_ROLES.CANDIDATE;
 };
 
-export const getCurrentUserRole = () => {
+export const getRoleByPathname = (pathname = '') => {
+  const normalizedPath = String(pathname).toLowerCase();
+
+  if (normalizedPath === '/admin' || normalizedPath.startsWith('/admin/')) return USER_ROLES.ADMIN;
+  if (normalizedPath === '/candidato' || normalizedPath.startsWith('/candidato/')) return USER_ROLES.CANDIDATE;
+  if (normalizedPath === '/reclutador' || normalizedPath.startsWith('/reclutador/')) return USER_ROLES.RECRUITER;
+
+  return null;
+};
+
+export const getCurrentUserRole = (pathname = window.location.pathname) => {
+  const routeRole = getRoleByPathname(pathname);
+  if (routeRole) return routeRole;
+
   const storedRole = localStorage.getItem('role');
 
   // Mock temporal para probar el sidebar mientras el backend no entregue rol.
@@ -54,7 +67,7 @@ const workHiveMenus = {
         id: 'admin-users',
         title: 'Usuarios',
         type: 'item',
-        url: '/usuarios',
+        url: '/admin/usuarios',
         icon: IconUsers,
         breadcrumbs: false
       },
@@ -62,7 +75,7 @@ const workHiveMenus = {
         id: 'admin-companies',
         title: 'Empresas',
         type: 'item',
-        url: '/empresas',
+        url: '/admin/empresas',
         icon: IconBuilding,
         breadcrumbs: false
       },
@@ -70,7 +83,7 @@ const workHiveMenus = {
         id: 'admin-jobs',
         title: 'Ofertas de empleo',
         type: 'item',
-        url: '/ofertas-empleo',
+        url: '/admin/ofertas-empleo',
         icon: IconBriefcase,
         breadcrumbs: false
       },
@@ -78,7 +91,7 @@ const workHiveMenus = {
         id: 'admin-candidates',
         title: 'Candidatos',
         type: 'item',
-        url: '/candidatos',
+        url: '/admin/candidatos',
         icon: IconUserCheck,
         breadcrumbs: false
       },
@@ -86,7 +99,7 @@ const workHiveMenus = {
         id: 'admin-reports',
         title: 'Reportes / Estadisticas',
         type: 'item',
-        url: '/reportes-estadisticas',
+        url: '/admin/reportes-estadisticas',
         icon: IconChartBar,
         breadcrumbs: false
       }
@@ -101,7 +114,7 @@ const workHiveMenus = {
         id: 'candidate-search-jobs',
         title: 'Buscar empleos',
         type: 'item',
-        url: '/',
+        url: '/candidato/buscar-empleos',
         icon: IconSearch,
         breadcrumbs: false
       },
@@ -109,7 +122,7 @@ const workHiveMenus = {
         id: 'candidate-applications',
         title: 'Mis postulaciones',
         type: 'item',
-        url: '/mis-postulaciones',
+        url: '/candidato/mis-postulaciones',
         icon: IconClipboardList,
         breadcrumbs: false
       },
@@ -117,7 +130,7 @@ const workHiveMenus = {
         id: 'candidate-profile',
         title: 'Mi perfil',
         type: 'item',
-        url: '/mi-perfil',
+        url: '/candidato/mi-perfil',
         icon: IconUserCircle,
         breadcrumbs: false
       },
@@ -125,7 +138,7 @@ const workHiveMenus = {
         id: 'candidate-cv',
         title: 'CV / Hoja de vida',
         type: 'item',
-        url: '/cv-hoja-de-vida',
+        url: '/candidato/cv-hoja-de-vida',
         icon: IconFileText,
         breadcrumbs: false
       },
@@ -133,7 +146,7 @@ const workHiveMenus = {
         id: 'candidate-notifications',
         title: 'Notificaciones',
         type: 'item',
-        url: '/notificaciones',
+        url: '/candidato/notificaciones',
         icon: IconBell,
         breadcrumbs: false
       }
@@ -148,7 +161,7 @@ const workHiveMenus = {
         id: 'recruiter-publish-job',
         title: 'Publicar oferta',
         type: 'item',
-        url: '/publicar-oferta',
+        url: '/reclutador/publicar-oferta',
         icon: IconSquarePlus,
         breadcrumbs: false
       },
@@ -156,7 +169,7 @@ const workHiveMenus = {
         id: 'recruiter-jobs',
         title: 'Mis ofertas',
         type: 'item',
-        url: '/mis-ofertas',
+        url: '/reclutador/mis-ofertas',
         icon: IconListDetails,
         breadcrumbs: false
       },
@@ -164,7 +177,7 @@ const workHiveMenus = {
         id: 'recruiter-applicants',
         title: 'Postulantes',
         type: 'item',
-        url: '/postulantes',
+        url: '/reclutador/postulantes',
         icon: IconUsers,
         breadcrumbs: false
       },
@@ -172,7 +185,7 @@ const workHiveMenus = {
         id: 'recruiter-company-profile',
         title: 'Perfil de empresa',
         type: 'item',
-        url: '/perfil-empresa',
+        url: '/reclutador/perfil-empresa',
         icon: IconBuilding,
         breadcrumbs: false
       },
@@ -180,7 +193,7 @@ const workHiveMenus = {
         id: 'recruiter-statistics',
         title: 'Estadisticas',
         type: 'item',
-        url: '/estadisticas',
+        url: '/reclutador/estadisticas',
         icon: IconChartBar,
         breadcrumbs: false
       }

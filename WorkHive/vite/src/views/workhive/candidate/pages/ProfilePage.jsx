@@ -51,7 +51,7 @@ export default function CandidateProfilePage() {
             color="secondary"
             startIcon={<IconPencil size={18} />}
             sx={buttonSX}
-            onClick={() => navigate('/mi-perfil/editar')}
+            onClick={() => navigate('/candidato/mi-perfil/editar')}
           >
             Editar perfil
           </Button>
