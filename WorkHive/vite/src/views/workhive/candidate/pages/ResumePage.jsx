@@ -21,7 +21,30 @@ import { buttonSX } from '../data/candidateData';
 import { IconBriefcase, IconDeviceFloppy, IconDownload, IconPlus, IconSchool, IconTrash, IconX } from '@tabler/icons-react';
 
 const skillOptions = {
-  'Tecnología y desarrollo': ['JavaScript', 'React', 'TypeScript', 'Node.js', 'Python', 'SQL', 'Git', 'Desarrollo web', 'Soporte técnico'],
+  'Tecnología y desarrollo': [
+    'JavaScript',
+    'React',
+    'TypeScript',
+    'Node.js',
+    'Python',
+    'SQL',
+    'Git',
+    'Desarrollo web',
+    'Soporte técnico',
+    'HTML',
+    'CSS',
+    'Next.js',
+    'Vue.js',
+    'Angular',
+    'Java',
+    'C#',
+    'PHP',
+    'Docker',
+    'AWS',
+    'Bases de datos',
+    'Pruebas de software',
+    'Metodologías ágiles'
+  ],
   'Diseño y creatividad': [
     'Figma',
     'Diseño UX/UI',
@@ -29,19 +52,85 @@ const skillOptions = {
     'Adobe Illustrator',
     'Diseño gráfico',
     'Investigación UX',
-    'Branding'
+    'Branding',
+    'Canva',
+    'Diseño editorial',
+    'Fotografía',
+    'Edición de video',
+    'Prototipado',
+    'Ilustración digital'
   ],
-  'Administración y finanzas': ['Excel', 'Contabilidad', 'Análisis financiero', 'Facturación', 'Presupuestos', 'SAP', 'Auditoría'],
-  'Marketing y ventas': ['Ventas', 'Marketing digital', 'SEO', 'Redes sociales', 'Google Analytics', 'Negociación', 'Servicio al cliente'],
-  'Ingeniería y operaciones': ['Gestión de proyectos', 'AutoCAD', 'Control de calidad', 'Logística', 'Procesos', 'Seguridad industrial'],
+  'Administración y finanzas': [
+    'Excel',
+    'Contabilidad',
+    'Análisis financiero',
+    'Facturación',
+    'Presupuestos',
+    'SAP',
+    'Auditoría',
+    'Power BI',
+    'Nómina',
+    'Gestión administrativa',
+    'Compras',
+    'Inventarios',
+    'Atención al cliente'
+  ],
+  'Marketing y ventas': [
+    'Ventas',
+    'Marketing digital',
+    'SEO',
+    'Redes sociales',
+    'Google Analytics',
+    'Negociación',
+    'Servicio al cliente',
+    'Publicidad',
+    'Email marketing',
+    'Creación de contenido',
+    'Copywriting',
+    'CRM',
+    'Investigación de mercado'
+  ],
+  'Ingeniería y operaciones': [
+    'Gestión de proyectos',
+    'AutoCAD',
+    'Control de calidad',
+    'Logística',
+    'Procesos',
+    'Seguridad industrial',
+    'Lean Manufacturing',
+    'Mantenimiento',
+    'Planificación',
+    'Gestión de proveedores',
+    'Mejora continua'
+  ],
   'Educación y salud': [
     'Docencia',
     'Planificación educativa',
     'Atención al paciente',
     'Primeros auxilios',
     'Investigación',
-    'Trabajo en equipo'
+    'Trabajo en equipo',
+    'Comunicación asertiva',
+    'Liderazgo',
+    'Resolución de problemas',
+    'Organización',
+    'Gestión del tiempo'
   ]
+};
+
+const actionButtonSX = {
+  ...buttonSX,
+  border: 0,
+  boxShadow: 'none',
+  fontWeight: 600,
+  '&:hover': { border: 0, boxShadow: 'none' }
+};
+
+const skillChipSX = {
+  bgcolor: '#eee8ff',
+  borderColor: '#b7a3f5',
+  color: '#5b3fa3',
+  '& .MuiChip-deleteIcon': { color: '#8066c9' }
 };
 
 const institutionOptions = [
@@ -166,11 +255,13 @@ export default function CandidateResumePage() {
       .filter((item) => item.position || item.company)
       .map(
         (item) => `
-          <section>
+          <article class="timeline-item">
+            <span class="timeline-dot"></span>
             <h3>${escapeHtml(item.position || 'Puesto')}</h3>
-            <p>${escapeHtml([item.company, [item.startDate, item.endDate].filter(Boolean).join(' - ')].filter(Boolean).join(' | '))}</p>
-            ${item.description ? `<p>${escapeHtml(item.description)}</p>` : ''}
-          </section>
+            <p class="company">${escapeHtml(item.company)}</p>
+            <p class="date">${escapeHtml([item.startDate, item.endDate].filter(Boolean).join(' - '))}</p>
+            ${item.description ? `<p class="description">${escapeHtml(item.description)}</p>` : ''}
+          </article>
         `
       )
       .join('');
@@ -178,10 +269,11 @@ export default function CandidateResumePage() {
       .filter((item) => item.institution || item.degree)
       .map(
         (item) => `
-          <section>
+          <article class="education-item">
             <h3>${escapeHtml(item.degree || 'Título académico')}</h3>
-            <p>${escapeHtml([item.institution, [item.startDate, item.endDate].filter(Boolean).join(' - ')].filter(Boolean).join(' | '))}</p>
-          </section>
+            <p>${escapeHtml(item.institution)}</p>
+            <p>${escapeHtml([item.startDate, item.endDate].filter(Boolean).join(' - '))}</p>
+          </article>
         `
       )
       .join('');
@@ -198,24 +290,71 @@ export default function CandidateResumePage() {
         <head>
           <title>CV - ${escapeHtml(fullName)}</title>
           <style>
-            body { color: #263238; font-family: Arial, sans-serif; line-height: 1.5; margin: 40px auto; max-width: 800px; }
-            h1 { color: #1565c0; margin-bottom: 0; }
-            h2 { border-bottom: 2px solid #90caf9; color: #1565c0; margin-top: 28px; padding-bottom: 4px; }
-            h3, p { margin: 4px 0; }
-            .skills { display: flex; flex-wrap: wrap; gap: 8px; }
-            .skill { background: #e3f2fd; border: 1px solid #64b5f6; border-radius: 16px; color: #0d47a1; padding: 4px 10px; }
-            @media print { body { margin: 0; } }
+            * { box-sizing: border-box; }
+            body { background: #f5f3ff; color: #20145c; font-family: Arial, sans-serif; line-height: 1.45; margin: 0; }
+            .resume { background: #fff; margin: 0 auto; max-width: 850px; min-height: 1100px; }
+            .header { background: #d9d1fb; padding: 34px 48px 30px 258px; }
+            .header h1 { color: #20145c; font-size: 46px; line-height: 1.08; margin: 0; max-width: 430px; }
+            .header p { font-size: 15px; font-weight: 700; letter-spacing: 1.5px; margin: 12px 0 0; text-transform: uppercase; }
+            .content { display: grid; grid-template-columns: 250px 1fr; min-height: 900px; }
+            .sidebar { background: #eeeaff; padding: 30px 34px; }
+            .main { padding: 30px 40px; }
+            h2 { color: #3d2b8f; font-size: 18px; letter-spacing: 2px; margin: 0 0 18px; text-transform: uppercase; }
+            h3, p { margin: 0; }
+            .section { border-bottom: 2px solid #b7a3f5; margin-bottom: 30px; padding-bottom: 28px; }
+            .section:last-child { border-bottom: 0; }
+            .contact p, .education-item p { font-size: 12px; margin-top: 6px; }
+            .skills { margin: 0; padding-left: 18px; }
+            .skills li { font-size: 12px; margin-bottom: 6px; }
+            .education-item { margin-bottom: 20px; }
+            .education-item h3 { font-size: 13px; }
+            .about { border-bottom: 2px solid #b7a3f5; margin-bottom: 28px; padding-bottom: 24px; }
+            .about p { color: #30266b; font-size: 12px; }
+            .timeline { border-left: 2px solid #a58cf1; margin-left: 6px; padding-left: 25px; }
+            .timeline-item { margin-bottom: 27px; position: relative; }
+            .timeline-dot { background: #a58cf1; border-radius: 50%; height: 11px; left: -31.5px; position: absolute; top: 4px; width: 11px; }
+            .timeline-item h3 { font-size: 14px; }
+            .timeline-item .company, .timeline-item .date { font-size: 11px; margin-top: 3px; }
+            .timeline-item .description { color: #30266b; font-size: 11px; margin-top: 10px; }
+            .empty { color: #6f659d; font-size: 12px; }
+            @page { margin: 0; size: A4; }
+            @media print { body { background: #fff; } .resume { max-width: none; min-height: 100vh; } }
           </style>
         </head>
         <body>
-          <h1>${escapeHtml(fullName)}</h1>
-          <h3>${escapeHtml(resume.headline)}</h3>
-          <p>${escapeHtml([resume.city, resume.country].filter(Boolean).join(', '))}</p>
-          ${resume.summary ? `<h2>Perfil profesional</h2><p>${escapeHtml(resume.summary)}</p>` : ''}
-          ${printableExperiences ? `<h2>Experiencia</h2>${printableExperiences}` : ''}
-          ${printableEducation ? `<h2>Educación</h2>${printableEducation}` : ''}
-          <h2>Habilidades</h2>
-          <div class="skills">${resume.skills.map((skill) => `<span class="skill">${escapeHtml(skill)}</span>`).join('')}</div>
+          <div class="resume">
+            <header class="header">
+              <h1>${escapeHtml(fullName)}</h1>
+              <p>${escapeHtml(resume.headline)}</p>
+            </header>
+            <div class="content">
+              <aside class="sidebar">
+                <section class="section contact">
+                  <h2>Contacto</h2>
+                  <p>${escapeHtml(resume.city)}</p>
+                  <p>${escapeHtml(resume.country)}</p>
+                </section>
+                <section class="section">
+                  <h2>Habilidades</h2>
+                  <ul class="skills">${resume.skills.map((skill) => `<li>${escapeHtml(skill)}</li>`).join('')}</ul>
+                </section>
+                <section class="section">
+                  <h2>Educación</h2>
+                  ${printableEducation || '<p class="empty">Sin educación agregada.</p>'}
+                </section>
+              </aside>
+              <main class="main">
+                <section class="about">
+                  <h2>Acerca de mí</h2>
+                  <p>${escapeHtml(resume.summary || `Profesional de ${resume.careerArea} con interés en seguir desarrollando sus habilidades y experiencia.`)}</p>
+                </section>
+                <section>
+                  <h2>Experiencia laboral</h2>
+                  <div class="timeline">${printableExperiences || '<p class="empty">Sin experiencia laboral agregada.</p>'}</div>
+                </section>
+              </main>
+            </div>
+          </div>
         </body>
       </html>
     `);
@@ -225,8 +364,6 @@ export default function CandidateResumePage() {
     setMessage({ type: 'success', text: 'CV preparado correctamente. Selecciona "Guardar como PDF" en la ventana de impresión.' });
   };
 
-  const missingRequiredFields = Object.keys(validate()).length;
-
   return (
     <>
       <PageHeading
@@ -234,13 +371,28 @@ export default function CandidateResumePage() {
         description="Crea tu CV digital con tu experiencia, educación y habilidades profesionales."
         action={
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-            <Button variant="contained" color="secondary" startIcon={<IconDeviceFloppy size={18} />} sx={buttonSX} onClick={handleSave}>
+            <Button
+              variant="contained"
+              startIcon={<IconDeviceFloppy size={18} />}
+              sx={{ ...actionButtonSX, bgcolor: '#bde9f7', color: '#15576b', '&:hover': { bgcolor: '#a8deef' } }}
+              onClick={handleSave}
+            >
               Guardar CV
             </Button>
-            <Button variant="outlined" color="inherit" startIcon={<IconX size={18} />} sx={buttonSX} onClick={handleCancel}>
+            <Button
+              variant="contained"
+              startIcon={<IconX size={18} />}
+              sx={{ ...actionButtonSX, bgcolor: '#ffd6d6', color: '#9b3030', '&:hover': { bgcolor: '#ffc4c4' } }}
+              onClick={handleCancel}
+            >
               Cancelar
             </Button>
-            <Button variant="outlined" color="info" startIcon={<IconDownload size={18} />} sx={buttonSX} onClick={handleExport}>
+            <Button
+              variant="contained"
+              startIcon={<IconDownload size={18} />}
+              sx={{ ...actionButtonSX, bgcolor: '#ded3ff', color: '#55359b', '&:hover': { bgcolor: '#cfc0fa' } }}
+              onClick={handleExport}
+            >
               Exportar CV en PDF
             </Button>
           </Stack>
@@ -250,11 +402,6 @@ export default function CandidateResumePage() {
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, lg: 8 }}>
           <Stack spacing={3}>
-            <Alert severity={missingRequiredFields === 0 ? 'success' : 'warning'} variant="outlined">
-              {missingRequiredFields === 0
-                ? 'Perfil completo: la información obligatoria está lista para guardar o exportar.'
-                : `Perfil incompleto: completa ${missingRequiredFields} campo${missingRequiredFields === 1 ? '' : 's'} obligatorio${missingRequiredFields === 1 ? '' : 's'}.`}
-            </Alert>
             {message && <Alert severity={message.type}>{message.text}</Alert>}
 
             <MainCard title="Información personal" border>
@@ -517,7 +664,7 @@ export default function CandidateResumePage() {
                   }}
                   renderValue={(value, getItemProps) =>
                     value.map((option, index) => (
-                      <Chip label={option} color="info" variant="outlined" {...getItemProps({ index })} key={option} />
+                      <Chip label={option} variant="outlined" sx={skillChipSX} {...getItemProps({ index })} key={option} />
                     ))
                   }
                   renderInput={(params) => (
@@ -610,7 +757,7 @@ export default function CandidateResumePage() {
                 </Typography>
                 <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
                   {resume.skills.length > 0 ? (
-                    resume.skills.map((skill) => <Chip key={skill} label={skill} size="small" color="info" variant="outlined" />)
+                    resume.skills.map((skill) => <Chip key={skill} label={skill} size="small" variant="outlined" sx={skillChipSX} />)
                   ) : (
                     <Typography variant="body2" color="text.secondary">
                       Selecciona tus habilidades.
