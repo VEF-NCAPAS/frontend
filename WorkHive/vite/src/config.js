@@ -1,4 +1,4 @@
-export const DEFAULT_PATH = '/buscar-empleos';
+export const DEFAULT_PATH = '/';
 export const DEFAULT_THEME_MODE = 'system';
 
 export const CSS_VAR_PREFIX = '';

@@ -1,11 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 // material-ui
 import Alert from '@mui/material/Alert';
+import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import IconButton from '@mui/material/IconButton';
@@ -14,6 +16,7 @@ import InputLabel from '@mui/material/InputLabel';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
@@ -29,8 +32,44 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
+const DEFAULT_COMPANIES = [
+  { id: 1, name: 'Banco Agrícola' },
+  { id: 2, name: 'TELUS International' },
+  { id: 3, name: 'Dollarcity' },
+  { id: 4, name: 'Huawei El Salvador' },
+  { id: 5, name: 'Hencorp' },
+  { id: 6, name: 'OnlyDevs' }
+];
+
+const getCompanyList = (data) => {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.content)) return data.content;
+  if (Array.isArray(data?.data)) return data.data;
+  if (Array.isArray(data?.companies)) return data.companies;
+
+  return [];
+};
+
+const normalizeCompany = (company, index) => {
+  if (typeof company === 'string') {
+    return {
+      id: index + 1,
+      name: company
+    };
+  }
+
+  return {
+    id: company.id ?? company.companyId ?? company.codigo ?? index + 1,
+    name: company.name ?? company.companyName ?? company.nombre ?? company.razonSocial ?? ''
+  };
+};
+
 export default function AuthRegister() {
   const [userType, setUserType] = useState('CANDIDATE');
+  const [companyMode, setCompanyMode] = useState('EXISTING');
+  const [companies, setCompanies] = useState(DEFAULT_COMPANIES);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [companiesLoading, setCompaniesLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -49,6 +88,49 @@ export default function AuthRegister() {
   });
 
   const isCandidate = userType === 'CANDIDATE';
+  const isExistingCompanyMode = companyMode === 'EXISTING';
+
+  useEffect(() => {
+    if (isCandidate) return undefined;
+
+    let ignore = false;
+
+    const loadCompanies = async () => {
+      try {
+        setCompaniesLoading(true);
+
+        const response = await fetch(`${API_URL}/companies`);
+
+        if (!response.ok) {
+          throw new Error('No se pudo cargar el catálogo de empresas.');
+        }
+
+        const data = await response.json();
+
+        const normalizedCompanies = getCompanyList(data)
+          .map(normalizeCompany)
+          .filter((company) => company.name.trim());
+
+        if (!ignore && normalizedCompanies.length > 0) {
+          setCompanies(normalizedCompanies);
+        }
+      } catch {
+        if (!ignore) {
+          setCompanies(DEFAULT_COMPANIES);
+        }
+      } finally {
+        if (!ignore) {
+          setCompaniesLoading(false);
+        }
+      }
+    };
+
+    loadCompanies();
+
+    return () => {
+      ignore = true;
+    };
+  }, [isCandidate]);
 
   const selectedInfo = useMemo(() => {
     if (isCandidate) {
@@ -120,10 +202,18 @@ export default function AuthRegister() {
       return false;
     }
 
-    if (!isCandidate && !form.companyName.trim()) {
+    if (!isCandidate && isExistingCompanyMode && !selectedCompany) {
       setMessage({
         type: 'error',
-        text: 'Ingresa el nombre de la empresa.'
+        text: 'Selecciona una empresa existente o agrega una nueva.'
+      });
+      return false;
+    }
+
+    if (!isCandidate && !isExistingCompanyMode && !form.companyName.trim()) {
+      setMessage({
+        type: 'error',
+        text: 'Ingresa el nombre de la nueva empresa.'
       });
       return false;
     }
@@ -150,19 +240,20 @@ export default function AuthRegister() {
   const buildPayload = () => {
     if (isCandidate) {
       return {
-        name: form.name,
-        email: form.email,
+        name: form.name.trim(),
+        email: form.email.trim(),
         password: form.password,
         role: 'CANDIDATE'
       };
     }
 
     return {
-      name: form.name,
-      email: form.email,
+      name: form.name.trim(),
+      email: form.email.trim(),
       password: form.password,
       role: 'RECRUITER',
-      companyName: form.companyName
+      companyId: isExistingCompanyMode ? selectedCompany?.id : null,
+      companyName: isExistingCompanyMode ? selectedCompany?.name : form.companyName.trim()
     };
   };
 
@@ -191,7 +282,7 @@ export default function AuthRegister() {
       });
 
       setTimeout(() => {
-        window.location.href = '/free/pages/login';
+        window.location.href = '/pages/login';
       }, 1000);
     } catch (err) {
       setMessage({
@@ -213,6 +304,8 @@ export default function AuthRegister() {
         onChange={(event, value) => {
           if (value) {
             setUserType(value);
+            setCompanyMode('EXISTING');
+            setSelectedCompany(null);
             setMessage({ type: '', text: '' });
           }
         }}
@@ -245,6 +338,78 @@ export default function AuthRegister() {
         </Stack>
       </Paper>
 
+      {!isCandidate && (
+        <Stack spacing={1.4}>
+          <ToggleButtonGroup
+            fullWidth
+            exclusive
+            value={companyMode}
+            color="secondary"
+            onChange={(event, value) => {
+              if (value) {
+                setCompanyMode(value);
+                setSelectedCompany(null);
+                setForm((prev) => ({
+                  ...prev,
+                  companyName: ''
+                }));
+                setMessage({ type: '', text: '' });
+              }
+            }}
+          >
+            <ToggleButton value="EXISTING">Empresa existente</ToggleButton>
+            <ToggleButton value="NEW">Agregar empresa</ToggleButton>
+          </ToggleButtonGroup>
+
+          {isExistingCompanyMode ? (
+            <Autocomplete
+              fullWidth
+              loading={companiesLoading}
+              options={companies}
+              value={selectedCompany}
+              getOptionLabel={(option) => option?.name || ''}
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              onChange={(event, value) => {
+                setSelectedCompany(value);
+                setMessage({ type: '', text: '' });
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Empresa existente"
+                  placeholder="Busca o selecciona una empresa"
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <>
+                        {companiesLoading ? <CircularProgress color="inherit" size={20} /> : null}
+                        {params.InputProps.endAdornment}
+                      </>
+                    )
+                  }}
+                />
+              )}
+            />
+          ) : (
+            <FormControl fullWidth>
+              <InputLabel htmlFor="register-company">Nombre de la nueva empresa</InputLabel>
+              <OutlinedInput
+                id="register-company"
+                name="companyName"
+                value={form.companyName}
+                onChange={handleChange}
+                label="Nombre de la nueva empresa"
+                placeholder="Ej. Empresa S.A. de C.V."
+              />
+            </FormControl>
+          )}
+
+          <Typography variant="caption" color="text.secondary">
+            Si la empresa ya existe, selecciónala. Si no aparece, agrega una nueva.
+          </Typography>
+        </Stack>
+      )}
+
       {message.text && <Alert severity={message.type}>{message.text}</Alert>}
 
       <FormControl fullWidth>
@@ -271,20 +436,6 @@ export default function AuthRegister() {
           placeholder="ejemplo@correo.com"
         />
       </FormControl>
-
-      {!isCandidate && (
-        <FormControl fullWidth>
-          <InputLabel htmlFor="register-company">Nombre de la empresa</InputLabel>
-          <OutlinedInput
-            id="register-company"
-            name="companyName"
-            value={form.companyName}
-            onChange={handleChange}
-            label="Nombre de la empresa"
-            placeholder="Ej. Empresa S.A. de C.V."
-          />
-        </FormControl>
-      )}
 
       <FormControl fullWidth>
         <InputLabel htmlFor="register-password">Contraseña</InputLabel>
@@ -343,6 +494,7 @@ export default function AuthRegister() {
           color="secondary"
           onClick={handleRegister}
           disabled={loading}
+          sx={{ textTransform: 'none' }}
         >
           {loading ? 'Creando cuenta...' : isCandidate ? 'Crear cuenta de candidato' : 'Crear cuenta de empresa'}
         </Button>

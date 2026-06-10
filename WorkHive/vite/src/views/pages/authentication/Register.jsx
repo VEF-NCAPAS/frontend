@@ -42,7 +42,7 @@ export default function Register() {
 
                 <Typography variant="body2" color="text.secondary" align="center">
                   ¿Ya tienes cuenta?{' '}
-                  <Typography component={Link} to="/free/pages/login" variant="subtitle2" color="primary" sx={{ textDecoration: 'none' }}>
+                  <Typography component={Link} to="/pages/login" variant="subtitle2" color="primary" sx={{ textDecoration: 'none' }}>
                     Iniciar sesión
                   </Typography>
                 </Typography>

@@ -8,7 +8,6 @@ import Box from '@mui/material/Box';
 import LogoSection from '../LogoSection';
 import SearchSection from './SearchSection';
 import ProfileSection from './ProfileSection';
-import NotificationSection from './NotificationSection';
 
 import { handlerDrawerOpen, useGetMenuMaster } from 'api/menu';
 
@@ -27,8 +26,16 @@ export default function Header() {
   return (
     <>
       {/* logo & toggler button */}
-      <Box sx={{ width: downMD ? 'auto' : 228, display: 'flex' }}>
-        <Box component="span" sx={{ display: { xs: 'none', md: 'block' }, flexGrow: 1 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 1,
+          width: 'auto'
+        }}
+      >
+        <Box component="span" sx={{ display: { xs: 'none', md: 'block' } }}>
           <LogoSection />
         </Box>
         <Avatar
@@ -37,9 +44,10 @@ export default function Header() {
             ...theme.typography.commonAvatar,
             ...theme.typography.mediumAvatar,
             overflow: 'hidden',
-            transition: 'all .2s ease-in-out',
+            transition: 'none',
             color: theme.vars.palette.secondary.dark,
             background: theme.vars.palette.secondary.light,
+            flexShrink: 0,
             '&:hover': {
               color: theme.vars.palette.secondary.light,
               background: theme.vars.palette.secondary.dark
@@ -55,9 +63,6 @@ export default function Header() {
       <SearchSection />
       <Box sx={{ flexGrow: 1 }} />
       <Box sx={{ flexGrow: 1 }} />
-
-      {/* notification */}
-      <NotificationSection />
 
       {/* profile */}
       <ProfileSection />
