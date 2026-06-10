@@ -1,6 +1,5 @@
 // assets
 import {
-  IconBell,
   IconBriefcase,
   IconBuilding,
   IconChartBar,
@@ -140,14 +139,6 @@ const workHiveMenus = {
         type: 'item',
         url: '/candidato/cv-hoja-de-vida',
         icon: IconFileText,
-        breadcrumbs: false
-      },
-      {
-        id: 'candidate-notifications',
-        title: 'Notificaciones',
-        type: 'item',
-        url: '/candidato/notificaciones',
-        icon: IconBell,
         breadcrumbs: false
       }
     ]

@@ -18,7 +18,7 @@ import MainCard from 'ui-component/cards/MainCard';
 import PageHeading from '../components/PageHeading';
 import { buttonSX } from '../data/candidateData';
 
-import { IconBriefcase, IconDeviceFloppy, IconPlus, IconSchool, IconTrash } from '@tabler/icons-react';
+import { IconBriefcase, IconDeviceFloppy, IconDownload, IconPlus, IconSchool, IconTrash, IconX } from '@tabler/icons-react';
 
 const skillOptions = {
   'Tecnología y desarrollo': ['JavaScript', 'React', 'TypeScript', 'Node.js', 'Python', 'SQL', 'Git', 'Desarrollo web', 'Soporte técnico'],
@@ -54,6 +54,14 @@ const institutionOptions = [
 
 const emptyExperience = { position: '', company: '', startDate: '', endDate: '', description: '' };
 const emptyEducation = { institution: '', degree: '', startDate: '', endDate: '' };
+
+const escapeHtml = (value = '') =>
+  String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
 
 const defaultResume = {
   firstName: 'Ana',
@@ -139,21 +147,114 @@ export default function CandidateResumePage() {
     setMessage({ type: 'success', text: 'CV digital guardado correctamente.' });
   };
 
+  const handleCancel = () => {
+    setResume(storedResume);
+    setErrors({});
+    setMessage({ type: 'info', text: 'Los cambios sin guardar fueron cancelados.' });
+  };
+
+  const handleExport = () => {
+    const validationErrors = validate();
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      setMessage({ type: 'error', text: 'Completa los campos obligatorios antes de exportar tu CV en PDF.' });
+      return;
+    }
+
+    const printableExperiences = resume.experiences
+      .filter((item) => item.position || item.company)
+      .map(
+        (item) => `
+          <section>
+            <h3>${escapeHtml(item.position || 'Puesto')}</h3>
+            <p>${escapeHtml([item.company, [item.startDate, item.endDate].filter(Boolean).join(' - ')].filter(Boolean).join(' | '))}</p>
+            ${item.description ? `<p>${escapeHtml(item.description)}</p>` : ''}
+          </section>
+        `
+      )
+      .join('');
+    const printableEducation = resume.education
+      .filter((item) => item.institution || item.degree)
+      .map(
+        (item) => `
+          <section>
+            <h3>${escapeHtml(item.degree || 'Título académico')}</h3>
+            <p>${escapeHtml([item.institution, [item.startDate, item.endDate].filter(Boolean).join(' - ')].filter(Boolean).join(' | '))}</p>
+          </section>
+        `
+      )
+      .join('');
+    const printWindow = window.open('', '_blank', 'width=900,height=700');
+
+    if (!printWindow) {
+      setMessage({ type: 'error', text: 'No se pudo abrir la exportación. Habilita las ventanas emergentes e inténtalo de nuevo.' });
+      return;
+    }
+
+    printWindow.document.write(`
+      <!doctype html>
+      <html lang="es">
+        <head>
+          <title>CV - ${escapeHtml(fullName)}</title>
+          <style>
+            body { color: #263238; font-family: Arial, sans-serif; line-height: 1.5; margin: 40px auto; max-width: 800px; }
+            h1 { color: #1565c0; margin-bottom: 0; }
+            h2 { border-bottom: 2px solid #90caf9; color: #1565c0; margin-top: 28px; padding-bottom: 4px; }
+            h3, p { margin: 4px 0; }
+            .skills { display: flex; flex-wrap: wrap; gap: 8px; }
+            .skill { background: #e3f2fd; border: 1px solid #64b5f6; border-radius: 16px; color: #0d47a1; padding: 4px 10px; }
+            @media print { body { margin: 0; } }
+          </style>
+        </head>
+        <body>
+          <h1>${escapeHtml(fullName)}</h1>
+          <h3>${escapeHtml(resume.headline)}</h3>
+          <p>${escapeHtml([resume.city, resume.country].filter(Boolean).join(', '))}</p>
+          ${resume.summary ? `<h2>Perfil profesional</h2><p>${escapeHtml(resume.summary)}</p>` : ''}
+          ${printableExperiences ? `<h2>Experiencia</h2>${printableExperiences}` : ''}
+          ${printableEducation ? `<h2>Educación</h2>${printableEducation}` : ''}
+          <h2>Habilidades</h2>
+          <div class="skills">${resume.skills.map((skill) => `<span class="skill">${escapeHtml(skill)}</span>`).join('')}</div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    setMessage({ type: 'success', text: 'CV preparado correctamente. Selecciona "Guardar como PDF" en la ventana de impresión.' });
+  };
+
+  const missingRequiredFields = Object.keys(validate()).length;
+
   return (
     <>
       <PageHeading
         title="CV / Hoja de vida"
         description="Crea tu CV digital con tu experiencia, educación y habilidades profesionales."
         action={
-          <Button variant="contained" color="secondary" startIcon={<IconDeviceFloppy size={18} />} sx={buttonSX} onClick={handleSave}>
-            Guardar CV
-          </Button>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+            <Button variant="contained" color="secondary" startIcon={<IconDeviceFloppy size={18} />} sx={buttonSX} onClick={handleSave}>
+              Guardar CV
+            </Button>
+            <Button variant="outlined" color="inherit" startIcon={<IconX size={18} />} sx={buttonSX} onClick={handleCancel}>
+              Cancelar
+            </Button>
+            <Button variant="outlined" color="info" startIcon={<IconDownload size={18} />} sx={buttonSX} onClick={handleExport}>
+              Exportar CV en PDF
+            </Button>
+          </Stack>
         }
       />
 
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, lg: 8 }}>
           <Stack spacing={3}>
+            <Alert severity={missingRequiredFields === 0 ? 'success' : 'warning'} variant="outlined">
+              {missingRequiredFields === 0
+                ? 'Perfil completo: la información obligatoria está lista para guardar o exportar.'
+                : `Perfil incompleto: completa ${missingRequiredFields} campo${missingRequiredFields === 1 ? '' : 's'} obligatorio${missingRequiredFields === 1 ? '' : 's'}.`}
+            </Alert>
             {message && <Alert severity={message.type}>{message.text}</Alert>}
 
             <MainCard title="Información personal" border>
@@ -416,7 +517,7 @@ export default function CandidateResumePage() {
                   }}
                   renderValue={(value, getItemProps) =>
                     value.map((option, index) => (
-                      <Chip label={option} color="secondary" variant="outlined" {...getItemProps({ index })} key={option} />
+                      <Chip label={option} color="info" variant="outlined" {...getItemProps({ index })} key={option} />
                     ))
                   }
                   renderInput={(params) => (
@@ -433,16 +534,6 @@ export default function CandidateResumePage() {
               </Stack>
             </MainCard>
 
-            <Button
-              variant="contained"
-              color="secondary"
-              size="large"
-              startIcon={<IconDeviceFloppy size={19} />}
-              sx={buttonSX}
-              onClick={handleSave}
-            >
-              Guardar CV digital
-            </Button>
           </Stack>
         </Grid>
 
@@ -519,7 +610,7 @@ export default function CandidateResumePage() {
                 </Typography>
                 <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
                   {resume.skills.length > 0 ? (
-                    resume.skills.map((skill) => <Chip key={skill} label={skill} size="small" color="secondary" variant="outlined" />)
+                    resume.skills.map((skill) => <Chip key={skill} label={skill} size="small" color="info" variant="outlined" />)
                   ) : (
                     <Typography variant="body2" color="text.secondary">
                       Selecciona tus habilidades.
