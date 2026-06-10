@@ -4,9 +4,7 @@ import {
   CandidateAccountSettingsPage,
   CandidateApplicationsPage,
   CandidateChangePasswordPage,
-  CandidateChangePhotoPage,
   CandidateJobsPage,
-  CandidateNotificationsPage,
   CandidateProfileEditPage,
   CandidateProfilePage,
   CandidateResumePage
@@ -22,9 +20,7 @@ const CandidateRoutes = {
     { path: 'mi-perfil', element: <CandidateProfilePage /> },
     { path: 'mi-perfil/editar', element: <CandidateProfileEditPage /> },
     { path: 'cv-hoja-de-vida', element: <CandidateResumePage /> },
-    { path: 'notificaciones', element: <CandidateNotificationsPage /> },
     { path: 'configuracion-cuenta', element: <CandidateAccountSettingsPage /> },
-    { path: 'configuracion-cuenta/cambiar-foto', element: <CandidateChangePhotoPage /> },
     { path: 'configuracion-cuenta/cambiar-contrasena', element: <CandidateChangePasswordPage /> }
   ]
 };
