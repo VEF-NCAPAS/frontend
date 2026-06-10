@@ -13,7 +13,7 @@ import MainCard from 'ui-component/cards/MainCard';
 import PageHeading from '../components/PageHeading';
 import { buttonSX } from '../data/candidateData';
 
-import { IconCamera, IconKey, IconLogout, IconShieldCheck } from '@tabler/icons-react';
+import { IconKey, IconLogout, IconShieldCheck } from '@tabler/icons-react';
 
 export default function CandidateAccountSettingsPage() {
   const navigate = useNavigate();
@@ -55,16 +55,6 @@ export default function CandidateAccountSettingsPage() {
               }
             }}
           />
-        )
-      },
-      {
-        title: 'Cambiar fotografía',
-        description: 'Sube una nueva imagen para tu perfil de candidato.',
-        icon: IconCamera,
-        action: (
-          <Button variant="outlined" color="secondary" sx={buttonSX} onClick={() => navigate('/candidato/configuracion-cuenta/cambiar-foto')}>
-            Subir foto
-          </Button>
         )
       },
       {

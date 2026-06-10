@@ -1,7 +1,6 @@
 export { default as CandidateAccountSettingsPage } from './pages/AccountSettingsPage';
 export { default as CandidateApplicationsPage } from './pages/ApplicationsPage';
 export { default as CandidateChangePasswordPage } from './pages/ChangePasswordPage';
-export { default as CandidateChangePhotoPage } from './pages/ChangePhotoPage';
 export { default as CandidateJobsPage } from './pages/JobsPage';
 export { default as CandidateNotificationsPage } from './pages/NotificationsPage';
 export { default as CandidateProfilePage } from './pages/ProfilePage';
