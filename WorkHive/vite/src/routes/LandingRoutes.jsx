@@ -4,8 +4,8 @@ import { lazy } from 'react';
 import Loadable from 'ui-component/Loadable';
 import MinimalLayout from 'layout/MinimalLayout';
 
-// landing routing
-const LandingPage = Loadable(lazy(() => import('views/workhive/landing/pages/LandingPage')));
+// landing routing - usa la landing page principal del proyecto
+const LandingPage = Loadable(lazy(() => import('views/landing')));
 
 // ==============================|| LANDING ROUTING ||============================== //
 
