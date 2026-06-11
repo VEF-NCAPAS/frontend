@@ -1,10 +1,10 @@
-export const HOME_PATH = '/';
+export const DEFAULT_PATH = '/';
 export const DEFAULT_THEME_MODE = 'system';
 
 export const CSS_VAR_PREFIX = '';
 
 const config = {
-  defaultPath: HOME_PATH,
+  defaultPath: DEFAULT_PATH,
   fontFamily: `'Roboto', sans-serif`,
   borderRadius: 8
 };

@@ -49,8 +49,6 @@ export const getCurrentUserRole = (pathname = window.location.pathname) => {
 
   const storedRole = localStorage.getItem('role');
 
-  // Mock temporal para probar el sidebar mientras el backend no entregue rol.
-  // Cambia VITE_MOCK_ROLE en .env o localStorage.role por: ADMIN, CANDIDATE o RECRUITER.
   const mockRole = import.meta.env.VITE_MOCK_ROLE || USER_ROLES.CANDIDATE;
 
   return normalizeRole(storedRole || mockRole);
@@ -170,6 +168,14 @@ const workHiveMenus = {
         type: 'item',
         url: '/reclutador/postulantes',
         icon: IconUsers,
+        breadcrumbs: false
+      },
+      {
+        id: 'recruiter-search-candidates',
+        title: 'Buscar candidatos',
+        type: 'item',
+        url: '/reclutador/buscar-candidatos',
+        icon: IconSearch,
         breadcrumbs: false
       },
       {
