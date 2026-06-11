@@ -13,7 +13,7 @@ import MainCard from 'ui-component/cards/MainCard';
 
 import PageHeading from '../components/PageHeading';
 import StatCard from '../components/StatCard';
-import { applications, buttonSX } from '../data/candidateData';
+import { applications, applicationStatusSX, buttonSX } from '../data/candidateData';
 
 import { IconBriefcase, IconChevronRight } from '@tabler/icons-react';
 
@@ -34,7 +34,7 @@ export default function CandidateApplicationsPage() {
           <StatCard value="08" label="Postulaciones enviadas" />
         </Grid>
         <Grid size={{ xs: 12, sm: 4 }}>
-          <StatCard value="03" label="En revision" color="warning" />
+          <StatCard value="03" label="En revisión" color="warning" />
         </Grid>
         <Grid size={{ xs: 12, sm: 4 }}>
           <StatCard value="01" label="Entrevista pendiente" color="primary" />
@@ -79,7 +79,7 @@ export default function CandidateApplicationsPage() {
                 </Box>
               </Stack>
               <Stack direction="row" spacing={1.5} alignItems="center">
-                <Chip label={application.status} color={application.color} size="small" variant="outlined" />
+                <Chip label={application.status} size="small" variant="outlined" sx={applicationStatusSX[application.status]} />
                 <IconChevronRight size={18} />
               </Stack>
             </Stack>

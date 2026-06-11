@@ -88,7 +88,7 @@ export const applications = [
     role: 'Desarrollador Frontend React',
     company: 'Nexa Digital',
     date: '24 mayo 2026',
-    status: 'En revision',
+    status: 'En revisión',
     color: 'warning',
     nextStep: 'El equipo de reclutamiento está revisando tu perfil y CV.',
     timeline: [
@@ -158,3 +158,17 @@ export const notices = [
 ];
 
 export const buttonSX = { textTransform: 'none', whiteSpace: 'nowrap' };
+
+export const pastelBackButtonSX = {
+  ...buttonSX,
+  bgcolor: '#cceeff',
+  boxShadow: 'none',
+  color: '#17698e',
+  '&:hover': { bgcolor: '#b8e5fa', boxShadow: 'none' }
+};
+
+export const applicationStatusSX = {
+  'En revisión': { bgcolor: '#fff0d6', borderColor: '#f5a623', color: '#b76700', fontWeight: 600 },
+  Entrevista: { bgcolor: '#e1f0ff', borderColor: '#64a8e8', color: '#246da8', fontWeight: 600 },
+  Finalizada: { bgcolor: '#edf0f4', borderColor: '#9ba5b1', color: '#4f5965', fontWeight: 600 }
+};

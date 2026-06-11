@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import Avatar from '@mui/material/Avatar';
@@ -5,6 +6,10 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -12,9 +17,16 @@ import Typography from '@mui/material/Typography';
 import MainCard from 'ui-component/cards/MainCard';
 
 import PageHeading from '../components/PageHeading';
-import { buttonSX, jobs } from '../data/candidateData';
+import { buttonSX, jobs, pastelBackButtonSX } from '../data/candidateData';
 
-import { IconArrowLeft, IconBriefcase, IconBuilding, IconCash, IconClock, IconMapPin } from '@tabler/icons-react';
+import { IconArrowLeft, IconBriefcase, IconBuilding, IconCash, IconCheck, IconClock, IconMapPin } from '@tabler/icons-react';
+
+const jobMeta = [
+  { field: 'location', icon: IconMapPin, background: '#dff3ff', color: '#2475a6' },
+  { field: 'type', icon: IconBriefcase, background: '#eee6ff', color: '#6842ad' },
+  { field: 'posted', icon: IconClock, background: '#fff0cf', color: '#a66b13' },
+  { field: 'salary', icon: IconCash, background: '#dcf6e8', color: '#25835a' }
+];
 
 function DetailList({ items }) {
   return (
@@ -31,6 +43,8 @@ function DetailList({ items }) {
 export default function CandidateJobDetailPage() {
   const { jobId } = useParams();
   const job = jobs.find((item) => item.id === jobId);
+  const [applicationSent, setApplicationSent] = useState(false);
+  const [confirmationOpen, setConfirmationOpen] = useState(false);
 
   if (!job) {
     return (
@@ -48,9 +62,17 @@ export default function CandidateJobDetailPage() {
 
   return (
     <>
-      <Button component={Link} to="/candidato/buscar-empleos" startIcon={<IconArrowLeft size={18} />} sx={{ ...buttonSX, mb: 2 }}>
-        Volver a ofertas
-      </Button>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2, width: '100%' }}>
+        <Button
+          component={Link}
+          to="/candidato/buscar-empleos"
+          variant="contained"
+          startIcon={<IconArrowLeft size={18} />}
+          sx={pastelBackButtonSX}
+        >
+          Volver a ofertas
+        </Button>
+      </Box>
 
       <MainCard border contentSX={{ p: { xs: 2.5, sm: 3.5 }, '&:last-child': { pb: { xs: 2.5, sm: 3.5 } } }} sx={{ mb: 3 }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.5} alignItems={{ sm: 'center' }}>
@@ -63,21 +85,29 @@ export default function CandidateJobDetailPage() {
               {job.company}
             </Typography>
           </Box>
-          <Button variant="contained" color="secondary" sx={buttonSX}>
-            Aplicar a esta oferta
+          <Button
+            variant="contained"
+            color="secondary"
+            sx={buttonSX}
+            onClick={() => {
+              setApplicationSent(true);
+              setConfirmationOpen(true);
+            }}
+            disabled={applicationSent}
+          >
+            {applicationSent ? 'Postulación enviada' : 'Aplicar a esta oferta'}
           </Button>
         </Stack>
 
         <Stack direction="row" spacing={2.5} useFlexGap flexWrap="wrap" sx={{ mt: 3 }}>
-          {[
-            [IconMapPin, job.location],
-            [IconBriefcase, job.type],
-            [IconClock, job.posted],
-            [IconCash, job.salary]
-          ].map(([Icon, label]) => (
-            <Stack direction="row" spacing={0.75} alignItems="center" key={label}>
-              <Icon size={18} />
-              <Typography variant="body2">{label}</Typography>
+          {jobMeta.map(({ field, icon: Icon, background, color }) => (
+            <Stack direction="row" spacing={0.75} alignItems="center" key={field}>
+              <Avatar sx={{ bgcolor: background, color, height: 30, width: 30 }}>
+                <Icon size={17} />
+              </Avatar>
+              <Typography variant="body2" sx={{ color, fontWeight: 600 }}>
+                {job[field]}
+              </Typography>
             </Stack>
           ))}
         </Stack>
@@ -121,13 +151,29 @@ export default function CandidateJobDetailPage() {
                   ))}
                 </Stack>
               </Box>
-              <Button fullWidth variant="contained" color="secondary" sx={buttonSX}>
-                Enviar postulación
-              </Button>
             </Stack>
           </MainCard>
         </Grid>
       </Grid>
+
+      <Dialog open={confirmationOpen} onClose={() => setConfirmationOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ textAlign: 'center', pt: 4 }}>
+          <Avatar sx={{ bgcolor: '#dcf6e8', color: '#25835a', height: 58, mx: 'auto', mb: 2, width: 58 }}>
+            <IconCheck size={30} />
+          </Avatar>
+          Postulación enviada
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center' }}>
+            Tu postulación para {job.title} fue enviada correctamente a {job.company}.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
+          <Button variant="contained" color="secondary" sx={buttonSX} onClick={() => setConfirmationOpen(false)}>
+            Entendido
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

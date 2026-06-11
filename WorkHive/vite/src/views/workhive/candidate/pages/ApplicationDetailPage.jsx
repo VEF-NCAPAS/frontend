@@ -12,9 +12,9 @@ import Typography from '@mui/material/Typography';
 import MainCard from 'ui-component/cards/MainCard';
 
 import PageHeading from '../components/PageHeading';
-import { applications, buttonSX, jobs } from '../data/candidateData';
+import { applications, applicationStatusSX, buttonSX, jobs, pastelBackButtonSX } from '../data/candidateData';
 
-import { IconArrowLeft, IconBriefcase, IconBuilding, IconCheck, IconClock, IconMapPin } from '@tabler/icons-react';
+import { IconArrowLeft, IconBriefcase, IconCash, IconCheck, IconClock, IconMapPin } from '@tabler/icons-react';
 
 export default function CandidateApplicationDetailPage() {
   const { applicationId } = useParams();
@@ -41,9 +41,17 @@ export default function CandidateApplicationDetailPage() {
 
   return (
     <>
-      <Button component={Link} to="/candidato/mis-postulaciones" startIcon={<IconArrowLeft size={18} />} sx={{ ...buttonSX, mb: 2 }}>
-        Volver a mis postulaciones
-      </Button>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2, width: '100%' }}>
+        <Button
+          component={Link}
+          to="/candidato/mis-postulaciones"
+          variant="contained"
+          startIcon={<IconArrowLeft size={18} />}
+          sx={pastelBackButtonSX}
+        >
+          Volver a mis postulaciones
+        </Button>
+      </Box>
 
       <MainCard border contentSX={{ p: { xs: 2.5, sm: 3.5 }, '&:last-child': { pb: { xs: 2.5, sm: 3.5 } } }} sx={{ mb: 3 }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.5} alignItems={{ sm: 'center' }}>
@@ -56,7 +64,7 @@ export default function CandidateApplicationDetailPage() {
               {application.company}
             </Typography>
           </Box>
-          <Chip label={application.status} color={application.color} variant="outlined" />
+          <Chip label={application.status} variant="outlined" sx={applicationStatusSX[application.status]} />
         </Stack>
       </MainCard>
 
@@ -123,20 +131,32 @@ export default function CandidateApplicationDetailPage() {
               <Divider />
               {location && (
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <IconMapPin size={18} />
-                  <Typography variant="body2">{location}</Typography>
+                  <Avatar sx={{ bgcolor: '#dff3ff', color: '#2475a6', height: 30, width: 30 }}>
+                    <IconMapPin size={17} />
+                  </Avatar>
+                  <Typography variant="body2" sx={{ color: '#2475a6', fontWeight: 600 }}>
+                    {location}
+                  </Typography>
                 </Stack>
               )}
               {type && (
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <IconClock size={18} />
-                  <Typography variant="body2">{type}</Typography>
+                  <Avatar sx={{ bgcolor: '#eee6ff', color: '#6842ad', height: 30, width: 30 }}>
+                    <IconClock size={17} />
+                  </Avatar>
+                  <Typography variant="body2" sx={{ color: '#6842ad', fontWeight: 600 }}>
+                    {type}
+                  </Typography>
                 </Stack>
               )}
               {salary && (
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <IconBuilding size={18} />
-                  <Typography variant="body2">{salary}</Typography>
+                  <Avatar sx={{ bgcolor: '#dcf6e8', color: '#25835a', height: 30, width: 30 }}>
+                    <IconCash size={17} />
+                  </Avatar>
+                  <Typography variant="body2" sx={{ color: '#25835a', fontWeight: 600 }}>
+                    {salary}
+                  </Typography>
                 </Stack>
               )}
             </Stack>
