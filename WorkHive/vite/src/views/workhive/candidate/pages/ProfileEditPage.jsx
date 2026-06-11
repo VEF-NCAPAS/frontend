@@ -16,6 +16,7 @@ import { useLocalStorage } from 'hooks/useLocalStorage';
 import MainCard from 'ui-component/cards/MainCard';
 
 import PageHeading from '../components/PageHeading';
+import ActionResultDialog from '../components/ActionResultDialog';
 import { buttonSX } from '../data/candidateData';
 
 import { IconCheckupList, IconShieldCheck } from '@tabler/icons-react';
@@ -33,6 +34,7 @@ export default function CandidateProfileEditPage() {
   const [values, setValues] = useState(storedProfile);
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState(null);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
 
   useEffect(() => {
     setValues(storedProfile);
@@ -91,7 +93,8 @@ export default function CandidateProfileEditPage() {
 
     setStoredProfile(values);
     setErrors({});
-    setMessage({ type: 'success', text: 'Perfil guardado correctamente.' });
+    setMessage(null);
+    setSaveDialogOpen(true);
   };
 
   return (
@@ -224,6 +227,13 @@ export default function CandidateProfileEditPage() {
           </Stack>
         </Grid>
       </Grid>
+
+      <ActionResultDialog
+        open={saveDialogOpen}
+        onClose={() => setSaveDialogOpen(false)}
+        title="Perfil guardado"
+        description="Tu perfil fue guardado correctamente."
+      />
     </>
   );
 }

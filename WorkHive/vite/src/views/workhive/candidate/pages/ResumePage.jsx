@@ -15,6 +15,7 @@ import Typography from '@mui/material/Typography';
 import { useLocalStorage } from 'hooks/useLocalStorage';
 import MainCard from 'ui-component/cards/MainCard';
 
+import ActionResultDialog from '../components/ActionResultDialog';
 import PageHeading from '../components/PageHeading';
 import { buttonSX } from '../data/candidateData';
 
@@ -194,6 +195,7 @@ export default function CandidateResumePage() {
   const [resume, setResume] = useState(() => normalizeResume(storedResume));
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState(null);
+  const [resultDialog, setResultDialog] = useState(null);
 
   const suggestedSkills = useMemo(() => skillOptions[resume.careerArea] || [], [resume.careerArea]);
   const fullName = [resume.firstName, resume.lastName].filter(Boolean).join(' ');
@@ -261,13 +263,23 @@ export default function CandidateResumePage() {
 
     setStoredResume(resume);
     setErrors({});
-    setMessage({ type: 'success', text: 'CV digital guardado correctamente.' });
+    setMessage(null);
+    setResultDialog({
+      title: 'CV guardado',
+      description: 'Tu CV digital fue guardado correctamente.',
+      type: 'success'
+    });
   };
 
   const handleCancel = () => {
     setResume(normalizeResume(storedResume));
     setErrors({});
-    setMessage({ type: 'info', text: 'Los cambios sin guardar fueron cancelados.' });
+    setMessage(null);
+    setResultDialog({
+      title: 'Cambios cancelados',
+      description: 'Los cambios sin guardar fueron cancelados correctamente.',
+      type: 'cancel'
+    });
   };
 
   const handleExport = () => {
@@ -382,7 +394,12 @@ export default function CandidateResumePage() {
     printWindow.document.close();
     printWindow.focus();
     printWindow.print();
-    setMessage({ type: 'success', text: 'CV preparado correctamente. Selecciona "Guardar como PDF" en la ventana de impresión.' });
+    setMessage(null);
+    setResultDialog({
+      title: 'CV exportado',
+      description: 'Tu CV fue preparado correctamente para exportarlo en PDF.',
+      type: 'info'
+    });
   };
 
   return (
@@ -906,6 +923,14 @@ export default function CandidateResumePage() {
           </MainCard>
         </Grid>
       </Grid>
+
+      <ActionResultDialog
+        open={Boolean(resultDialog)}
+        onClose={() => setResultDialog(null)}
+        title={resultDialog?.title}
+        description={resultDialog?.description}
+        type={resultDialog?.type}
+      />
     </>
   );
 }
