@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
@@ -13,7 +12,7 @@ import MainCard from 'ui-component/cards/MainCard';
 
 import PageHeading from '../components/PageHeading';
 import StatCard from '../components/StatCard';
-import { applications, applicationStatusSX, buttonSX } from '../data/candidateData';
+import { applications, applicationStatusSX } from '../data/candidateData';
 
 import { IconBriefcase, IconChevronRight } from '@tabler/icons-react';
 
@@ -23,11 +22,6 @@ export default function CandidateApplicationsPage() {
       <PageHeading
         title="Mis postulaciones"
         description="Da seguimiento a cada proceso y preparate para tus entrevistas."
-        action={
-          <Button component={Link} to="/" variant="contained" color="secondary" sx={buttonSX}>
-            Buscar mas empleos
-          </Button>
-        }
       />
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid size={{ xs: 12, sm: 4 }}>
