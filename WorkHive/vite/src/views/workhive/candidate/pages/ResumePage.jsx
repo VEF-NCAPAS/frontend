@@ -169,7 +169,6 @@ const escapeHtml = (value = '') =>
 const defaultResume = {
   firstName: 'Ana',
   lastName: 'Martínez',
-  complementaryName: '',
   email: '',
   headline: 'Desarrolladora Frontend',
   summary: '',
@@ -197,7 +196,7 @@ export default function CandidateResumePage() {
   const [message, setMessage] = useState(null);
 
   const suggestedSkills = useMemo(() => skillOptions[resume.careerArea] || [], [resume.careerArea]);
-  const fullName = [resume.firstName, resume.complementaryName, resume.lastName].filter(Boolean).join(' ');
+  const fullName = [resume.firstName, resume.lastName].filter(Boolean).join(' ');
 
   const handleFieldChange = (field) => (event) => {
     setResume((previous) => ({ ...previous, [field]: event.target.value }));
@@ -452,14 +451,6 @@ export default function CandidateResumePage() {
                       onChange={handleFieldChange('lastName')}
                       error={Boolean(errors.lastName)}
                       helperText={errors.lastName}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField
-                      fullWidth
-                      label="Nombre complementario"
-                      value={resume.complementaryName}
-                      onChange={handleFieldChange('complementaryName')}
                     />
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
