@@ -44,12 +44,28 @@ export default function CandidateApplicationsPage() {
         <Stack divider={<Divider flexItem />}>
           {applications.map((application) => (
             <Stack
+              component={Link}
+              to={`/candidato/mis-postulaciones/${application.id}`}
               key={application.role}
               direction={{ xs: 'column', sm: 'row' }}
               spacing={2}
               justifyContent="space-between"
               alignItems={{ sm: 'center' }}
-              sx={{ py: 2 }}
+              sx={{
+                borderRadius: 2,
+                color: 'inherit',
+                cursor: 'pointer',
+                mx: -1,
+                px: 1,
+                py: 2,
+                textDecoration: 'none',
+                transition: 'transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease',
+                '&:hover': {
+                  bgcolor: 'background.default',
+                  boxShadow: '0 10px 24px rgba(54, 42, 112, 0.12)',
+                  transform: 'translateY(-4px)'
+                }
+              }}
             >
               <Stack direction="row" spacing={1.5} alignItems="center">
                 <Avatar variant="rounded" sx={{ bgcolor: 'primary.light', color: 'primary.dark' }}>
