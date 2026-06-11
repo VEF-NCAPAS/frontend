@@ -10,7 +10,23 @@ import { IconBookmark, IconBriefcase, IconBuilding, IconClock, IconMapPin } from
 
 export default function JobItem({ job }) {
   return (
-    <MainCard border boxShadow contentSX={{ p: { xs: 2, sm: 2.5 }, '&:last-child': { pb: { xs: 2, sm: 2.5 } } }}>
+    <MainCard
+      component={Link}
+      to={`/candidato/buscar-empleos/${job.id}`}
+      border
+      boxShadow
+      contentSX={{ p: { xs: 2, sm: 2.5 }, '&:last-child': { pb: { xs: 2, sm: 2.5 } } }}
+      sx={{
+        color: 'inherit',
+        cursor: 'pointer',
+        textDecoration: 'none',
+        transition: 'transform 180ms ease, box-shadow 180ms ease',
+        '&:hover': {
+          boxShadow: '0 12px 28px rgba(54, 42, 112, 0.16)',
+          transform: 'translateY(-6px)'
+        }
+      }}
+    >
       <Stack spacing={2}>
         <Stack direction="row" spacing={1.5} alignItems="flex-start">
           <Avatar variant="rounded" sx={{ bgcolor: 'secondary.light', color: 'secondary.main', flexShrink: 0 }}>
@@ -55,3 +71,4 @@ export default function JobItem({ job }) {
     </MainCard>
   );
 }
+import { Link } from 'react-router-dom';
