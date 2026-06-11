@@ -54,6 +54,16 @@ export default function ProfileSection() {
 
     setOpen(false);
   };
+  const userName = localStorage.getItem('name');
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('name');
+    localStorage.removeItem('email');
+    localStorage.removeItem('rememberSession');
+    setOpen(false);
+    window.location.href = '/pages/login';
+  };
 
   const prevOpen = useRef(open);
   useEffect(() => {
@@ -120,9 +130,9 @@ export default function ProfileSection() {
                     <Box sx={{ p: 2, pb: 0 }}>
                       <Stack>
                         <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5 }}>
-                          <Typography variant="h4">Bienvenido,</Typography>
+                          <Typography variant="h4">Bienvenido/a,</Typography>
                           <Typography component="span" variant="h4" sx={{ fontWeight: 400 }}>
-                            WorkHive
+                              {userName || 'Usuario'}
                           </Typography>
                         </Stack>
                         <Typography variant="subtitle2">Panel de usuario</Typography>
@@ -161,7 +171,7 @@ export default function ProfileSection() {
                             <ListItemText primary={<Typography variant="body2">Configuracion de cuenta</Typography>} />
                           </ListItemButton>
                         )}
-                        <ListItemButton sx={{ borderRadius: `${borderRadius}px` }}>
+                        <ListItemButton sx={{ borderRadius: `${borderRadius}px` }} onClick={handleLogout}>
                           <ListItemIcon>
                             <IconLogout stroke={1.5} size="20px" />
                           </ListItemIcon>
