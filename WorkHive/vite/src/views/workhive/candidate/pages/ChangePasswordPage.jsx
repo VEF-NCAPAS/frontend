@@ -14,7 +14,7 @@ import PageHeading from '../components/PageHeading';
 import { buttonSX } from '../data/candidateData';
 
 import { IconLock, IconArrowLeft } from '@tabler/icons-react';
-
+import { changePassword } from 'services/authService';
 const defaultForm = {
   currentPassword: '',
   newPassword: '',
@@ -33,7 +33,7 @@ export default function CandidateChangePasswordPage() {
     setMessage(null);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const validation = {};
 
     if (!form.currentPassword.trim()) {
@@ -52,9 +52,32 @@ export default function CandidateChangePasswordPage() {
       return;
     }
 
-    setForm(defaultForm);
-    setErrors({});
-    setMessage({ type: 'success', text: 'Contraseña actualizada correctamente.' });
+    try {
+
+      await changePassword({
+        currentPassword: form.currentPassword,
+        newPassword: form.newPassword
+      });
+
+      setForm(defaultForm);
+      setErrors({});
+
+      setMessage({
+        type: 'success',
+        text: 'Contraseña actualizada correctamente.'
+      });
+
+    } catch (err) {
+
+      setMessage({
+        type: 'error',
+        text:
+          err.response?.data?.message ||
+          err.message ||
+          'No se pudo cambiar la contraseña.'
+      });
+
+    }
   };
 
   return (
