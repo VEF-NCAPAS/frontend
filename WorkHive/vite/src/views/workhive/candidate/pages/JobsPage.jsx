@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
@@ -16,9 +17,51 @@ import PageHeading from '../components/PageHeading';
 import { buttonSX, jobs } from '../data/candidateData';
 
 import { IconSearch } from '@tabler/icons-react';
-
+import { getVacancies } from 'services/vacancyService';
 export default function CandidateJobsPage() {
-  return (
+  const [title, setTitle] = useState('');
+  const [modality, setModality] = useState('');
+
+  const [vacancies, setVacancies] = useState([]);
+  const [totalElements, setTotalElements] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const handleSearch = async () => {
+  try {
+    setLoading(true);
+
+    const result = await getVacancies({
+      page: 0,
+      size: 10,
+      sortBy: 'title',
+      sortOrder: 'asc',
+      ...(title && { title }),
+      ...(modality && { modality })
+    });
+
+      setVacancies(result.data.content);
+      setTotalElements(result.data.totalElements);
+
+    } catch (error) {
+
+      if (error.response?.status === 404) {
+        setVacancies([]);
+        setTotalElements(0);
+        return;
+      }
+
+      console.error(error);
+
+    } finally {
+      setLoading(false);
+    }
+  };
+
+    useEffect(() => {
+      handleSearch();
+    }, []);
+ 
+  return (  
     <>
       <PageHeading
         title="Buscar empleos"
@@ -39,7 +82,9 @@ export default function CandidateJobsPage() {
                 <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
-                    placeholder="Cargo, empresa o palabra clave"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Cargo o palabra clave"
                     slotProps={{
                       input: {
                         startAdornment: (
@@ -52,15 +97,29 @@ export default function CandidateJobsPage() {
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                  <TextField select fullWidth defaultValue="all" label="Ubicacion">
-                    <MenuItem value="all">Todas</MenuItem>
-                    <MenuItem value="ss">San Salvador</MenuItem>
-                    <MenuItem value="st">Santa Tecla</MenuItem>
+                  <TextField
+                    select
+                    fullWidth
+                    value={modality}
+                    label="Modalidad"
+                    onChange={(e) => setModality(e.target.value)}
+                  >
+                    <MenuItem value="">Todas</MenuItem>
+                    <MenuItem value="REMOTE">Remoto</MenuItem>
+                    <MenuItem value="HYBRID">Híbrido</MenuItem>
+                    <MenuItem value="ONSITE">Presencial</MenuItem>
                   </TextField>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                  <Button fullWidth variant="contained" color="secondary" sx={{ ...buttonSX, height: '100%', minHeight: 50 }}>
-                    Buscar
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    color="secondary"
+                    onClick={handleSearch}
+                    disabled={loading}
+                    sx={{ ...buttonSX, height: '100%', minHeight: 50 }}
+                  >
+                    {loading ? 'Buscando...' : 'Buscar'}
                   </Button>
                 </Grid>
               </Grid>
@@ -71,11 +130,11 @@ export default function CandidateJobsPage() {
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               <Typography variant="h3">Ofertas recomendadas</Typography>
               <Typography variant="body2" color="text.secondary">
-                24 resultados
+                {totalElements} resultados
               </Typography>
             </Stack>
-            {jobs.map((job) => (
-              <JobItem key={job.title} job={job} />
+            {vacancies.map((job) => (
+              <JobItem key={job.id} job={job} />
             ))}
           </Stack>
         </Grid>

@@ -19,7 +19,7 @@ export default function JobItem({ job }) {
           <Box sx={{ minWidth: 0, flexGrow: 1 }}>
             <Typography variant="h4">{job.title}</Typography>
             <Typography variant="body2" color="text.secondary">
-              {job.company}
+              {job.companyName}
             </Typography>
           </Box>
           <IconBookmark size={20} color="#697586" />
@@ -27,26 +27,20 @@ export default function JobItem({ job }) {
 
         <Stack direction="row" spacing={2} useFlexGap flexWrap="wrap">
           <Stack direction="row" spacing={0.5} alignItems="center">
-            <IconMapPin size={16} />
-            <Typography variant="caption">{job.location}</Typography>
-          </Stack>
-          <Stack direction="row" spacing={0.5} alignItems="center">
             <IconBriefcase size={16} />
-            <Typography variant="caption">{job.type}</Typography>
-          </Stack>
-          <Stack direction="row" spacing={0.5} alignItems="center">
-            <IconClock size={16} />
-            <Typography variant="caption">{job.posted}</Typography>
+            <Typography variant="caption">
+              {{REMOTE: 'Remoto', HYBRID: 'Híbrido', ONSITE: 'Presencial'}[job.modality] || 'N/A'}
+            </Typography>
           </Stack>
         </Stack>
 
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} justifyContent="space-between" alignItems={{ sm: 'center' }}>
           <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-            {job.tags.map((tag) => (
+            {job.requirements?.map((requirement) => (
               <Chip
-                key={tag}
+                key={requirement}
                 size="small"
-                label={tag}
+                label={requirement}
                 variant="outlined"
                 color="info"
                 sx={{ borderColor: 'info.light', color: 'info.dark' }}
@@ -54,7 +48,7 @@ export default function JobItem({ job }) {
             ))}
           </Stack>
           <Typography variant="subtitle1" sx={{ color: 'success.dark', fontWeight: 600 }}>
-            {job.salary}
+            ${job.salary}
           </Typography>
         </Stack>
       </Stack>
