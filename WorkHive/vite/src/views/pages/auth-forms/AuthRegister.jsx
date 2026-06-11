@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
+import { getCompanies } from 'services/companyService';
 
+import {registerCandidate,registerRecruiter} from 'services/authService';
 // material-ui
 import Alert from '@mui/material/Alert';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -17,6 +19,8 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
@@ -29,8 +33,6 @@ import BusinessOutlinedIcon from '@mui/icons-material/BusinessOutlined';
 import PersonSearchOutlinedIcon from '@mui/icons-material/PersonSearchOutlined';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 const DEFAULT_COMPANIES = [
   { id: 1, name: 'Banco Agrícola' },
@@ -79,9 +81,12 @@ export default function AuthRegister() {
     email: '',
     password: '',
     confirmPassword: '',
-    companyName: ''
-  });
+    gender: '',
 
+    companyName: '',
+    location: '',
+    sector: ''
+  });
   const [message, setMessage] = useState({
     type: '',
     text: ''
@@ -99,13 +104,7 @@ export default function AuthRegister() {
       try {
         setCompaniesLoading(true);
 
-        const response = await fetch(`${API_URL}/companies`);
-
-        if (!response.ok) {
-          throw new Error('No se pudo cargar el catálogo de empresas.');
-        }
-
-        const data = await response.json();
+        const data = await getCompanies();
 
         const normalizedCompanies = getCompanyList(data)
           .map(normalizeCompany)
@@ -217,11 +216,34 @@ export default function AuthRegister() {
       });
       return false;
     }
+    if (!isCandidate && !isExistingCompanyMode && !form.location.trim()) {
+      setMessage({
+        type: 'error',
+        text: 'Ingresa la ubicación de la empresa.'
+      });
+      return false;
+    }
+
+    if (!isCandidate && !isExistingCompanyMode && !form.sector.trim()) {
+      setMessage({
+        type: 'error',
+        text: 'Ingresa el sector de la empresa.'
+      });
+      return false;
+    }
 
     if (!acceptedTerms) {
       setMessage({
         type: 'error',
         text: 'Debes aceptar los términos y condiciones.'
+      });
+      return false;
+    }
+
+    if (!form.gender) {
+      setMessage({
+        type: 'error',
+        text: 'Selecciona un género.'
       });
       return false;
     }
@@ -241,19 +263,27 @@ export default function AuthRegister() {
     if (isCandidate) {
       return {
         name: form.name.trim(),
+        gender: form.gender,
         email: form.email.trim(),
-        password: form.password,
-        role: 'CANDIDATE'
+        password: form.password
       };
     }
 
     return {
       name: form.name.trim(),
+      gender: form.gender,
       email: form.email.trim(),
       password: form.password,
-      role: 'RECRUITER',
-      companyId: isExistingCompanyMode ? selectedCompany?.id : null,
-      companyName: isExistingCompanyMode ? selectedCompany?.name : form.companyName.trim()
+
+      company: isExistingCompanyMode
+        ? {
+            companyId: selectedCompany.id
+          }
+        : {
+            companyName: form.companyName.trim(),
+            location: form.location.trim(),
+            sector: form.sector.trim()
+          }
     };
   };
 
@@ -264,16 +294,12 @@ export default function AuthRegister() {
       setLoading(true);
       setMessage({ type: '', text: '' });
 
-      const response = await fetch(getEndpoint(), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(buildPayload())
-      });
+      const payload = buildPayload();
 
-      if (!response.ok) {
-        throw new Error('No se pudo crear la cuenta. Revisa los datos ingresados.');
+      if (isCandidate) {
+        await registerCandidate(payload);
+      } else {
+        await registerRecruiter(payload);
       }
 
       setMessage({
@@ -391,17 +417,39 @@ export default function AuthRegister() {
               )}
             />
           ) : (
-            <FormControl fullWidth>
-              <InputLabel htmlFor="register-company">Nombre de la nueva empresa</InputLabel>
-              <OutlinedInput
-                id="register-company"
-                name="companyName"
-                value={form.companyName}
+            <Stack spacing={2}>
+              <FormControl fullWidth>
+                <InputLabel htmlFor="register-company">
+                  Nombre de la nueva empresa
+                </InputLabel>
+
+                <OutlinedInput
+                  id="register-company"
+                  name="companyName"
+                  value={form.companyName}
+                  onChange={handleChange}
+                  label="Nombre de la nueva empresa"
+                />
+              </FormControl>
+
+              <TextField
+                label="Ubicación"
+                name="location"
+                value={form.location}
                 onChange={handleChange}
-                label="Nombre de la nueva empresa"
-                placeholder="Ej. Empresa S.A. de C.V."
+                fullWidth
+                placeholder="Ej. El Salvador"
               />
-            </FormControl>
+
+              <TextField
+                label="Sector"
+                name="sector"
+                value={form.sector}
+                onChange={handleChange}
+                fullWidth
+                placeholder="Ej. IT"
+              />
+            </Stack>
           )}
 
           <Typography variant="caption" color="text.secondary">
@@ -424,6 +472,29 @@ export default function AuthRegister() {
         />
       </FormControl>
 
+      <FormControl fullWidth>
+        <InputLabel id="gender-label">Género</InputLabel>
+
+        <Select
+          labelId="gender-label"
+          name="gender"
+          value={form.gender}
+          label="Género"
+          onChange={handleChange}
+        >
+          <MenuItem value="FEMALE">
+            Femenino
+          </MenuItem>
+
+          <MenuItem value="MALE">
+            Masculino
+          </MenuItem>
+
+          <MenuItem value="OTHER">
+            Otro
+          </MenuItem>
+        </Select>
+      </FormControl>
       <FormControl fullWidth>
         <InputLabel htmlFor="register-email">Correo electrónico</InputLabel>
         <OutlinedInput
