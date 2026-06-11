@@ -1,5 +1,5 @@
 import MainLayout from 'layout/MainLayout';
-
+import ProtectedRoute from './ProtectedRoute';
 import {
   AdminCandidatesPage,
   AdminCompaniesPage,
@@ -11,7 +11,11 @@ import {
 
 const AdminRoutes = {
   path: '/admin',
-  element: <MainLayout />,
+  element: (
+    <ProtectedRoute allowedRoles={['ADMIN']}>
+      <MainLayout />
+    </ProtectedRoute>
+  ),
   children: [
     { index: true, element: <AdminDashboardPage /> },
     { path: 'usuarios', element: <AdminUsersPage /> },
