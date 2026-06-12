@@ -1,6 +1,5 @@
 // material-ui
 import { useTheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 
@@ -16,9 +15,8 @@ import { IconMenu2 } from '@tabler/icons-react';
 
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 
-export default function Header() {
+export default function Header({ logoClickable = true }) {
   const theme = useTheme();
-  const downMD = useMediaQuery(theme.breakpoints.down('md'));
 
   const { menuMaster } = useGetMenuMaster();
   const drawerOpen = menuMaster.isDashboardDrawerOpened;
@@ -36,7 +34,7 @@ export default function Header() {
         }}
       >
         <Box component="span" sx={{ display: { xs: 'none', md: 'block' } }}>
-          <LogoSection />
+          <LogoSection clickable={logoClickable} />
         </Box>
         <Avatar
           variant="rounded"
