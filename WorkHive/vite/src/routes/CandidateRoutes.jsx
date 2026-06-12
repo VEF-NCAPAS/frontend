@@ -14,7 +14,7 @@ import {
 
 const CandidateRoutes = {
   path: '/candidato',
-  element: <MainLayout logoClickable={false} />,
+  element: <MainLayout logoClickable={false} showSearch={false} />,
   children: [
     { index: true, element: <CandidateJobsPage /> },
     { path: 'buscar-empleos', element: <CandidateJobsPage /> },

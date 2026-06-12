@@ -11,7 +11,7 @@ import {
 
 const AdminRoutes = {
   path: '/admin',
-  element: <MainLayout />,
+  element: <MainLayout logoClickable={false} showSearch={false} />,
   children: [
     { index: true, element: <AdminDashboardPage /> },
     { path: 'usuarios', element: <AdminUsersPage /> },

@@ -15,7 +15,7 @@ import { IconMenu2 } from '@tabler/icons-react';
 
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 
-export default function Header({ logoClickable = true }) {
+export default function Header({ logoClickable = true, showSearch = true }) {
   const theme = useTheme();
 
   const { menuMaster } = useGetMenuMaster();
@@ -58,7 +58,7 @@ export default function Header({ logoClickable = true }) {
       </Box>
 
       {/* header search */}
-      <SearchSection />
+      {showSearch && <SearchSection />}
       <Box sx={{ flexGrow: 1 }} />
       <Box sx={{ flexGrow: 1 }} />
 
