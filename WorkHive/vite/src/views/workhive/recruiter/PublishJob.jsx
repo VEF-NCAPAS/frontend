@@ -111,7 +111,7 @@ export default function PublishJob() {
     };
 
     recruiterService.publishJob(payload);
-    navigate('/mis-ofertas');
+    navigate('/reclutador/mis-ofertas');
   };
 
   return (
@@ -288,7 +288,7 @@ export default function PublishJob() {
                     variant="outlined"
                     color="secondary"
                     startIcon={<CancelIcon />}
-                    onClick={() => navigate('/mis-ofertas')}
+                    onClick={() => navigate('/reclutador/mis-ofertas')}
                     sx={{ borderRadius: 2 }}
                   >
                     Cancelar
