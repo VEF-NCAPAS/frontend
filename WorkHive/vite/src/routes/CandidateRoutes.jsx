@@ -2,9 +2,11 @@ import MainLayout from 'layout/MainLayout';
 
 import {
   CandidateAccountSettingsPage,
+  CandidateApplicationDetailPage,
   CandidateApplicationsPage,
   CandidateChangePasswordPage,
   CandidateJobsPage,
+  CandidateJobDetailPage,
   CandidateProfileEditPage,
   CandidateProfilePage,
   CandidateResumePage
@@ -16,7 +18,9 @@ const CandidateRoutes = {
   children: [
     { index: true, element: <CandidateJobsPage /> },
     { path: 'buscar-empleos', element: <CandidateJobsPage /> },
+    { path: 'buscar-empleos/:jobId', element: <CandidateJobDetailPage /> },
     { path: 'mis-postulaciones', element: <CandidateApplicationsPage /> },
+    { path: 'mis-postulaciones/:applicationId', element: <CandidateApplicationDetailPage /> },
     { path: 'mi-perfil', element: <CandidateProfilePage /> },
     { path: 'mi-perfil/editar', element: <CandidateProfileEditPage /> },
     { path: 'cv-hoja-de-vida', element: <CandidateResumePage /> },
