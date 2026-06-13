@@ -29,18 +29,21 @@ export const login = async (data) => {
   return response.data;
 };
 
-export const changePassword = async (data) => {
-  const token = localStorage.getItem('token');
+export const logout = ({ navigate, redirectTo = '/pages/login' } = {}) => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('role');
+  localStorage.removeItem('name');
+  localStorage.removeItem('email');
+  localStorage.removeItem('rememberSession');
 
-  const response = await axios.patch(
-    `${API_URL}/auth/change-password`,
-    data,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }
-  );
+  if (axios.defaults && axios.defaults.headers && axios.defaults.headers.common) {
+    delete axios.defaults.headers.common.Authorization;
+  }
 
-  return response.data;
+  if (typeof navigate === 'function') {
+    navigate(redirectTo);
+  } else {
+    window.location.href = redirectTo;
+  }
 };
+

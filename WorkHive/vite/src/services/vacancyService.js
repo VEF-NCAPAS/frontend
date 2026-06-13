@@ -16,3 +16,12 @@ export const getVacancies = async (params) => {
 
   return response.data;
 };
+
+export const getVacancyById = async (id) => {
+  const response = await axios.get(`${API_URL}/vacancy/${id}`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`
+    }
+  });
+  return response.data;
+};
