@@ -60,14 +60,14 @@ export default function MyJobs() {
   const totalAppsCount = apps.length;
 
   return (
-    <MainCard 
-      title="Gestión de Mis Ofertas de Empleo" 
+    <MainCard
+      title="Gestión de Mis Ofertas de Empleo"
       secondary={
         <Button
           variant="contained"
           color="primary"
           startIcon={<PostAddIcon />}
-          onClick={() => navigate('/publicar-oferta')}
+          onClick={() => navigate('/reclutador/publicar-oferta')}
           sx={{ borderRadius: 2 }}
         >
           Publicar Nueva Oferta
@@ -78,10 +78,10 @@ export default function MyJobs() {
         {/* KPI Dashboard Ribbon */}
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={4}>
-            <Paper elevation={0} sx={{ 
-              p: 2.5, 
-              bgcolor: 'primary.light', 
-              color: 'primary.800', 
+            <Paper elevation={0} sx={{
+              p: 2.5,
+              bgcolor: 'primary.light',
+              color: 'primary.800',
               borderRadius: 3,
               border: '1px solid',
               borderColor: 'primary.200',
@@ -100,12 +100,12 @@ export default function MyJobs() {
               <WorkOutlineIcon sx={{ fontSize: 40, opacity: 0.7 }} />
             </Paper>
           </Grid>
-          
+
           <Grid item xs={12} sm={6} md={4}>
-            <Paper elevation={0} sx={{ 
-              p: 2.5, 
-              bgcolor: 'success.light', 
-              color: 'success.dark', 
+            <Paper elevation={0} sx={{
+              p: 2.5,
+              bgcolor: 'success.light',
+              color: 'success.dark',
               borderRadius: 3,
               border: '1px solid',
               borderColor: 'success.200',
@@ -126,10 +126,10 @@ export default function MyJobs() {
           </Grid>
 
           <Grid item xs={12} sm={12} md={4}>
-            <Paper elevation={0} sx={{ 
-              p: 2.5, 
-              bgcolor: 'grey.50', 
-              color: 'grey.800', 
+            <Paper elevation={0} sx={{
+              p: 2.5,
+              bgcolor: 'grey.50',
+              color: 'grey.800',
               borderRadius: 3,
               border: '1px solid',
               borderColor: 'grey.200',
@@ -170,7 +170,7 @@ export default function MyJobs() {
               variant="contained"
               color="primary"
               startIcon={<PostAddIcon />}
-              onClick={() => navigate('/publicar-oferta')}
+              onClick={() => navigate('/reclutador/publicar-oferta')}
               sx={{ borderRadius: 2 }}
             >
               Publicar Mi Primera Oferta
@@ -182,9 +182,9 @@ export default function MyJobs() {
               const applicantsCount = getApplicantsCount(job.id);
               return (
                 <Grid item xs={12} md={6} key={job.id}>
-                  <Card sx={{ 
-                    border: '1px solid', 
-                    borderColor: 'grey.200', 
+                  <Card sx={{
+                    border: '1px solid',
+                    borderColor: 'grey.200',
                     borderRadius: 3,
                     transition: 'transform 0.2s, box-shadow 0.2s',
                     '&:hover': {
@@ -199,28 +199,28 @@ export default function MyJobs() {
                             {job.title}
                           </Typography>
                           <Stack direction="row" spacing={1} flexWrap="wrap" gap={0.5}>
-                            <Chip 
-                              label={job.modality} 
-                              size="small" 
+                            <Chip
+                              label={job.modality}
+                              size="small"
                               color={job.modality === 'Remoto' ? 'success' : job.modality === 'Híbrido' ? 'warning' : 'primary'}
-                              variant="outlined" 
+                              variant="outlined"
                             />
-                            <Chip 
-                              icon={<AttachMoneyIcon fontSize="small" />} 
-                              label={job.salary} 
-                              size="small" 
-                              variant="filled" 
+                            <Chip
+                              icon={<AttachMoneyIcon fontSize="small" />}
+                              label={job.salary}
+                              size="small"
+                              variant="filled"
                               sx={{ bgcolor: 'grey.100', color: 'grey.800', fontWeight: 500 }}
                             />
                           </Stack>
                         </Box>
-                        
+
                         {/* Status chip or dropdown */}
                         <FormControl size="small" sx={{ width: 120 }}>
                           <Select
                             value={job.status}
                             onChange={(e) => handleStatusChange(job.id, e.target.value)}
-                            sx={{ 
+                            sx={{
                               borderRadius: 2,
                               fontWeight: 600,
                               bgcolor: job.status === 'Activa' ? 'success.light' : job.status === 'Pausada' ? 'warning.light' : 'grey.100',
@@ -235,15 +235,15 @@ export default function MyJobs() {
                         </FormControl>
                       </Box>
 
-                      <Typography 
-                        variant="body2" 
-                        color="text.secondary" 
-                        sx={{ 
-                          mb: 2, 
-                          display: '-webkit-box', 
-                          WebkitLineClamp: 3, 
-                          WebkitBoxOrient: 'vertical', 
-                          overflow: 'hidden', 
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          mb: 2,
+                          display: '-webkit-box',
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
                           lineHeight: 1.6,
                           height: '4.8em' // fix height for alignments
                         }}
@@ -275,7 +275,7 @@ export default function MyJobs() {
                         size="medium"
                         variant="contained"
                         color="primary"
-                        onClick={() => navigate('/postulantes', { state: { selectedJobId: job.id } })}
+                        onClick={() => navigate('/reclutador/postulantes', { state: { selectedJobId: job.id } })}
                         sx={{ borderRadius: 2, px: 3 }}
                         disabled={applicantsCount === 0}
                       >

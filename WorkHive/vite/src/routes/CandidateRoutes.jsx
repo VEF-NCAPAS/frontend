@@ -16,7 +16,7 @@ import ProtectedRoute from './ProtectedRoute';
 const CandidateRoutes = {
   path: '/candidato',
   element: (
-    <ProtectedRoute allowedRoles={['CANDIDATE']}>
+    <ProtectedRoute allowedRoles={['CANDIDATE']} logoClickable={false} showSearch={false}>
       <MainLayout />
     </ProtectedRoute>
   ),

@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 
 // Logo
 import logoCapas from 'assets/images/icons/logoCapas.png';
@@ -12,13 +11,10 @@ import {
   Button,
   Container,
   Box,
-  TextField,
-  InputAdornment,
   Grid,
   Card,
   CardContent,
   Stack,
-  Divider,
   useTheme,
   useMediaQuery,
   Avatar
@@ -27,8 +23,6 @@ import {
 // Tabler Icons
 import {
   IconBriefcase,
-  IconMapPin,
-  IconSearch,
   IconUsers,
   IconBuilding,
   IconArrowRight,
@@ -48,17 +42,6 @@ const MotionGrid = motion(Grid);
 export default function LandingPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const navigate = useNavigate();
-
-  // Search states
-  const [cargo, setCargo] = useState('');
-  const [lugar, setLugar] = useState('');
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    // Redirect to candidate's job search page with query params
-    navigate(`/buscar-empleos?q=${encodeURIComponent(cargo)}&l=${encodeURIComponent(lugar)}`);
-  };
 
   return (
     <Box sx={{ bgcolor: 'background.paper', minHeight: '100vh', overflowX: 'hidden' }}>
@@ -189,105 +172,7 @@ export default function LandingPage() {
             </Typography>
           </MotionBox>
 
-          {/* Search Pill (Form) */}
-          <MotionBox
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            component="form"
-            onSubmit={handleSearch}
-          >
-            <Stack
-              direction={isMobile ? 'column' : 'row'}
-              alignItems="center"
-              divider={!isMobile && <Divider orientation="vertical" flexItem sx={{ height: 40, alignSelf: 'center', bgcolor: 'grey.300', width: '2px' }} />}
-              sx={{
-                bg: 'white',
-                bgcolor: 'white',
-                borderRadius: isMobile ? '16px' : '60px',
-                p: isMobile ? 2 : 1,
-                pl: isMobile ? 2 : 3,
-                pr: isMobile ? 2 : 1.5,
-                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.25)',
-                maxWidth: '850px',
-                mx: 'auto',
-                gap: isMobile ? 1.5 : 0
-              }}
-            >
-              {/* Field 1: Job Title */}
-              <TextField
-                placeholder="Cargo, categoría o palabra clave"
-                fullWidth
-                variant="standard"
-                value={cargo}
-                onChange={(e) => setCargo(e.target.value)}
-                InputProps={{
-                  disableUnderline: true,
-                  startAdornment: (
-                    <InputAdornment position="start" sx={{ color: 'grey.500' }}>
-                      <IconBriefcase size={22} />
-                    </InputAdornment>
-                  ),
-                  style: { color: theme.palette.grey[900], fontSize: '1.05rem', fontWeight: 500 }
-                }}
-                sx={{
-                  '& .MuiInputBase-input::placeholder': {
-                    color: 'grey.500',
-                    opacity: 1
-                  }
-                }}
-              />
 
-              {/* Field 2: Location */}
-              <TextField
-                placeholder="Lugar (ej. San Salvador)"
-                fullWidth
-                variant="standard"
-                value={lugar}
-                onChange={(e) => setLugar(e.target.value)}
-                InputProps={{
-                  disableUnderline: true,
-                  startAdornment: (
-                    <InputAdornment position="start" sx={{ color: 'grey.500' }}>
-                      <IconMapPin size={22} />
-                    </InputAdornment>
-                  ),
-                  style: { color: theme.palette.grey[900], fontSize: '1.05rem', fontWeight: 500 }
-                }}
-                sx={{
-                  pl: isMobile ? 0 : 2,
-                  '& .MuiInputBase-input::placeholder': {
-                    color: 'grey.500',
-                    opacity: 1
-                  }
-                }}
-              />
-
-              {/* Search Button */}
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                startIcon={<IconSearch size={20} />}
-                fullWidth={isMobile}
-                sx={{
-                  borderRadius: isMobile ? '12px' : '40px',
-                  py: isMobile ? 1.5 : 2,
-                  px: 4,
-                  fontWeight: 700,
-                  fontSize: '1rem',
-                  textTransform: 'none',
-                  boxShadow: `0 4px 15px rgba(33, 150, 243, 0.4)`,
-                  whiteSpace: 'nowrap',
-                  '&:hover': {
-                    boxShadow: `0 6px 20px rgba(33, 150, 243, 0.5)`
-                  }
-                }}
-              >
-                Buscar empleos
-              </Button>
-            </Stack>
-          </MotionBox>
         </Container>
 
         {/* Elegant Wave Curved SVG Divider */}
@@ -632,94 +517,6 @@ export default function LandingPage() {
         </Container>
       </Box>
 
-      {/* ==================== FOOTER ==================== */}
-      <Box sx={{ bgcolor: 'grey.900', color: 'grey.300', pt: 8, pb: 4 }}>
-        <Container maxWidth="lg">
-          <Grid container spacing={5} sx={{ mb: 6 }}>
-            {/* Column 1: Info */}
-            <Grid item xs={12} md={4}>
-              <Stack spacing={2}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Avatar sx={{ bgcolor: 'primary.main', width: 36, height: 36, fontWeight: 'bold' }}>
-                    WH
-                  </Avatar>
-                  <Typography variant="h3" sx={{ fontWeight: 800, color: 'white', fontFamily: 'Poppins, sans-serif' }}>
-                    WorkHive
-                  </Typography>
-                </Stack>
-                <Typography variant="body2" sx={{ color: 'grey.400', lineHeight: 1.6, maxWidth: '300px' }}>
-                  La colmena de oportunidades laborales diseñada para conectar al mejor talento con las mejores empresas de El Salvador.
-                </Typography>
-              </Stack>
-            </Grid>
-
-            {/* Column 2: Candidates links */}
-            <Grid item xs={6} md={2.5}>
-              <Typography variant="h4" color="white" sx={{ mb: 2.5, fontWeight: 700 }}>
-                Para Candidatos
-              </Typography>
-              <Stack spacing={1.5}>
-                <Button component={RouterLink} to="/buscar-empleos" sx={{ color: 'grey.400', p: 0, minWidth: 0, justifyContent: 'flex-start', textTransform: 'none', '&:hover': { color: 'white' } }}>
-                  Buscar Empleos
-                </Button>
-                <Button component={RouterLink} to="/pages/register" sx={{ color: 'grey.400', p: 0, minWidth: 0, justifyContent: 'flex-start', textTransform: 'none', '&:hover': { color: 'white' } }}>
-                  Registrar CV
-                </Button>
-                <Button component={RouterLink} to="/mi-perfil" sx={{ color: 'grey.400', p: 0, minWidth: 0, justifyContent: 'flex-start', textTransform: 'none', '&:hover': { color: 'white' } }}>
-                  Mi Perfil
-                </Button>
-              </Stack>
-            </Grid>
-
-            {/* Column 3: Recruiters links */}
-            <Grid item xs={6} md={2.5}>
-              <Typography variant="h4" color="white" sx={{ mb: 2.5, fontWeight: 700 }}>
-                Para Empresas
-              </Typography>
-              <Stack spacing={1.5}>
-                <Button component={RouterLink} to="/publicar-oferta" sx={{ color: 'grey.400', p: 0, minWidth: 0, justifyContent: 'flex-start', textTransform: 'none', '&:hover': { color: 'white' } }}>
-                  Publicar Vacante
-                </Button>
-                <Button component={RouterLink} to="/estadisticas" sx={{ color: 'grey.400', p: 0, minWidth: 0, justifyContent: 'flex-start', textTransform: 'none', '&:hover': { color: 'white' } }}>
-                  Ver Panel de Control
-                </Button>
-                <Button component={RouterLink} to="/pages/login" sx={{ color: 'grey.400', p: 0, minWidth: 0, justifyContent: 'flex-start', textTransform: 'none', '&:hover': { color: 'white' } }}>
-                  Ingreso Corporativo
-                </Button>
-              </Stack>
-            </Grid>
-
-            {/* Column 4: Contact/Legal */}
-            <Grid item xs={12} md={3}>
-              <Typography variant="h4" color="white" sx={{ mb: 2.5, fontWeight: 700 }}>
-                Compañía
-              </Typography>
-              <Stack spacing={1.5}>
-                <Typography variant="body2" sx={{ color: 'grey.400' }}>
-                  Soporte: info@workhive.com
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'grey.400' }}>
-                  San Salvador, El Salvador
-                </Typography>
-                <Button sx={{ color: 'grey.400', p: 0, minWidth: 0, justifyContent: 'flex-start', textTransform: 'none', '&:hover': { color: 'white' } }}>
-                  Políticas de Privacidad
-                </Button>
-              </Stack>
-            </Grid>
-          </Grid>
-
-          <Divider sx={{ bgcolor: 'grey.800', mb: 3 }} />
-
-          <Stack direction={isMobile ? 'column' : 'row'} justifyContent="space-between" alignItems="center" spacing={2}>
-            <Typography variant="body2" sx={{ color: 'grey.500' }}>
-              &copy; {new Date().getFullYear()} WorkHive. Todos los derechos reservados.
-            </Typography>
-            <Stack direction="row" spacing={1} sx={{ color: 'grey.500' }}>
-              <Typography variant="caption">Desarrollado con ❤️ para El Salvador.</Typography>
-            </Stack>
-          </Stack>
-        </Container>
-      </Box>
 
     </Box>
   );

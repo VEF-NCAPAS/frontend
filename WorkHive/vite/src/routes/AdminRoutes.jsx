@@ -12,7 +12,7 @@ import {
 const AdminRoutes = {
   path: '/admin',
   element: (
-    <ProtectedRoute allowedRoles={['ADMIN']}>
+    <ProtectedRoute allowedRoles={['ADMIN']} logoClickable={false} showSearch={false} >
       <MainLayout />
     </ProtectedRoute>
   ),

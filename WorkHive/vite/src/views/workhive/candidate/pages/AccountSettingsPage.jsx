@@ -14,18 +14,14 @@ import PageHeading from '../components/PageHeading';
 import { buttonSX } from '../data/candidateData';
 
 import { IconKey, IconLogout } from '@tabler/icons-react';
+import { logout } from 'services/authService';
 
 export default function CandidateAccountSettingsPage() {
   const navigate = useNavigate();
   const { state: settings, setState: setSettings } = useLocalStorage('candidate-account-settings', {});
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    localStorage.removeItem('name');
-    localStorage.removeItem('email');
-    localStorage.removeItem('rememberSession');
-    window.location.href = '/pages/login';
+    logout({ navigate, redirectTo: '/pages/login' });
   };
 
   const accountOptions = useMemo(

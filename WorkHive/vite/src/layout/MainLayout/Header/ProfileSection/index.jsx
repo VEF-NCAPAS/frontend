@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -30,13 +30,16 @@ import { IconLogout, IconSettings, IconUser } from '@tabler/icons-react';
 
 export default function ProfileSection() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const theme = useTheme();
   const {
     state: { borderRadius }
   } = useConfig();
 
   const [open, setOpen] = useState(false);
-  const isCandidate = getCurrentUserRole(pathname) === USER_ROLES.CANDIDATE;
+  const currentUserRole = getCurrentUserRole(pathname);
+  const isCandidate = currentUserRole === USER_ROLES.CANDIDATE;
+  const logoutToLanding = [USER_ROLES.CANDIDATE, USER_ROLES.ADMIN].includes(currentUserRole);
 
   /**
    * anchorRef is used on different components and specifying one type leads to other components throwing an error
@@ -63,6 +66,12 @@ export default function ProfileSection() {
     localStorage.removeItem('rememberSession');
     setOpen(false);
     window.location.href = '/pages/login';
+  };
+
+  const handleLogout = () => {
+    setOpen(false);
+
+    if (logoutToLanding) navigate('/');
   };
 
   const prevOpen = useRef(open);
