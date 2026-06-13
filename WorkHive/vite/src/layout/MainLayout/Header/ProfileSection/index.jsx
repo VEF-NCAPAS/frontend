@@ -22,6 +22,7 @@ import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
 import useConfig from 'hooks/useConfig';
 import { getCurrentUserRole, USER_ROLES } from 'menu-items/roleMenus';
+import { logout } from 'services/authService';
 
 // assets
 import { IconLogout, IconSettings, IconUser } from '@tabler/icons-react';
@@ -59,19 +60,9 @@ export default function ProfileSection() {
   };
   const userName = localStorage.getItem('name');
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    localStorage.removeItem('name');
-    localStorage.removeItem('email');
-    localStorage.removeItem('rememberSession');
     setOpen(false);
-    window.location.href = '/pages/login';
-  };
-
-  const handleLogout = () => {
-    setOpen(false);
-
-    if (logoutToLanding) navigate('/');
+    const redirectTo = logoutToLanding ? '/' : '/pages/login';
+    logout({ navigate, redirectTo });
   };
 
   const prevOpen = useRef(open);
