@@ -13,10 +13,54 @@ import MainCard from 'ui-component/cards/MainCard';
 import PageHeading from '../components/PageHeading';
 import StatCard from '../components/StatCard';
 import { applications, applicationStatusSX } from '../data/candidateData';
+import { useEffect, useState } from 'react';
+import { getApplications } from 'services/applicationService';
 
-import { IconBriefcase, IconChevronRight } from '@tabler/icons-react';
+
+import { IconBriefcase, IconChevronRight, IconCalendarEvent, IconVideo, IconExternalLink, IconClipboardCheck } from '@tabler/icons-react';
+
 
 export default function CandidateApplicationsPage() {
+
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const totalApplications = applications.length;
+  const reviewedApplications = applications.filter(
+    app => app.applicationStatus === 'REVIEWED'
+  ).length;
+
+  const interviewApplications = applications.filter(
+    app => app.applicationStatus === 'INTERVIEW'
+  ).length;
+  useEffect(() => {
+    const loadApplications = async () => {
+      try {
+        const response = await getApplications();
+        setApplications(response.data.content);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadApplications();
+  }, []);
+
+  const applicationStatusLabels = {
+    APPLIED: 'Aplicada',
+    REVIEWED: 'En revisión',
+    INTERVIEW: 'Entrevista',
+    TECHNICAL_TEST: 'Prueba técnica',
+    SELECTED: 'Seleccionada',
+    REJECTED: 'Rechazada',
+    WITHDRAWN: 'Retirada'
+  };
+
+  if (loading) {
+    return <Typography>Cargando postulaciones...</Typography>;
+  }
+
   return (
     <>
       <PageHeading
@@ -25,13 +69,13 @@ export default function CandidateApplicationsPage() {
       />
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid size={{ xs: 12, sm: 4 }}>
-          <StatCard value="08" label="Postulaciones enviadas" />
+        <StatCard value={totalApplications} label="Postulaciones enviadas"/>        
         </Grid>
         <Grid size={{ xs: 12, sm: 4 }}>
-          <StatCard value="03" label="En revisión" color="warning" />
+          <StatCard value={reviewedApplications} label="En revisión" color="warning" />
         </Grid>
         <Grid size={{ xs: 12, sm: 4 }}>
-          <StatCard value="01" label="Entrevista pendiente" color="primary" />
+          <StatCard value={interviewApplications} label="Entrevista pendiente" color="primary" />
         </Grid>
       </Grid>
       <MainCard title="Actividad reciente" border contentSX={{ p: { xs: 1.5, sm: 2.5 } }}>
@@ -66,14 +110,23 @@ export default function CandidateApplicationsPage() {
                   <IconBriefcase size={20} />
                 </Avatar>
                 <Box>
-                  <Typography variant="h4">{application.role}</Typography>
+                  <Typography variant="h4">{application.vacancyTitle}</Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {application.company} - Postulado el {application.date}
+                    {application.companyName} - Postulado el {application.applicationDate}
                   </Typography>
                 </Box>
               </Stack>
               <Stack direction="row" spacing={1.5} alignItems="center">
-                <Chip label={application.status} size="small" variant="outlined" sx={applicationStatusSX[application.status]} />
+                <Chip
+                  label={
+                    applicationStatusLabels[
+                      application.applicationStatus
+                    ] || application.applicationStatus
+                  }
+                  size="small"
+                  color="secondary"
+                  variant="outlined"
+                />
                 <IconChevronRight size={18} />
               </Stack>
             </Stack>

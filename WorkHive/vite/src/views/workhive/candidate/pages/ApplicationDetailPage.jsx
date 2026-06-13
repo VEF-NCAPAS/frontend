@@ -12,15 +12,47 @@ import Typography from '@mui/material/Typography';
 import MainCard from 'ui-component/cards/MainCard';
 
 import PageHeading from '../components/PageHeading';
-import { applications, applicationStatusSX, buttonSX, jobs, pastelBackButtonSX } from '../data/candidateData';
+import { buttonSX, pastelBackButtonSX } from '../data/candidateData';
 
-import { IconArrowLeft, IconBriefcase, IconCash, IconCheck, IconClock, IconMapPin } from '@tabler/icons-react';
+import { IconArrowLeft, IconBriefcase, IconCash, IconCheck, IconClock, IconMapPin, IconCalendarEvent, IconVideo, IconExternalLink, IconClipboardCheck } from '@tabler/icons-react';
+import { useEffect, useState } from 'react';
+import { getApplicationById } from 'services/applicationService';
 
 export default function CandidateApplicationDetailPage() {
   const { applicationId } = useParams();
-  const application = applications.find((item) => item.id === applicationId);
-  const linkedJob = jobs.find((job) => job.id === application?.jobId);
+  const [application, setApplication] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  const applicationStatusLabels = {
+    APPLIED: 'Aplicada',
+    REVIEWED: 'En revisión',
+    INTERVIEW: 'Entrevista pendiente',
+    TECHNICAL_TEST: 'Prueba técnica',
+    SELECTED: 'Seleccionada',
+    REJECTED: 'Rechazada',
+    WITHDRAWN: 'Retirada'
+  };
+  useEffect(() => {
+    const loadApplication = async () => {
+      try {
+        const response = await getApplicationById(applicationId);
+
+        setApplication(response.data);
+        console.log(response);
+      } catch (error) {
+        console.error(error);
+        setApplication(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadApplication();
+  }, [applicationId]);
+
+  if (loading) {
+    return <Typography>Cargando postulación...</Typography>;
+  }
   if (!application) {
     return (
       <PageHeading
@@ -34,10 +66,6 @@ export default function CandidateApplicationDetailPage() {
       />
     );
   }
-
-  const location = linkedJob?.location || application.location;
-  const type = linkedJob?.type || application.type;
-  const salary = linkedJob?.salary || application.salary;
 
   return (
     <>
@@ -59,12 +87,21 @@ export default function CandidateApplicationDetailPage() {
             <IconBriefcase size={28} />
           </Avatar>
           <Box sx={{ flexGrow: 1 }}>
-            <Typography variant="h2">{application.role}</Typography>
-            <Typography variant="h4" color="text.secondary" sx={{ mt: 0.5 }}>
-              {application.company}
+            <Typography variant="h2">
+              {application.vacancyTitle}
+            </Typography>
+
+            <Typography
+              variant="h4"
+              color="text.secondary"
+              sx={{ mt: 0.5 }}
+            >
+              {application.companyName}
             </Typography>
           </Box>
-          <Chip label={application.status} variant="outlined" sx={applicationStatusSX[application.status]} />
+         <Chip
+            label={applicationStatusLabels[application.applicationStatus] || application.applicationStatus}
+         />
         </Stack>
       </MainCard>
 
@@ -72,50 +109,93 @@ export default function CandidateApplicationDetailPage() {
         <Grid size={{ xs: 12, lg: 8 }}>
           <Stack spacing={3}>
             <MainCard title="Estado de tu postulación" border>
-              <Stack spacing={2.5}>
-                {application.timeline.map((step, index) => (
-                  <Stack direction="row" spacing={2} key={step.title}>
-                    <Avatar
-                      sx={{
-                        bgcolor: step.completed ? 'success.light' : 'grey.100',
-                        color: step.completed ? 'success.dark' : 'text.secondary',
-                        height: 34,
-                        width: 34
-                      }}
-                    >
-                      {step.completed ? <IconCheck size={18} /> : index + 1}
-                    </Avatar>
-                    <Box>
-                      <Typography variant="subtitle1">{step.title}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {step.date}
-                      </Typography>
-                    </Box>
-                  </Stack>
-                ))}
-              </Stack>
+              <Chip
+                color="secondary"
+                label={
+                  applicationStatusLabels[
+                    application.applicationStatus
+                  ] || application.applicationStatus
+                }
+              />
             </MainCard>
 
-            <MainCard title="Próximo paso" border>
-              <Typography variant="body2">{application.nextStep}</Typography>
-            </MainCard>
+            <MainCard title="Entrevista" border>
+            {application.interview ? (
+              <Stack spacing={2}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <IconCalendarEvent size={20} />
+                  <Typography>
+                    {new Date(
+                      application.interview.interviewDate
+                    ).toLocaleString()}
+                  </Typography>
+                </Stack>
 
-            {linkedJob && (
-              <MainCard title="Información de la oferta" border>
-                <Typography variant="body2" sx={{ mb: 2 }}>
-                  {linkedJob.description}
+                <Typography variant="body2">
+                  Candidato: {application.interview.candidateName}
                 </Typography>
+
                 <Button
-                  component={Link}
-                  to={`/candidato/buscar-empleos/${linkedJob.id}`}
-                  variant="outlined"
-                  color="secondary"
-                  sx={buttonSX}
+                  variant="contained"
+                  color="primary"
+                  startIcon={<IconVideo size={18} />}
+                  component="a"
+                  href={application.interview.meetingLink}
+                  target="_blank"
                 >
-                  Ver oferta completa
+                  Unirse a la entrevista
                 </Button>
-              </MainCard>
+              </Stack>
+            ) : (
+              <Stack spacing={1}>
+                <Typography variant="body2" color="text.secondary">
+                  Aún no tienes una entrevista asignada.
+                </Typography>
+
+                <Typography variant="caption" color="text.secondary">
+                  Mantente atento a las actualizaciones de tu proceso de selección.
+                </Typography>
+              </Stack>
             )}
+          </MainCard>
+          
+          <MainCard title="Prueba técnica" border>
+            {application.technicalTest ? (
+              <Stack spacing={2}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <IconClipboardCheck size={20} />
+                  <Typography>
+                    Fecha límite:
+                    {' '}
+                    {new Date(
+                      application.technicalTest.deadline
+                    ).toLocaleString()}
+                  </Typography>
+                </Stack>
+
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  startIcon={<IconExternalLink size={18} />}
+                  component="a"
+                  href={application.technicalTest.link}
+                  target="_blank"
+                >
+                  Realizar prueba técnica
+                </Button>
+              </Stack>
+            ) : (
+              <Stack spacing={1}>
+                <Typography variant="body2" color="text.secondary">
+                  Aún no tienes una prueba técnica asignada.
+                </Typography>
+
+                <Typography variant="caption" color="text.secondary">
+                  Si continúas avanzando en el proceso, recibirás instrucciones aquí.
+                </Typography>
+              </Stack>
+            )}
+          </MainCard>
           </Stack>
         </Grid>
 
@@ -126,39 +206,85 @@ export default function CandidateApplicationDetailPage() {
                 <Typography variant="caption" color="text.secondary">
                   Fecha de postulación
                 </Typography>
-                <Typography variant="subtitle1">{application.date}</Typography>
+                
+                <Typography variant="subtitle1">{application.applicationDate}</Typography>
               </Box>
               <Divider />
-              {location && (
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Avatar sx={{ bgcolor: '#dff3ff', color: '#2475a6', height: 30, width: 30 }}>
-                    <IconMapPin size={17} />
-                  </Avatar>
-                  <Typography variant="body2" sx={{ color: '#2475a6', fontWeight: 600 }}>
-                    {location}
-                  </Typography>
-                </Stack>
-              )}
-              {type && (
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Avatar sx={{ bgcolor: '#eee6ff', color: '#6842ad', height: 30, width: 30 }}>
-                    <IconClock size={17} />
-                  </Avatar>
-                  <Typography variant="body2" sx={{ color: '#6842ad', fontWeight: 600 }}>
-                    {type}
-                  </Typography>
-                </Stack>
-              )}
-              {salary && (
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Avatar sx={{ bgcolor: '#dcf6e8', color: '#25835a', height: 30, width: 30 }}>
-                    <IconCash size={17} />
-                  </Avatar>
-                  <Typography variant="body2" sx={{ color: '#25835a', fontWeight: 600 }}>
-                    {salary}
-                  </Typography>
-                </Stack>
-              )}
+
+              {application.interview ? (
+                  <>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Próxima entrevista
+                      </Typography>
+
+                      <Typography variant="subtitle2">
+                        {new Date(
+                          application.interview.interviewDate
+                        ).toLocaleDateString()}
+                      </Typography>
+
+                      <Typography variant="body2" color="primary">
+                        {new Date(
+                          application.interview.interviewDate
+                        ).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </Typography>
+                    </Box>
+
+                    <Divider />
+                  </>
+                ) : (
+                  <>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Entrevista
+                      </Typography>
+
+                      <Typography variant="body2">
+                        Pendiente de asignación
+                      </Typography>
+                    </Box>
+
+                    <Divider />
+                  </>
+                )}
+
+                {application.technicalTest ? (
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Fecha límite prueba técnica
+                    </Typography>
+
+                    <Typography variant="subtitle2">
+                      {new Date(
+                        application.technicalTest.deadline
+                      ).toLocaleDateString()}
+                    </Typography>
+
+                    <Typography variant="body2" color="secondary">
+                      {new Date(
+                        application.technicalTest.deadline
+                      ).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                      })}
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Prueba técnica
+                    </Typography>
+
+                    <Typography variant="body2">
+                      Pendiente de asignación
+                    </Typography>
+                  </Box>
+                )}
+              
             </Stack>
           </MainCard>
         </Grid>

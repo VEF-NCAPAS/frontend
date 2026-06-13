@@ -14,7 +14,7 @@ import MainCard from 'ui-component/cards/MainCard';
 
 import JobItem from '../components/JobItem';
 import PageHeading from '../components/PageHeading';
-import { buttonSX, jobs } from '../data/candidateData';
+import { buttonSX } from '../data/candidateData';
 
 import { IconSearch } from '@tabler/icons-react';
 import { getVacancies } from 'services/vacancyService';

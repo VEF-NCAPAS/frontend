@@ -14,7 +14,7 @@ import PageHeading from '../components/PageHeading';
 import { buttonSX } from '../data/candidateData';
 
 import { IconLock, IconArrowLeft } from '@tabler/icons-react';
-import { changePassword } from 'services/authService';
+import { changePassword } from 'services/userService';
 const defaultForm = {
   currentPassword: '',
   newPassword: '',
