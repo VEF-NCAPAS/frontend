@@ -38,7 +38,6 @@ export default function JobItem({ job }) {
               {job.companyName}
             </Typography>
           </Box>
-          <IconBookmark size={20} color="#697586" />
         </Stack>
 
         <Stack direction="row" spacing={2} useFlexGap flexWrap="wrap">

@@ -68,7 +68,7 @@ export default function CandidateJobsPage() {
         description="Encuentra oportunidades que coincidan con tu experiencia en El Salvador."
         action={
           <Button component={Link} to="/candidato/mi-perfil" variant="outlined" color="secondary" sx={buttonSX}>
-            Completar mi perfil
+            Mi perfil
           </Button>
         }
       />
@@ -141,20 +141,14 @@ export default function CandidateJobsPage() {
 
         <Grid size={{ xs: 12, lg: 4 }}>
           <Stack spacing={3}>
-            <MainCard title="Perfil destacado" border>
-              <Stack spacing={1.5}>
-                <Stack direction="row" justifyContent="space-between">
-                  <Typography variant="body2">Completado</Typography>
-                  <Typography variant="subtitle1" color="secondary.main">
-                    78%
-                  </Typography>
-                </Stack>
-                <LinearProgress variant="determinate" value={78} color="secondary" sx={{ height: 8, borderRadius: 8 }} />
-                <Typography variant="body2" color="text.secondary">
-                  Agrega tu experiencia mas reciente para aumentar la visibilidad.
-                </Typography>
-              </Stack>
-            </MainCard>
+           <MainCard title="WorkHive te recomienda" border contentSX={{ p: { xs: 2, sm: 3 } }}>
+            <Stack spacing={2}>
+              <Typography variant="h4">Mantente activo en tu búsqueda</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Revisa nuevas vacantes con frecuencia y mantén actualizada tu información. Las oportunidades cambian constantemente y estar al día puede marcar la diferencia.
+              </Typography>
+            </Stack>
+          </MainCard>
           </Stack>
         </Grid>
       </Grid>
