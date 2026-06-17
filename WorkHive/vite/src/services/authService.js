@@ -1,9 +1,8 @@
-import axios from 'axios';
-
+import api from '../config/axiosConfig';
 const API_URL = import.meta.env.VITE_API_URL;
 
 export const registerCandidate = async (data) => {
-  const response = await axios.post(
+  const response = await api.post(
     `${API_URL}/auth/register/candidate`,
     data
   );
@@ -12,7 +11,7 @@ export const registerCandidate = async (data) => {
 };
 
 export const registerRecruiter = async (data) => {
-  const response = await axios.post(
+  const response = await api.post(
     `${API_URL}/auth/register/recruiter`,
     data
   );
@@ -21,7 +20,7 @@ export const registerRecruiter = async (data) => {
 };
 
 export const login = async (data) => {
-  const response = await axios.post(
+  const response = await api.post(
     `${API_URL}/auth/login`,
     data
   );
@@ -36,8 +35,8 @@ export const logout = ({ navigate, redirectTo = '/pages/login' } = {}) => {
   localStorage.removeItem('email');
   localStorage.removeItem('rememberSession');
 
-  if (axios.defaults && axios.defaults.headers && axios.defaults.headers.common) {
-    delete axios.defaults.headers.common.Authorization;
+  if (api.defaults && api.defaults.headers && api.defaults.headers.common) {
+    delete api.defaults.headers.common.Authorization;
   }
 
   if (typeof navigate === 'function') {

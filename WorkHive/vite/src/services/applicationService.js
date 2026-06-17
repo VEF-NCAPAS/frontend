@@ -1,9 +1,9 @@
-import axios from 'axios';
+import api from '../config/axiosConfig';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export const createApplication = async (applicationData) => {
-  const response = await axios.post(
+  const response = await api.post(
     `${API_URL}/application`,
     applicationData,
     {
@@ -17,7 +17,7 @@ export const createApplication = async (applicationData) => {
 };
 
 export const getApplications = async (params = {}) => {
-  const response = await axios.get(
+  const response = await api.get(
     `${API_URL}/application`,
     {
       params,
@@ -31,7 +31,7 @@ export const getApplications = async (params = {}) => {
 };
 
 export const getApplicationById = async (id) => {
-  const response = await axios.get(
+  const response = await api.get(
     `${API_URL}/application/${id}`,
     {
       headers: {
@@ -44,7 +44,7 @@ export const getApplicationById = async (id) => {
 };
 
 export const withdrawApplication = async (id) => {
-  const response = await axios.patch(
+  const response = await api.patch(
     `${API_URL}/application/${id}/withdraw`,
     {},
     {
