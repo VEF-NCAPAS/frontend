@@ -40,7 +40,7 @@ export default function ProfileSection() {
   const [open, setOpen] = useState(false);
   const currentUserRole = getCurrentUserRole(pathname);
   const isCandidate = currentUserRole === USER_ROLES.CANDIDATE;
-  const logoutToLanding = [USER_ROLES.CANDIDATE, USER_ROLES.ADMIN].includes(currentUserRole);
+  const logoutToLanding = [USER_ROLES.CANDIDATE, USER_ROLES.ADMINISTRATOR].includes(currentUserRole);
 
   /**
    * anchorRef is used on different components and specifying one type leads to other components throwing an error

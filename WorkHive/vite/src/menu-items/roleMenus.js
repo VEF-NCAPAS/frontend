@@ -16,7 +16,7 @@ import {
 // ==============================|| WORKHIVE ROLE MENU ITEMS ||============================== //
 
 export const USER_ROLES = {
-  ADMIN: 'ADMIN',
+  ADMINISTRATOR: 'ADMINISTRATOR',
   CANDIDATE: 'CANDIDATE',
   RECRUITER: 'RECRUITER'
 };
@@ -26,7 +26,7 @@ const normalizeRole = (role) => {
     .trim()
     .toUpperCase();
 
-  if (['ADMIN', 'ADMINISTRADOR', 'ADMINISTRATOR'].includes(normalizedRole)) return USER_ROLES.ADMIN;
+  if (['ADMIN', 'ADMINISTRADOR', 'ADMINISTRATOR'].includes(normalizedRole)) return USER_ROLES.ADMINISTRATOR;
   if (['CANDIDATE', 'CANDIDATO'].includes(normalizedRole)) return USER_ROLES.CANDIDATE;
   if (['RECRUITER', 'RECLUTADOR', 'EMPRESA', 'COMPANY'].includes(normalizedRole)) return USER_ROLES.RECRUITER;
 
@@ -36,7 +36,7 @@ const normalizeRole = (role) => {
 export const getRoleByPathname = (pathname = '') => {
   const normalizedPath = String(pathname).toLowerCase();
 
-  if (normalizedPath === '/admin' || normalizedPath.startsWith('/admin/')) return USER_ROLES.ADMIN;
+  if (normalizedPath === '/admin' || normalizedPath.startsWith('/admin/')) return USER_ROLES.ADMINISTRATOR;
   if (normalizedPath === '/candidato' || normalizedPath.startsWith('/candidato/')) return USER_ROLES.CANDIDATE;
   if (normalizedPath === '/reclutador' || normalizedPath.startsWith('/reclutador/')) return USER_ROLES.RECRUITER;
 
@@ -55,7 +55,7 @@ export const getCurrentUserRole = (pathname = window.location.pathname) => {
 };
 
 const workHiveMenus = {
-  [USER_ROLES.ADMIN]: {
+  [USER_ROLES.ADMINISTRATOR]: {
     id: 'workhive-admin',
     title: 'WorkHive',
     type: 'group',

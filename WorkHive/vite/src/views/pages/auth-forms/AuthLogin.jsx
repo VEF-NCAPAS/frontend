@@ -72,6 +72,7 @@ export default function AuthLogin() {
           break;
 
         case 'ADMIN':
+        case 'ADMINISTRATOR':
           window.location.href = '/admin';
           break;
 

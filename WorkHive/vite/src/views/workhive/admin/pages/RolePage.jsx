@@ -10,7 +10,7 @@ import MainCard from 'ui-component/cards/MainCard';
 
 export default function RolePage({ title, description }) {
   const handleSetAdmin = useCallback(() => {
-    localStorage.setItem('role', 'ADMIN');
+    localStorage.setItem('role', 'ADMINISTRATOR');
     window.location.reload();
   }, []);
 
@@ -20,7 +20,7 @@ export default function RolePage({ title, description }) {
         {description}
       </Typography>
       <Button variant="contained" color="primary" onClick={handleSetAdmin}>
-        Cambiar a rol ADMIN
+        Cambiar a rol ADMINISTRATOR
       </Button>
     </MainCard>
   );
