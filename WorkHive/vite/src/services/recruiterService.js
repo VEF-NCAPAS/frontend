@@ -1,5 +1,12 @@
 // ==============================|| WORKHIVE RECRUITER MOCK SERVICE ||============================== //
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+
+const getHeaders = () => ({
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${localStorage.getItem('token')}`
+});
+
 // Helper to load from localStorage or fallback to default
 const loadData = (key, fallback) => {
   const stored = localStorage.getItem(key);
@@ -234,12 +241,47 @@ export const calculateMatchingScore = (jobKeywords, candidateSkills) => {
 
 export const recruiterService = {
   // Company Profile
-  getCompanyProfile: () => {
-    return loadData('wh_company_profile', DEFAULT_COMPANY_PROFILE);
+  getCompanyProfile: async () => {
+    const response = await fetch(`${API_URL}/company/my-company`, {
+      headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Error al obtener perfil de la empresa');
+    const res = await response.json();
+    return {
+      id: res.data.id,
+      name: res.data.companyName,
+      sector: res.data.sector,
+      location: res.data.location,
+      description: 'Empresa líder en desarrollo de software, inteligencia artificial y consultoría tecnológica en la región de Centroamérica.',
+      website: 'https://techsolutions.sv',
+      email: 'contacto@techsolutions.sv',
+      employees: '50 - 200 empleados',
+      founded: '2018'
+    };
   },
-  updateCompanyProfile: (profile) => {
-    saveData('wh_company_profile', profile);
-    return profile;
+  updateCompanyProfile: async (profile) => {
+    const response = await fetch(`${API_URL}/company/${profile.id}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({
+        name: profile.name,
+        location: profile.location,
+        sector: profile.sector
+      })
+    });
+    if (!response.ok) throw new Error('Error al actualizar el perfil');
+    const res = await response.json();
+    return {
+      id: res.data.id,
+      name: res.data.companyName,
+      sector: res.data.sector,
+      location: res.data.location,
+      description: profile.description || 'Empresa líder en desarrollo de software, inteligencia artificial y consultoría tecnológica en la región de Centroamérica.',
+      website: profile.website || 'https://techsolutions.sv',
+      email: profile.email || 'contacto@techsolutions.sv',
+      employees: profile.employees || '50 - 200 empleados',
+      founded: profile.founded || '2018'
+    };
   },
 
   // Job Vacancies
@@ -385,7 +427,21 @@ export const recruiterService = {
   },
 
   // Get statistics metrics for charts
-  getStatistics: () => {
+  getStatistics: async () => {
+    const profile = await recruiterService.getCompanyProfile();
+    const response = await fetch(`${API_URL}/company/${profile.id}/diversity`, {
+      headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Error al obtener estadísticas de diversidad');
+    const res = await response.json();
+
+    // Mapear los datos de diversidad reales (M, F, O)
+    const genderData = [
+      { gender: 'Masculino', count: res.data.M || 0 },
+      { gender: 'Femenino', count: res.data.F || 0 },
+      { gender: 'Otros', count: res.data.O || 0 }
+    ];
+
     const jobs = loadData('wh_jobs', DEFAULT_JOBS);
     const candidates = loadData('wh_candidates', DEFAULT_CANDIDATES);
     const applications = loadData('wh_applications', DEFAULT_APPLICATIONS);
@@ -404,31 +460,18 @@ export const recruiterService = {
       name: cand.name,
       days: cand.hiringTimeDays || 15
     }));
-    
-    // 3. Anonimized diversity data (Gender and Age)
-    const genderCounts = candidates.reduce((acc, cand) => {
-      acc[cand.gender] = (acc[cand.gender] || 0) + 1;
-      return acc;
-    }, {});
 
     const ageGroups = {
-      '18-25': 0,
-      '26-30': 0,
-      '31-35': 0,
-      '36+': 0
+      '18-25': 2,
+      '26-30': 5,
+      '31-35': 3,
+      '36+': 1
     };
-
-    candidates.forEach((cand) => {
-      if (cand.age <= 25) ageGroups['18-25']++;
-      else if (cand.age <= 30) ageGroups['26-30']++;
-      else if (cand.age <= 35) ageGroups['31-35']++;
-      else ageGroups['36+']++;
-    });
 
     return {
       jobsApplicationsData,
       hiringTimes,
-      genderData: Object.keys(genderCounts).map((g) => ({ gender: g, count: genderCounts[g] })),
+      genderData,
       ageData: Object.keys(ageGroups).map((range) => ({ range, count: ageGroups[range] })),
       summary: {
         activeJobs: jobs.filter((j) => j.status === 'Activa').length,

@@ -30,8 +30,15 @@ export default function Statistics() {
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
-    const data = recruiterService.getStatistics();
-    setStats(data);
+    const loadStats = async () => {
+      try {
+        const data = await recruiterService.getStatistics();
+        setStats(data);
+      } catch (err) {
+        console.error("Error loading statistics", err);
+      }
+    };
+    loadStats();
   }, []);
 
   if (!stats) return <Typography>Cargando estadísticas...</Typography>;
