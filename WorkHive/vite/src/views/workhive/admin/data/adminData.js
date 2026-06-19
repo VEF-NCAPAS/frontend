@@ -52,7 +52,7 @@ export const candidateFields = [
   { name: 'name', label: 'Nombre completo' },
   { name: 'email', label: 'Correo electrónico', type: 'email' },
   { name: 'profession', label: 'Profesión o especialidad' },
-  { name: 'gender', label: 'Género', options: ['Femenino', 'Masculino'] },
+  { name: 'gender', label: 'Género', options: ['Femenino', 'Masculino', 'Otro'] },
   { name: 'status', label: 'Estado', options: ['Activo', 'Inactivo', 'Suspendido'] }
 ];
 

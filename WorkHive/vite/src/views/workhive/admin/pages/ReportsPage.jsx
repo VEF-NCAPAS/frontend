@@ -22,7 +22,7 @@ const reportData = {
     companies: [4, 6, 5, 8, 7, 10, 9, 12, 11, 14, 13, 16],
     candidates: [24, 29, 33, 36, 41, 47, 51, 56, 62, 68, 74, 81],
     areas: [82, 64, 51, 43, 31, 24],
-    gender: [164, 142]
+    gender: [164, 142, 2]
   },
   2025: {
     offers: [22, 26, 29, 35, 38, 44, 49, 53, 58, 64, 69, 75],
@@ -30,7 +30,7 @@ const reportData = {
     companies: [7, 9, 8, 11, 13, 12, 15, 17, 16, 19, 21, 23],
     candidates: [39, 46, 52, 59, 66, 73, 81, 89, 98, 108, 119, 131],
     areas: [108, 83, 69, 57, 42, 35],
-    gender: [211, 189]
+    gender: [211, 189, 3]
   },
   2026: {
     offers: [31, 36, 42, 48, 55, 61, 67, 72, 78, 84, 91, 98],
@@ -38,14 +38,14 @@ const reportData = {
     companies: [10, 12, 15, 14, 18, 20, 22, 25, 27, 29, 32, 35],
     candidates: [52, 61, 69, 79, 90, 102, 113, 125, 138, 151, 165, 180],
     areas: [137, 105, 88, 73, 55, 46],
-    gender: [264, 238]
+    gender: [264, 238, 2]
   }
 };
 
 const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 const areaLabels = ['Tecnología', 'Administración', 'Ventas', 'Servicio al cliente', 'Diseño', 'Otros'];
-const genderLabels = ['Masculino', 'Femenino'];
-const genderColors = ['#319795', '#f59aa0'];
+const genderLabels = ['Masculino', 'Femenino', 'Otro'];
+const genderColors = ['#319795', '#f59aa0', '#7ee36b'];
 const areaColors = ['#2196f3', '#00cfa5', '#ffb020', '#ff4964', '#7c4dff', '#55c2da'];
 
 function total(values) {
