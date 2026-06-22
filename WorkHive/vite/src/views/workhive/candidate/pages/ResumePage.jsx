@@ -21,6 +21,7 @@ import { buttonSX } from '../data/candidateData';
 
 import { createCv, getCvByCandidate, updateCv } from 'services/cvService';
 import { getAllSkills } from 'services/skillService';
+import { getAllLanguages } from 'services/languageService';
 
 import { IconBriefcase, IconDeviceFloppy, IconDownload, IconPlus, IconSchool, IconTrash, IconX } from '@tabler/icons-react';
 
@@ -47,22 +48,15 @@ const institutionOptions = [
   'Instituto Técnico de Exalumnos Salesianos ITEXSAL'
 ];
 
-const languageOptions = ['Español', 'Inglés', 'Francés', 'Portugués', 'Italiano', 'Alemán', 'Mandarín', 'Japonés', 'Coreano'];
-const languageLevelOptions = [
-  'A1 - Básico',
-  'A2 - Elemental',
-  'B1 - Intermedio',
-  'B2 - Intermedio alto',
-  'C1 - Avanzado',
-  'C2 - Experto',
-  'Nativo'
-];
+const languageLevelOptions = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'NATIVE'];
 const currentYear = new Date().getFullYear();
 const educationYearOptions = Array.from({ length: currentYear - 1949 }, (_, index) => String(currentYear - index));
 
 const emptyExperience = { position: '', company: '', startDate: '', endDate: '', description: '' };
 const emptyEducation = { institution: '', major: '' };
-const emptyLanguage = { language: '', level: '' };
+const emptyLanguage = { id: '', level: '' };
+
+const formatLanguageLevel = (level) => (level === 'NATIVE' ? 'Nativo' : level);
 
 const escapeHtml = (value = '') =>
   String(value)
@@ -77,12 +71,12 @@ const defaultResume = {
   email: '',
   headline: '',
   summary: '',
-  country: 'El Salvador',
-  city: 'San Salvador, San Salvador',
+  location: '',
+  city: '',
   skills: [],
   experiences: [{ ...emptyExperience }],
   education: [{ ...emptyEducation }],
-  languages: [{ language: 'Español', level: 'Nativo' }]
+  languages: [{ ...emptyLanguage }]
 };
 
 const normalizeResume = (resume) => ({
@@ -100,6 +94,7 @@ export default function CandidateResumePage() {
   const [message, setMessage] = useState(null);
   const [resultDialog, setResultDialog] = useState(null);
   const [availableSkills, setAvailableSkills] = useState([]);
+  const [availableLanguages, setAvailableLanguages] = useState([]);
   const [cvId, setCvId] = useState(null);
   const [hasCv, setHasCv] = useState(false);
   const [editMode, setEditMode] = useState(true);
@@ -110,6 +105,15 @@ export default function CandidateResumePage() {
   useEffect(() => {
     const loadData = async () => {
       try {
+        const languagesResponse = await getAllLanguages();
+        const languagePayload = languagesResponse?.data ?? languagesResponse;
+        const languages = Array.isArray(languagePayload)
+          ? languagePayload
+          : Array.isArray(languagePayload?.data)
+          ? languagePayload.data
+          : [];
+        setAvailableLanguages(languages);
+
         const skillsResponse = await getAllSkills();
         const skillPayload = skillsResponse?.data ?? skillsResponse;
         const skills = Array.isArray(skillPayload)
@@ -121,7 +125,10 @@ export default function CandidateResumePage() {
 
         const cvResponse = await getCvByCandidate();
         const cv = cvResponse?.data ?? cvResponse;
-        const existingCv = Boolean(cv && (cv.id || cv.name || cv.experiences?.length > 0 || cv.education?.length > 0 || cv.skills?.length > 0));
+        const existingCv = Boolean(
+          cv &&
+            (cv.id || cv.name || cv.experiences?.length > 0 || cv.education?.length > 0 || cv.skills?.length > 0 || cv.languages?.length > 0)
+        );
         setCvId(cv?.id ?? null);
         setHasCv(existingCv);
         setEditMode(!existingCv);
@@ -130,8 +137,8 @@ export default function CandidateResumePage() {
           name: cv.name || '',
           email: cv.email || '',
           headline: '',
-          summary: cv.summary || '',
-          country: cv.country || 'El Salvador',
+          summary: cv.professionalSummary || cv.summary || '',
+          location: cv.location || cv.country || 'El Salvador',
           city: cv.city || 'San Salvador',
 
           experiences:
@@ -155,8 +162,12 @@ export default function CandidateResumePage() {
 
           languages:
             cv.languages?.length > 0
-              ? cv.languages
-              : [{ language: 'Español', level: 'Nativo' }],
+              ? cv.languages.map((item) => ({
+                id: item?.id,
+                level: item?.level || '',
+                name: item?.name || ''
+              }))
+              : [{ ...emptyLanguage }],
 
           skills:
             cv.skills
@@ -189,6 +200,20 @@ export default function CandidateResumePage() {
     setMessage(null);
   };
 
+  const handleLanguageSelectionChange = (index, languageId) => {
+    const language = availableLanguages.find((item) => String(item.id) === String(languageId));
+    setResume((previous) => ({
+      ...previous,
+      languages: previous.languages.map((item, itemIndex) =>
+        itemIndex === index
+          ? { ...item, id: languageId, name: language?.name || '' }
+          : item
+      )
+    }));
+    setErrors((previous) => ({ ...previous, languages: undefined }));
+    setMessage(null);
+  };
+
   const handleListChange = (section, index, field, value) => {
     setResume((previous) => ({
       ...previous,
@@ -209,8 +234,10 @@ export default function CandidateResumePage() {
     const validationErrors = {};
 
 
-    if (!resume.country.trim()) validationErrors.country = 'El país es obligatorio.';
+    if (!resume.location.trim()) validationErrors.location = 'El país o región es obligatorio.';
     if (resume.skills.length === 0) validationErrors.skills = 'Selecciona al menos una habilidad.';
+    const validLanguages = resume.languages.filter((item) => item.id && item.level);
+    if (validLanguages.length === 0) validationErrors.languages = 'Selecciona al menos un idioma y su nivel.';
 
     return validationErrors;
   };
@@ -218,7 +245,11 @@ export default function CandidateResumePage() {
   const handleSave = async () => {
     const validationErrors = validate();
 
+    const validLanguages = resume.languages.filter((language) => language.id && language.level);
     const payload = {
+      professionalSummary: resume.summary,
+      location: resume.location,
+      city: resume.city,
       experiences: resume.experiences
         .filter((exp) => exp.company || exp.position)
         .map((exp) => ({
@@ -233,15 +264,17 @@ export default function CandidateResumePage() {
         .filter((edu) => edu.institution || edu.major)
         .map((edu) => ({
           institution: edu.institution,
-          major: edu.major,
+          major: edu.major
         })),
 
-      skills: resume.skills
-      .map((skill) => ({
-        id: typeof skill === 'object'
-          ? skill.id
-          : skill
-      }))
+      languages: validLanguages.map((language) => ({
+        id: language.id,
+        level: language.level
+      })),
+
+      skills: resume.skills.map((skill) =>
+        typeof skill === 'object' ? { id: skill.id } : { id: skill }
+      )
     };
 
 
@@ -316,10 +349,10 @@ export default function CandidateResumePage() {
       )
       .join('');
     // Idiomas quemados
-    const printableLanguages = `
-      <li>Español - Nativo</li>
-      <li>Inglés - B2 Intermedio alto</li>
-    `;
+    const printableLanguages = resume.languages
+      .filter((language) => language.name)
+      .map((language) => `<li>${escapeHtml(language.name)}${language.level ? ` - ${escapeHtml(formatLanguageLevel(language.level))}` : ''}</li>`)
+      .join('');
     const initials = (resume.name || '')
       .split(' ')
       .map((word) => word.charAt(0).toUpperCase())
@@ -367,13 +400,12 @@ export default function CandidateResumePage() {
               <h1>${escapeHtml(resume.name)}</h1>
               <div class="contact">
                 <p>${escapeHtml(resume.email)}</p>
-                <p>San Salvador, San Salvador</p>
-                <p>El Salvador</p>
+                <p>${escapeHtml([resume.city, resume.location].filter(Boolean).join(', '))}</p>
               </div>
             </header>
             <section class="section">
               <h2>Resumen profesional</h2>
-              <p>Profesional experimentado en desarrollo de software con sólidos conocimientos en tecnologías frontend y backend. Apasionado por crear soluciones innovadoras y eficientes. Comprometido con la excelencia técnica y el trabajo en equipo.</p>
+              <p>${escapeHtml(resume.summary || 'Describe brevemente tu experiencia, fortalezas y objetivos.')}</p>
             </section>
             <section class="section">
               <h2>Aptitudes</h2>
@@ -487,10 +519,10 @@ export default function CandidateResumePage() {
                     fullWidth
                     required
                     label="País o región"
-                    value={resume.country}
-                    onChange={handleFieldChange('country')}
-                    error={Boolean(errors.country)}
-                    helperText={errors.country}
+                    value={resume.location}
+                    onChange={handleFieldChange('location')}
+                    error={Boolean(errors.location)}
+                    helperText={errors.location}
                     disabled={disableForm}
                   />
                 </Grid>
@@ -670,13 +702,13 @@ export default function CandidateResumePage() {
                         select
                         fullWidth
                         label="Idioma"
-                        value={language.language}
-                        onChange={(event) => handleListChange('languages', index, 'language', event.target.value)}
+                        value={language.id}
+                        onChange={(event) => handleLanguageSelectionChange(index, event.target.value)}
                         disabled={disableForm}
                       >
-                        {languageOptions.map((option) => (
-                          <MenuItem key={option} value={option}>
-                            {option}
+                        {availableLanguages.map((option) => (
+                          <MenuItem key={option.id} value={option.id}>
+                            {option.name}
                           </MenuItem>
                         ))}
                       </TextField>
@@ -692,7 +724,7 @@ export default function CandidateResumePage() {
                       >
                         {languageLevelOptions.map((option) => (
                           <MenuItem key={option} value={option}>
-                            {option}
+                            {formatLanguageLevel(option)}
                           </MenuItem>
                         ))}
                       </TextField>
@@ -713,6 +745,11 @@ export default function CandidateResumePage() {
                   </Grid>
                 ))}
               </Stack>
+              {errors.languages && (
+                <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block' }}>
+                  {errors.languages}
+                </Typography>
+              )}
             </MainCard>
 
             <MainCard title="Habilidades" border>
@@ -755,11 +792,8 @@ export default function CandidateResumePage() {
             <Stack spacing={2.5}>
               <Box>
                 <Typography variant="h2">{userName || 'Tu nombre'}</Typography>
-                <Typography variant="h4" color="secondary.main" sx={{ mt: 0.75 }}>
-                  Desarrolladora de software
-                </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                  {[resume.city, resume.country].filter(Boolean).join(', ')}
+                  {[resume.city, resume.location].filter(Boolean).join(', ')}
                 </Typography>
                 {userEmail && (
                   <Typography variant="body2" color="text.secondary">
@@ -830,10 +864,12 @@ export default function CandidateResumePage() {
                   {resume.languages.some((item) => item.language || item.level) ? (
                     resume.languages.map(
                       (item, index) =>
-                        (item.language || item.level) && (
+                        (item.id || item.level) && (
                           <Chip
                             key={`preview-language-${index}`}
-                            label={[item.language, item.level].filter(Boolean).join(' - ')}
+                            label={[item.name || availableLanguages.find((lang) => String(lang.id) === String(item.id))?.name, formatLanguageLevel(item.level)]
+                              .filter(Boolean)
+                              .join(' - ')}
                             size="small"
                             variant="outlined"
                             sx={skillChipSX}
