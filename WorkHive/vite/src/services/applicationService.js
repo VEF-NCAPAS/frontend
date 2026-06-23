@@ -56,3 +56,17 @@ export const withdrawApplication = async (id) => {
 
   return response.data;
 };
+
+export const getApplicationsByVacancy = async (vacancyId, params = {}) => {
+  const response = await api.get(
+    `${API_URL}/application/vacancy/${vacancyId}`,
+    {
+      params,
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    }
+  );
+
+  return response.data;
+};

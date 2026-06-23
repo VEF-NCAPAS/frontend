@@ -1,132 +1,148 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // material-ui
+import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
-import InputAdornment from '@mui/material/InputAdornment';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Avatar from '@mui/material/Avatar';
 import Paper from '@mui/material/Paper';
 import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import Alert from '@mui/material/Alert';
 
 // assets
-import SearchIcon from '@mui/icons-material/Search';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import SchoolIcon from '@mui/icons-material/School';
 import HistoryIcon from '@mui/icons-material/History';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
-import { recruiterService } from 'services/recruiterService';
-
-// Recommended hot skills in El Salvador
-const HOT_SKILLS = ['React', 'JavaScript', 'SQL', 'PowerBI', 'Docker', 'AWS', 'Python', 'TypeScript', 'Git', 'CSS'];
+import { getAllSkills } from 'services/skillService';
+import { getApplicationsByVacancy } from 'services/applicationService';
+import { getVacancies } from 'services/vacancyService';
 
 export default function SearchCandidates() {
-  const [candidates, setCandidates] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredCandidates, setFilteredCandidates] = useState([]);
-  
-  // Job assignment states
+  const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [selectedJobId, setSelectedJobId] = useState('');
-  const [selectedCandidate, setSelectedCandidate] = useState(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [alertSeverity, setAlertSeverity] = useState('success');
-
+  const [availableSkills, setAvailableSkills] = useState([]);
+  const [selectedSkill, setSelectedSkill] = useState(null);
+  const [applications, setApplications] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [hasSearchClicked, setHasSearchClicked] = useState(false);
   useEffect(() => {
-    const list = recruiterService.getCandidates();
-    setCandidates(list);
-    setFilteredCandidates(list);
-    setJobs(recruiterService.getJobs());
+    const loadData = async () => {
+      try {
+        const vacanciesResponse = await getVacancies({ page: 0, size: 50 });
+        const vacancyPayload = vacanciesResponse?.data ?? vacanciesResponse;
+        const vacancies = Array.isArray(vacancyPayload)
+          ? vacancyPayload
+          : Array.isArray(vacancyPayload?.content)
+          ? vacancyPayload.content
+          : Array.isArray(vacancyPayload?.data)
+          ? vacancyPayload.data
+          : Array.isArray(vacancyPayload?.data?.content)
+          ? vacancyPayload.data.content
+          : [];
+
+        const normalizedVacancies = vacancies.map((job) => ({
+          ...job,
+          id: job.id ?? job.vacancyId ?? job.uuid ?? job.jobId,
+          title: job.title ?? job.name ?? job.position ?? job.role ?? 'Vacante sin título',
+        }));
+
+        setJobs(normalizedVacancies);
+        if (normalizedVacancies.length > 0) {
+          setSelectedJobId(normalizedVacancies[0].id);
+        }
+      } catch (error) {
+        console.error('Error loading vacancies:', error);
+      }
+
+      try {
+        const skillsResponse = await getAllSkills();
+        const skillPayload = skillsResponse?.data ?? skillsResponse;
+        const skills = Array.isArray(skillPayload)
+          ? skillPayload
+          : Array.isArray(skillPayload?.data)
+          ? skillPayload.data
+          : [];
+        setAvailableSkills(skills);
+      } catch (error) {
+        console.error('Error loading skills:', error);
+      }
+    };
+
+    loadData();
   }, []);
 
-  const handleSearchChange = (e) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-    filterAndScore(value, candidates);
-  };
+  const handleSearch = async () => {
+    setHasSearchClicked(true);
 
-  const handleQuickSkillClick = (skill) => {
-    let newQuery = searchQuery.trim();
-    if (!newQuery) {
-      newQuery = skill;
-    } else {
-      // Split by comma
-      const parts = newQuery.split(',').map((p) => p.trim());
-      if (!parts.includes(skill)) {
-        parts.push(skill);
-      }
-      newQuery = parts.join(', ');
-    }
-    setSearchQuery(newQuery);
-    filterAndScore(newQuery, candidates);
-  };
-
-  const filterAndScore = (query, allCandidates) => {
-    if (!query.trim()) {
-      setFilteredCandidates(allCandidates);
+    if (!selectedJobId || !selectedSkill) {
+      setApplications([]);
       return;
     }
 
-    // Split query by commas or spaces
-    const searchSkills = query
-      .split(',')
-      .map((s) => s.trim().toLowerCase())
-      .filter(Boolean);
+    setIsLoading(true);
+    setErrorMessage('');
 
-    if (searchSkills.length === 0) {
-      setFilteredCandidates(allCandidates);
-      return;
-    }
-
-    // Map candidates to add a dynamic score
-    const scoredList = allCandidates.map((cand) => {
-      const candSkills = cand.skills.map((s) => s.toLowerCase());
-      
-      let matchCount = 0;
-      searchSkills.forEach((sk) => {
-        const matches = candSkills.some((cs) => cs.includes(sk) || sk.includes(cs));
-        if (matches) matchCount++;
+    try {
+      const response = await getApplicationsByVacancy(selectedJobId, {
+        skill: selectedSkill.name
       });
+      const payload = response?.data ?? response;
+      const apps = payload?.data?.content ?? payload?.content ?? [];
 
-      const score = Math.round((matchCount / searchSkills.length) * 100);
-      const matchedSkills = cand.skills.filter((cs) => 
-        searchSkills.some((sk) => cs.toLowerCase().includes(sk) || sk.toLowerCase().includes(cs.toLowerCase()))
+      setApplications(
+        apps.map((app) => ({
+          ...app,
+          score: app.score ?? 75,
+          matchedSkills: selectedSkill ? [selectedSkill.name] : [],
+
+          skills: app.cv?.skills ?? [],
+
+          experience:
+            app.cv?.experiences?.length > 0
+              ? app.cv.experiences[0].position
+              : null,
+
+          education:
+            app.cv?.education?.length > 0
+              ? app.cv.education[0].major
+              : null
+        }))
       );
+    } catch (error) {
+       console.error('Error loading applications:', error);
 
-      return {
-        ...cand,
-        score,
-        matchedSkills
-      };
-    });
+      if (error.response?.status === 404) {
+        setApplications([]);
+        setErrorMessage('');
+        return;
+      }
 
-    // Sort by score (descending), then filter out those with 0% match if query is specific
-    const finalFiltered = scoredList
-      .filter((c) => c.score > 0)
-      .sort((a, b) => b.score - a.score);
-
-    setFilteredCandidates(finalFiltered);
+      setApplications([]);
+      setErrorMessage(
+        'No se pudieron cargar las postulaciones. Intenta de nuevo.'
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
+
 
   const getScoreColor = (score) => {
     if (score >= 80) return 'success';
@@ -134,120 +150,126 @@ export default function SearchCandidates() {
     return 'info';
   };
 
-  // Open job selection dialog
-  const handleOpenAssignDialog = (cand) => {
-    setSelectedCandidate(cand);
-    if (jobs.length > 0) {
-      setSelectedJobId(jobs[0].id);
-    }
-    setIsDialogOpen(true);
+  const handleViewProfile = (app) => {
+    navigate('/reclutador/postulantes', {
+      state: {
+        selectedJobId,
+        applicationId: app.id,
+        candidateId: app.candidateId || app.candidateId || app.candidate?.id
+      }
+    });
   };
 
-  // Confirm assignment and apply candidate to job
-  const handleConfirmAssignment = () => {
-    if (!selectedCandidate || !selectedJobId) return;
-
-    const success = recruiterService.applyCandidateToJob(selectedCandidate.id, selectedJobId);
-    
-    const activeJob = jobs.find((j) => j.id === selectedJobId);
-
-    if (success) {
-      setAlertSeverity('success');
-      setSuccessMessage(`¡Excelente! El candidato ${selectedCandidate.name} ha sido postulado de forma proactiva a la vacante de "${activeJob?.title}".`);
-    } else {
-      setAlertSeverity('warning');
-      setSuccessMessage(`El candidato ${selectedCandidate.name} ya se encuentra postulado a la vacante de "${activeJob?.title}".`);
-    }
-
-    setIsDialogOpen(false);
-    
-    // Clear message after 4s
-    setTimeout(() => {
-      setSuccessMessage('');
-    }, 4500);
-  };
+  const selectedJob = jobs.find((job) => job.id === selectedJobId);
 
   return (
     <MainCard title="Búsqueda de Candidatos por Skills">
       <Stack spacing={3}>
-        {successMessage && (
-          <Alert severity={alertSeverity} sx={{ borderRadius: 2 }}>
-            {successMessage}
-          </Alert>
-        )}
-
         <Box>
           <Typography variant="h4" color="primary" fontWeight={600} mb={1}>
-            Buscar Talento Tecnológico
+            Buscar candidatos por vacante y skill
           </Typography>
           <Typography variant="body2" color="text.secondary" mb={3}>
-            Ingresa las tecnologías y habilidades técnicas deseadas (separadas por comas) para encontrar candidatos calificados. El sistema calculará el porcentaje de coincidencia en tiempo real.
+            Selecciona una vacante y una skill disponible en el sistema para filtrar los candidatos que ya postularon a esa oferta.
           </Typography>
 
-          {/* Search bar input */}
-          <TextField
-            fullWidth
-            placeholder="Ej: React, Git, JavaScript, CSS"
-            value={searchQuery}
-            onChange={handleSearchChange}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon color="action" />
-                </InputAdornment>
-              ),
-              sx: { borderRadius: 3, bgcolor: 'grey.50' }
-            }}
-          />
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
+            <FormControl fullWidth sx={{ minWidth: 240 }}>
+              <InputLabel id="vacancy-selector-label">Vacante</InputLabel>
+              <Select
+                labelId="vacancy-selector-label"
+                label="Vacante"
+                value={selectedJobId}
+                onChange={(e) => setSelectedJobId(e.target.value)}
+                sx={{ borderRadius: 2 }}
+              >
+                {jobs.map((job) => (
+                  <MenuItem key={job.id} value={job.id}>
+                    {job.title}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-          {/* Quick Hot skills tags */}
-          <Stack direction="row" spacing={1} flexWrap="wrap" gap={1} mt={2} alignItems="center">
-            <Typography variant="caption" color="text.secondary" fontWeight={600}>
-              SUGERENCIAS DE SKILLS EN EL SALVADOR:
-            </Typography>
-            {HOT_SKILLS.map((skill) => (
-              <Chip
-                key={skill}
-                label={skill}
-                size="small"
-                onClick={() => handleQuickSkillClick(skill)}
-                variant="outlined"
-                color="secondary"
-                sx={{ 
-                  cursor: 'pointer',
-                  fontWeight: 500,
-                  transition: 'all 0.2s',
-                  '&:hover': { bgcolor: 'secondary.light' }
-                }}
-              />
-            ))}
+            <Autocomplete
+              value={selectedSkill}
+              onChange={(event, newValue) => setSelectedSkill(newValue)}
+              options={availableSkills}
+              getOptionLabel={(option) => option.name || ''}
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              fullWidth
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Skill"
+                  placeholder="Selecciona una skill"
+                  sx={{ borderRadius: 2 }}
+                />
+              )}
+            />
+
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={handleSearch}
+              disabled={!selectedJobId || !selectedSkill || isLoading}
+              sx={{ height: 56, borderRadius: 2, whiteSpace: 'nowrap' }}
+            >
+              Buscar
+            </Button>
           </Stack>
         </Box>
 
         <Divider />
 
-        {/* Results layout */}
         <Box>
           <Typography variant="h5" fontWeight={600} color="text.primary" mb={2}>
-            Candidatos Encontrados ({filteredCandidates.length})
+            Candidatos Encontrados ({applications.length})
           </Typography>
 
-          {filteredCandidates.length === 0 ? (
+          {!selectedJobId || !selectedSkill ? (
             <Paper variant="outlined" sx={{ p: 6, textAlign: 'center', borderRadius: 3, borderStyle: 'dashed' }}>
               <PersonSearchIcon sx={{ fontSize: 60, color: 'text.secondary', opacity: 0.3, mb: 1 }} />
               <Typography variant="subtitle1" color="text.secondary" fontWeight={600}>
-                Ningún candidato coincide con la búsqueda
+                Selecciona una vacante y una skill para iniciar la búsqueda.
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Prueba buscando otras habilidades como 'React', 'SQL', 'Docker' o limpia el buscador para ver el catálogo global.
+                Las skills se cargan desde el backend y solo puedes elegir opciones válidas para la búsqueda.
+              </Typography>
+            </Paper>
+          ) : isLoading ? (
+            <Paper variant="outlined" sx={{ p: 6, textAlign: 'center', borderRadius: 3 }}>
+              <Typography variant="subtitle1" color="text.secondary" fontWeight={600}>
+                Cargando postulaciones...
+              </Typography>
+            </Paper>
+          ) : errorMessage ? (
+            <Paper variant="outlined" sx={{ p: 6, textAlign: 'center', borderRadius: 3, borderStyle: 'dashed' }}>
+              <Typography variant="subtitle1" color="text.secondary" fontWeight={600}>
+                {errorMessage}
+              </Typography>
+            </Paper>
+          ) : applications.length === 0 ? (
+            <Paper variant="outlined" sx={{ p: 6, textAlign: 'center', borderRadius: 3, borderStyle: 'dashed' }}>
+              <PersonSearchIcon sx={{ fontSize: 60, color: 'text.secondary', opacity: 0.3, mb: 1 }} />
+              <Typography variant="subtitle1" color="text.secondary" fontWeight={600}>
+                No hay candidatos con esa skill para la vacante seleccionada.
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Prueba seleccionando otra skill o revisa las postulaciones de la vacante.
               </Typography>
             </Paper>
           ) : (
             <Grid container spacing={3}>
-              {filteredCandidates.map((cand) => {
-                const hasScore = cand.score !== undefined;
+              {applications.map((app) => {
+                const candidateName = app.candidateName || 'Candidato';
+                const candidateEmail = app.candidateEmail || '';
+                const score = app.score ?? 75;
+                const matchedSkills = app.matchedSkills || [];
+                const candidateSkills = app.skills || [];
+
                 return (
-                  <Grid item xs={12} md={6} key={cand.id}>
+                  <Grid item xs={12} md={6} key={app.id || app.applicationId || `${app.id}-${candidateEmail}`}>
                     <Card sx={{ 
                       border: '1px solid', 
                       borderColor: 'grey.200', 
@@ -263,48 +285,45 @@ export default function SearchCandidates() {
                         <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
                           <Box display="flex" gap={1.5} alignItems="center">
                             <Avatar sx={{ bgcolor: 'secondary.light', color: 'secondary.dark', fontWeight: 700 }}>
-                              {cand.name.split(' ').map(n => n[0]).join('')}
+                              {candidateName.split(' ').map((n) => n[0] || '').join('')}
                             </Avatar>
                             <Box>
                               <Typography variant="h4" fontWeight={600}>
-                                {cand.name}
+                                {candidateName}
                               </Typography>
                               <Typography variant="caption" color="text.secondary">
-                                {cand.email}
+                                {candidateEmail}
                               </Typography>
                             </Box>
                           </Box>
 
-                          {hasScore && (
-                            <Box textAlign="right">
-                              <Chip 
-                                label={`${cand.score}% Match`} 
-                                color={getScoreColor(cand.score)} 
-                                size="medium"
-                                sx={{ fontWeight: 700 }}
-                              />
-                            </Box>
-                          )}
+                          <Box textAlign="right">
+                            <Chip 
+                              label={`${score}% Match`} 
+                              color={getScoreColor(score)} 
+                              size="medium"
+                              sx={{ fontWeight: 700 }}
+                            />
+                          </Box>
                         </Box>
 
                         <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, lineHeight: 1.6 }}>
                           <HistoryIcon sx={{ fontSize: 18 }} />
-                          <span>**Experiencia:** {cand.experience}</span>
+                          <span>Experiencia: {app.experience || 'No disponible'}</span>
                         </Typography>
 
                         <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, lineHeight: 1.6 }}>
                           <SchoolIcon sx={{ fontSize: 18 }} />
-                          <span>**Educación:** {cand.education}</span>
+                          <span>Educación: {app.education || 'No disponible'}</span>
                         </Typography>
 
-                        {/* Matched skills highlight */}
-                        {cand.matchedSkills && cand.matchedSkills.length > 0 && (
+                        {matchedSkills.length > 0 && (
                           <Paper elevation={0} sx={{ p: 1, px: 1.5, bgcolor: 'success.light', border: '1px dashed', borderColor: 'success.200', borderRadius: 2, mb: 2 }}>
                             <Stack direction="row" spacing={1} flexWrap="wrap" gap={0.5} alignItems="center">
                               <WorkspacePremiumIcon color="success" sx={{ fontSize: 18 }} />
                               <Typography variant="caption" color="success.dark" fontWeight={700}>COINCIDENCIAS:</Typography>
-                              {cand.matchedSkills.map((ms) => (
-                                <Chip key={ms} label={ms} size="small" color="success" sx={{ height: 16, fontSize: 10, color: '#fff', fontWeight: 600 }} />
+                              {matchedSkills.map((ms) => (
+                                <Chip key={ms} label={ms} size="small" color="success" sx={{ height: 16, fontSize: 10, color: '#57714e', fontWeight: 600 }} />
                               ))}
                             </Stack>
                           </Paper>
@@ -317,8 +336,8 @@ export default function SearchCandidates() {
                             TODOS LOS SKILLS:
                           </Typography>
                           <Box display="flex" flexWrap="wrap" gap={0.5}>
-                            {cand.skills.map((skill) => {
-                              const isMatched = cand.matchedSkills?.includes(skill);
+                            {candidateSkills.map((skill) => {
+                              const isMatched = matchedSkills.includes(skill);
                               return (
                                 <Chip
                                   key={skill}
@@ -339,17 +358,15 @@ export default function SearchCandidates() {
 
                         <Divider sx={{ my: 1.5 }} />
 
-                        {/* PROACTIVE ASSIGNMENT TRIGGER */}
                         <Box display="flex" justifyContent="flex-end">
                           <Button
                             variant="contained"
                             color="primary"
                             size="small"
-                            startIcon={<AddCircleOutlineIcon />}
-                            onClick={() => handleOpenAssignDialog(cand)}
+                            onClick={() => handleViewProfile(app)}
                             sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
                           >
-                            Asignar a Vacante / Postular
+                            Ver Perfil
                           </Button>
                         </Box>
                       </CardContent>
@@ -361,66 +378,6 @@ export default function SearchCandidates() {
           )}
         </Box>
       </Stack>
-
-      {/* ASSIGNMENT MODAL DIALOG */}
-      <Dialog
-        open={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
-        maxWidth="xs"
-        fullWidth
-        PaperProps={{ sx: { borderRadius: 3 } }}
-      >
-        <DialogTitle sx={{ fontWeight: 700, pb: 1 }}>
-          Asignar Candidato a una Oferta
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" mb={3}>
-            Selecciona a cuál de tus ofertas de empleo activas deseas postular proactivamente a **{selectedCandidate?.name}**.
-          </Typography>
-
-          {jobs.length === 0 ? (
-            <Alert severity="warning" sx={{ borderRadius: 2 }}>
-              No tienes ninguna oferta de empleo activa actualmente. Primero debes crear una en la pantalla de "Publicar Oferta".
-            </Alert>
-          ) : (
-            <FormControl fullWidth sx={{ mt: 1 }}>
-              <InputLabel id="assign-job-select-label">Oferta de Empleo</InputLabel>
-              <Select
-                labelId="assign-job-select-label"
-                label="Oferta de Empleo"
-                value={selectedJobId}
-                onChange={(e) => setSelectedJobId(e.target.value)}
-                sx={{ borderRadius: 2 }}
-              >
-                {jobs.map((job) => (
-                  <MenuItem key={job.id} value={job.id}>
-                    {job.title} ({job.modality})
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ p: 2.5, pt: 1 }}>
-          <Button 
-            variant="outlined" 
-            color="secondary" 
-            onClick={() => setIsDialogOpen(false)}
-            sx={{ borderRadius: 2 }}
-          >
-            Cancelar
-          </Button>
-          <Button 
-            variant="contained" 
-            color="primary" 
-            disabled={jobs.length === 0}
-            onClick={handleConfirmAssignment}
-            sx={{ borderRadius: 2 }}
-          >
-            Confirmar Asignación
-          </Button>
-        </DialogActions>
-      </Dialog>
     </MainCard>
   );
 }
