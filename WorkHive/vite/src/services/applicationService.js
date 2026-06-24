@@ -70,3 +70,31 @@ export const getApplicationsByVacancy = async (vacancyId, params = {}) => {
 
   return response.data;
 };
+
+export const reviewApplication = async (id) => {
+  const response = await api.patch(
+    `${API_URL}/application/${id}/review`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    }
+  );
+
+  return response.data;
+};
+
+export const updateApplicationStatus = async (id, statusData) => {
+  const response = await api.patch(
+    `${API_URL}/application/${id}/status`,
+    statusData,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    }
+  );
+
+  return response.data;
+};

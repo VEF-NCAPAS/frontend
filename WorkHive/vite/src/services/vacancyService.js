@@ -25,3 +25,41 @@ export const getVacancyById = async (id) => {
   });
   return response.data;
 };
+
+export const createVacancy = async (vacancyData) => {
+  const response = await api.post(
+    `${API_URL}/vacancy`,
+    vacancyData,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    }
+  );
+  return response.data;
+};
+
+export const updateVacancy = async (id, vacancyData) => {
+  const response = await api.put(
+    `${API_URL}/vacancy/${id}`,
+    vacancyData,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    }
+  );
+  return response.data;
+};
+
+export const deleteVacancy = async (id) => {
+  const response = await api.delete(
+    `${API_URL}/vacancy/${id}`,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    }
+  );
+  return response.data;
+};
