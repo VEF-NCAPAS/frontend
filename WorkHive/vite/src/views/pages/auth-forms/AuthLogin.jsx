@@ -99,12 +99,12 @@ export default function AuthLogin() {
 
       const data = await response.json();
 
-      if (data.token) {
-        localStorage.setItem('token', data.token);
+      if (data.data && data.data.token) {
+        localStorage.setItem('token', data.data.token);
       }
 
-      if (data.role) {
-        localStorage.setItem('role', data.role);
+      if (data.data && data.data.role) {
+        localStorage.setItem('role', data.data.role);
       }
 
       if (checked) {
@@ -113,7 +113,7 @@ export default function AuthLogin() {
         localStorage.removeItem('rememberSession');
       }
 
-      redirectByRole(data.role);
+      redirectByRole(data.data ? data.data.role : null);
     } catch (err) {
       setError(err.message || 'No se pudo iniciar sesión.');
     } finally {

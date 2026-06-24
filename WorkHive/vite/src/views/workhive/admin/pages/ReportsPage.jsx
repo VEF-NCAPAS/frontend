@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -77,7 +77,6 @@ export default function ReportsPage() {
   } = useConfig();
   const [year, setYear] = useState('2026');
   const [registrationType, setRegistrationType] = useState('companies');
-  const data = reportData[year];
 
   const commonLineOptions = useMemo(
     () => ({
@@ -205,13 +204,86 @@ export default function ReportsPage() {
       }
     }
   };
+  
+  const [dbData, setDbData] = useState({
+    companiesCount: 0,
+    candidatesCount: 0,
+    gender: [0, 0],
+    areas: [0, 0, 0, 0, 0, 0]
+  });
 
-  const offersTotal = total(data.offers);
-  const registrationsTotal = total(data.registrations);
-  const selectedRegistrations = data[registrationType];
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const loadDbStats = async () => {
+      try {
+        setLoading(true);
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+        const headers = {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        };
+
+        // 1. Fetch global gender diversity stats (counts all candidates by gender)
+        let m = 0, f = 0, o = 0;
+        try {
+          const res = await fetch(`${API_URL}/company/diversity`, { headers });
+          if (res.ok) {
+            const data = await res.json();
+            m = data.data.M || 0;
+            f = data.data.F || 0;
+            o = data.data.O || 0;
+          }
+        } catch (e) {
+          console.error("Error fetching diversity stats", e);
+        }
+
+        // 2. Fetch companies list
+        let companiesCount = 0;
+        try {
+          const res = await fetch(`${API_URL}/companies`, { headers });
+          if (res.ok) {
+            const data = await res.json();
+            companiesCount = data.data ? data.data.length : 0;
+          }
+        } catch (e) {
+          console.error("Error fetching companies", e);
+        }
+
+        setDbData({
+          companiesCount,
+          candidatesCount: m + f + o,
+          gender: [m, f],
+          areas: [0, 0, 0, 0, 0, 0]
+        });
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadDbStats();
+  }, []);
+
   const showingCompanies = registrationType === 'companies';
+  const currentMonthIndex = new Date().getMonth();
+  
+  const companyMonthly = Array(12).fill(0);
+  companyMonthly[currentMonthIndex] = dbData.companiesCount;
+
+  const candidateMonthly = Array(12).fill(0);
+  candidateMonthly[currentMonthIndex] = dbData.candidatesCount;
+
+  const selectedRegistrations = showingCompanies ? companyMonthly : candidateMonthly;
+  const registrationsTotal = dbData.candidatesCount + dbData.companiesCount;
   const selectedRegistrationLabel = showingCompanies ? 'Empresas registradas' : 'Candidatos registrados';
-  const selectedRegistrationTotal = total(selectedRegistrations);
+  const selectedRegistrationTotal = showingCompanies ? dbData.companiesCount : dbData.candidatesCount;
+
+  // Since we don't have endpoints for monthly offers
+  const offersTotal = 0;
+  const offersMonthly = Array(12).fill(0);
+  const registrationsMonthly = Array(12).fill(0);
+  registrationsMonthly[currentMonthIndex] = registrationsTotal;
 
   return (
     <>
@@ -229,20 +301,6 @@ export default function ReportsPage() {
               Pasa el mouse sobre las gráficas para consultar las cantidades exactas.
             </Typography>
           </Box>
-          <TextField
-            select
-            label="Año de registro"
-            value={year}
-            onChange={(event) => setYear(event.target.value)}
-            size="small"
-            sx={{ minWidth: 190 }}
-          >
-            {Object.keys(reportData).map((option) => (
-              <MenuItem key={option} value={option}>
-                {option}
-              </MenuItem>
-            ))}
-          </TextField>
         </Stack>
       </MainCard>
 
@@ -255,7 +313,7 @@ export default function ReportsPage() {
             <Chart
               type="line"
               height={330}
-              series={[{ name: 'Ofertas publicadas', data: data.offers }]}
+              series={[{ name: 'Ofertas publicadas', data: offersMonthly }]}
               options={{
                 ...commonLineOptions,
                 colors: [theme.vars.palette.secondary.main],
@@ -273,7 +331,7 @@ export default function ReportsPage() {
             <Chart
               type="line"
               height={330}
-              series={[{ name: 'Personas registradas', data: data.registrations }]}
+              series={[{ name: 'Personas registradas', data: registrationsMonthly }]}
               options={{
                 ...commonLineOptions,
                 colors: [theme.vars.palette.primary.main],
@@ -331,13 +389,13 @@ export default function ReportsPage() {
 
         <Grid size={{ xs: 12, lg: 6 }}>
           <ChartCard title="Candidatos por área" subtitle="Distribución de perfiles profesionales">
-            <Chart type="donut" height={390} series={data.areas} options={areaOptions} />
+            <Chart type="donut" height={390} series={dbData.areas} options={areaOptions} />
           </ChartCard>
         </Grid>
 
         <Grid size={{ xs: 12, lg: 6 }}>
           <ChartCard title="Personas por género" subtitle="Cantidad de usuarios registrados por género">
-            <Chart type="donut" height={390} series={data.gender} options={genderOptions} />
+            <Chart type="donut" height={390} series={dbData.gender} options={genderOptions} />
           </ChartCard>
         </Grid>
       </Grid>

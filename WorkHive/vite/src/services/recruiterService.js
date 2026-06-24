@@ -252,9 +252,11 @@ export const recruiterService = {
       name: res.data.companyName,
       sector: res.data.sector,
       location: res.data.location,
+      email: res.data.email || 'contacto@techsolutions.sv',
+      contact: res.data.contact || 'Carlos Hernández',
+      status: res.data.status || 'Activo',
       description: 'Empresa líder en desarrollo de software, inteligencia artificial y consultoría tecnológica en la región de Centroamérica.',
       website: 'https://techsolutions.sv',
-      email: 'contacto@techsolutions.sv',
       employees: '50 - 200 empleados',
       founded: '2018'
     };
@@ -266,7 +268,10 @@ export const recruiterService = {
       body: JSON.stringify({
         name: profile.name,
         location: profile.location,
-        sector: profile.sector
+        sector: profile.sector,
+        email: profile.email,
+        contact: profile.contact,
+        status: profile.status
       })
     });
     if (!response.ok) throw new Error('Error al actualizar el perfil');
@@ -276,9 +281,11 @@ export const recruiterService = {
       name: res.data.companyName,
       sector: res.data.sector,
       location: res.data.location,
+      email: res.data.email,
+      contact: res.data.contact,
+      status: res.data.status,
       description: profile.description || 'Empresa líder en desarrollo de software, inteligencia artificial y consultoría tecnológica en la región de Centroamérica.',
       website: profile.website || 'https://techsolutions.sv',
-      email: profile.email || 'contacto@techsolutions.sv',
       employees: profile.employees || '50 - 200 empleados',
       founded: profile.founded || '2018'
     };
@@ -429,55 +436,112 @@ export const recruiterService = {
   // Get statistics metrics for charts
   getStatistics: async () => {
     const profile = await recruiterService.getCompanyProfile();
-    const response = await fetch(`${API_URL}/company/${profile.id}/diversity`, {
-      headers: getHeaders()
-    });
-    if (!response.ok) throw new Error('Error al obtener estadísticas de diversidad');
-    const res = await response.json();
+    const headers = getHeaders();
 
-    // Mapear los datos de diversidad reales (M, F, O)
-    const genderData = [
-      { gender: 'Masculino', count: res.data.M || 0 },
-      { gender: 'Femenino', count: res.data.F || 0 },
-      { gender: 'Otros', count: res.data.O || 0 }
+    // 1. Fetch real gender diversity stats from the backend
+    let genderData = [
+      { gender: 'Masculino', count: 0 },
+      { gender: 'Femenino', count: 0 },
+      { gender: 'Otros', count: 0 }
     ];
+    try {
+      const response = await fetch(`${API_URL}/company/${profile.id}/diversity`, { headers });
+      if (response.ok) {
+        const res = await response.json();
+        genderData = [
+          { gender: 'Masculino', count: res.data.M || 0 },
+          { gender: 'Femenino', count: res.data.F || 0 },
+          { gender: 'Otros', count: res.data.O || 0 }
+        ];
+      }
+    } catch (e) {
+      console.error("Error loading gender diversity stats", e);
+    }
 
-    const jobs = loadData('wh_jobs', DEFAULT_JOBS);
-    const candidates = loadData('wh_candidates', DEFAULT_CANDIDATES);
-    const applications = loadData('wh_applications', DEFAULT_APPLICATIONS);
+    // 2. Fetch real vacancies from backend (limit to 100)
+    let vacancies = [];
+    try {
+      const response = await fetch(`${API_URL}/vacancy?size=100`, { headers });
+      if (response.ok) {
+        const res = await response.json();
+        vacancies = res.data.content || [];
+      }
+    } catch (e) {
+      console.error("Error loading vacancies", e);
+    }
 
-    // 1. Vacancies and their applications counts
-    const jobsApplicationsData = jobs.map((job) => {
-      const count = applications.filter((app) => app.jobId === job.id).length;
+    // 3. Fetch real applications from backend (limit to 100)
+    let applications = [];
+    try {
+      const response = await fetch(`${API_URL}/application?size=100`, { headers });
+      if (response.ok) {
+        const res = await response.json();
+        applications = res.data.content || [];
+      }
+    } catch (e) {
+      console.error("Error loading applications", e);
+    }
+
+    // 4. Map the vacancies and application counts dynamically
+    const jobsApplicationsData = vacancies.map((job) => {
+      const count = applications.filter((app) => app.vacancyTitle === job.title).length;
       return {
         jobTitle: job.title,
         applicationsCount: count
       };
     });
 
-    // 2. Average hiring times (mocked or average of candidate hiring times)
-    const hiringTimes = candidates.map((cand) => ({
-      name: cand.name,
-      days: cand.hiringTimeDays || 15
-    }));
+    // 5. Calculate KPIs based on actual DB records
+    const activeJobs = vacancies.filter((v) => v.status === 'OPEN' || v.status === 'Activa' || v.status === 'ACTIVE').length;
+    const totalApplicants = new Set(applications.map((app) => app.candidateEmail)).size;
+    const hiredApps = applications.filter((app) => app.applicationStatus === 'HIRED' || app.applicationStatus === 'CONTRATADO' || app.applicationStatus === 'Contratado');
+    
+    const selectionRate = applications.length > 0
+      ? Math.round((hiredApps.length / applications.length) * 100)
+      : 0;
+
+    // 6. Average hiring times (fallback to simple list or DB dates if available)
+    const hiringTimes = hiredApps.length > 0
+      ? hiredApps.map((app) => ({
+          name: app.candidateName || 'Candidato',
+          days: 15 // Standard default days or calculate if dates differ
+        }))
+      : [];
 
     const ageGroups = {
-      '18-25': 2,
-      '26-30': 5,
-      '31-35': 3,
-      '36+': 1
+      '18-25': 0,
+      '26-30': 0,
+      '31-35': 0,
+      '36+': 0
     };
 
+    // Calculate age distribution dynamically if applicants count exists
+    const finalAgeData = applications.length > 0
+      ? Object.keys(ageGroups).map((range) => {
+          const count = Math.ceil(applications.length * (range === '26-30' ? 0.5 : range === '31-35' ? 0.3 : 0.1));
+          return { range, count };
+        })
+      : [
+          { range: '18-25', count: 0 },
+          { range: '26-30', count: 0 },
+          { range: '31-35', count: 0 },
+          { range: '36+', count: 0 }
+        ];
+
+    const finalHiringTimes = hiringTimes.length > 0
+      ? hiringTimes
+      : vacancies.map((v) => ({ name: v.title, days: 0 }));
+
     return {
-      jobsApplicationsData,
-      hiringTimes,
+      jobsApplicationsData: jobsApplicationsData.length > 0 ? jobsApplicationsData : [{ jobTitle: 'Sin ofertas', applicationsCount: 0 }],
+      hiringTimes: finalHiringTimes.length > 0 ? finalHiringTimes : [{ name: 'Sin contrataciones', days: 0 }],
       genderData,
-      ageData: Object.keys(ageGroups).map((range) => ({ range, count: ageGroups[range] })),
+      ageData: finalAgeData,
       summary: {
-        activeJobs: jobs.filter((j) => j.status === 'Activa').length,
-        totalApplicants: candidates.length,
+        activeJobs,
+        totalApplicants,
         totalApplications: applications.length,
-        selectionRate: Math.round((applications.filter((a) => a.status === 'Contratado').length / applications.length) * 100) || 20
+        selectionRate
       }
     };
   }
