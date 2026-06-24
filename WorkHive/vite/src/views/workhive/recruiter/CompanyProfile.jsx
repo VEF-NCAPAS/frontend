@@ -58,9 +58,16 @@ export default function CompanyProfile() {
   const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
-    const data = recruiterService.getCompanyProfile();
-    setProfile(data);
-    setFormData(data);
+    const loadProfile = async () => {
+      try {
+        const data = await recruiterService.getCompanyProfile();
+        setProfile(data);
+        setFormData(data);
+      } catch (err) {
+        console.error("Error loading profile", err);
+      }
+    };
+    loadProfile();
   }, []);
 
   const handleInputChange = (e) => {
@@ -71,12 +78,16 @@ export default function CompanyProfile() {
     }));
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    const updated = recruiterService.updateCompanyProfile(formData);
-    setProfile(updated);
-    setIsEditing(false);
-    setSuccessMessage('¡Perfil de la empresa registrado y actualizado correctamente!');
+    try {
+      const updated = await recruiterService.updateCompanyProfile(formData);
+      setProfile(updated);
+      setIsEditing(false);
+      setSuccessMessage('¡Perfil de la empresa registrado y actualizado correctamente!');
+    } catch (err) {
+      console.error("Error saving profile", err);
+    }
 
     // Clear message after 4s
     setTimeout(() => {
@@ -128,7 +139,7 @@ export default function CompanyProfile() {
                   <Chip
                     label={profile.sector}
                     sx={{
-                      bgcolor: 'rgba(255, 255, 255, 0.25)',
+                      bgcolor: 'rgba(255,255,255,0.25)',
                       color: '#fff',
                       fontWeight: 500,
                       backdropFilter: 'blur(4px)'
