@@ -21,18 +21,14 @@ export const users = [
 
 export const companyFields = [
   { name: 'name', label: 'Nombre de la empresa' },
-  { name: 'sector', label: 'Sector' },
-  { name: 'contact', label: 'Responsable' },
-  { name: 'email', label: 'Correo corporativo', type: 'email' },
-  { name: 'status', label: 'Estado', options: ['Activo', 'Pendiente', 'Suspendido'] }
+  { name: 'location', label: 'Ubicación' },
+  { name: 'sector', label: 'Sector' }
 ];
 
 export const companyColumns = [
   { name: 'name', label: 'Empresa' },
-  { name: 'sector', label: 'Sector' },
-  { name: 'contact', label: 'Responsable' },
-  { name: 'email', label: 'Correo' },
-  { name: 'status', label: 'Estado' }
+  { name: 'location', label: 'Ubicación' },
+  { name: 'sector', label: 'Sector' }
 ];
 
 export const companies = [

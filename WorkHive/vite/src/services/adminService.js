@@ -17,10 +17,7 @@ export const adminService = {
       id: c.id,
       name: c.companyName,
       location: c.location || 'No especificada',
-      sector: c.sector || '',
-      contact: c.contact || '',
-      email: c.email || '',
-      status: c.status || 'Activo'
+      sector: c.sector || ''
     }));
   },
 
@@ -32,10 +29,7 @@ export const adminService = {
       body: JSON.stringify({
         name: companyData.name,
         location: companyData.location || 'No especificada',
-        sector: companyData.sector || '',
-        contact: companyData.contact || '',
-        email: companyData.email || '',
-        status: companyData.status || 'Activo'
+        sector: companyData.sector || ''
       })
     });
     if (!response.ok) {
@@ -47,10 +41,7 @@ export const adminService = {
       id: res.data.id,
       name: res.data.companyName,
       location: res.data.location,
-      sector: res.data.sector,
-      contact: res.data.contact,
-      email: res.data.email,
-      status: res.data.status
+      sector: res.data.sector
     };
   },
 
@@ -62,10 +53,7 @@ export const adminService = {
       body: JSON.stringify({
         name: companyData.name,
         location: companyData.location || 'No especificada',
-        sector: companyData.sector || '',
-        contact: companyData.contact || '',
-        email: companyData.email || '',
-        status: companyData.status || 'Activo'
+        sector: companyData.sector || ''
       })
     });
     if (!response.ok) {
@@ -77,10 +65,7 @@ export const adminService = {
       id: res.data.id,
       name: res.data.companyName,
       location: res.data.location,
-      sector: res.data.sector,
-      contact: res.data.contact,
-      email: res.data.email,
-      status: res.data.status
+      sector: res.data.sector
     };
   },
 
@@ -93,56 +78,6 @@ export const adminService = {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || 'Error al eliminar la empresa en el servidor');
-    }
-    return true;
-  },
-
-  // Candidates CRUD
-  getCandidates: async () => {
-    const response = await fetch(`${API_URL}/admin/candidates`, {
-      headers: getHeaders()
-    });
-    if (!response.ok) throw new Error('Error al obtener los candidatos del servidor');
-    const res = await response.json();
-    return res.data; // Array of Candidates
-  },
-
-  createCandidate: async (candidateData) => {
-    const response = await fetch(`${API_URL}/admin/candidates`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify(candidateData)
-    });
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'Error al crear el candidato en el servidor');
-    }
-    const res = await response.json();
-    return res.data;
-  },
-
-  updateCandidate: async (id, candidateData) => {
-    const response = await fetch(`${API_URL}/admin/candidates/${id}`, {
-      method: 'PUT',
-      headers: getHeaders(),
-      body: JSON.stringify(candidateData)
-    });
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'Error al actualizar el candidato en el servidor');
-    }
-    const res = await response.json();
-    return res.data;
-  },
-
-  deleteCandidate: async (id) => {
-    const response = await fetch(`${API_URL}/admin/candidates/${id}`, {
-      method: 'DELETE',
-      headers: getHeaders()
-    });
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'Error al eliminar el candidato en el servidor');
     }
     return true;
   }

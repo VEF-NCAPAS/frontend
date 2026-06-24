@@ -252,9 +252,9 @@ export const recruiterService = {
       name: res.data.companyName,
       sector: res.data.sector,
       location: res.data.location,
-      email: res.data.email || 'contacto@techsolutions.sv',
-      contact: res.data.contact || 'Carlos Hernández',
-      status: res.data.status || 'Activo',
+      email: 'contacto@techsolutions.sv',
+      contact: 'Carlos Hernández',
+      status: 'Activo',
       description: 'Empresa líder en desarrollo de software, inteligencia artificial y consultoría tecnológica en la región de Centroamérica.',
       website: 'https://techsolutions.sv',
       employees: '50 - 200 empleados',
@@ -268,10 +268,7 @@ export const recruiterService = {
       body: JSON.stringify({
         name: profile.name,
         location: profile.location,
-        sector: profile.sector,
-        email: profile.email,
-        contact: profile.contact,
-        status: profile.status
+        sector: profile.sector
       })
     });
     if (!response.ok) throw new Error('Error al actualizar el perfil');
@@ -281,9 +278,9 @@ export const recruiterService = {
       name: res.data.companyName,
       sector: res.data.sector,
       location: res.data.location,
-      email: res.data.email,
-      contact: res.data.contact,
-      status: res.data.status,
+      email: profile.email || 'contacto@techsolutions.sv',
+      contact: profile.contact || 'Carlos Hernández',
+      status: profile.status || 'Activo',
       description: profile.description || 'Empresa líder en desarrollo de software, inteligencia artificial y consultoría tecnológica en la región de Centroamérica.',
       website: profile.website || 'https://techsolutions.sv',
       employees: profile.employees || '50 - 200 empleados',

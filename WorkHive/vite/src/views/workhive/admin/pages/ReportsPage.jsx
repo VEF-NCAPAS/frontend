@@ -227,7 +227,7 @@ export default function ReportsPage() {
         // 1. Fetch global gender diversity stats (counts all candidates by gender)
         let m = 0, f = 0, o = 0;
         try {
-          const res = await fetch(`${API_URL}/company/diversity`, { headers });
+          const res = await fetch(`${API_URL}/user/diversity`, { headers });
           if (res.ok) {
             const data = await res.json();
             m = data.data.M || 0;
