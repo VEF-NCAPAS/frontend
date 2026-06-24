@@ -5,7 +5,6 @@ import Box from '@mui/material/Box';
 
 // project imports
 import LogoSection from '../LogoSection';
-import SearchSection from './SearchSection';
 import ProfileSection from './ProfileSection';
 
 import { handlerDrawerOpen, useGetMenuMaster } from 'api/menu';
@@ -57,8 +56,6 @@ export default function Header({ logoClickable = true, showSearch = true }) {
         </Avatar>
       </Box>
 
-      {/* header search */}
-      {showSearch && <SearchSection />}
       <Box sx={{ flexGrow: 1 }} />
       <Box sx={{ flexGrow: 1 }} />
 

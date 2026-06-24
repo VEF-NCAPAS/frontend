@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import Avatar from '@mui/material/Avatar';
@@ -13,20 +12,46 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 import MainCard from 'ui-component/cards/MainCard';
 
 import PageHeading from '../components/PageHeading';
-import { buttonSX, jobs, pastelBackButtonSX } from '../data/candidateData';
+import { buttonSX, pastelBackButtonSX } from '../data/candidateData';
+import { useEffect, useState } from 'react';
+import { getVacancyById } from 'services/vacancyService';
+import TextField from '@mui/material/TextField';
+import { createApplication } from 'services/applicationService';
 
-import { IconArrowLeft, IconBriefcase, IconBuilding, IconCash, IconCheck, IconClock, IconMapPin } from '@tabler/icons-react';
+import { IconArrowLeft, IconBriefcase, IconBuilding, IconCash, IconCheck } from '@tabler/icons-react';
 
 const jobMeta = [
-  { field: 'location', icon: IconMapPin, background: '#dff3ff', color: '#2475a6' },
-  { field: 'type', icon: IconBriefcase, background: '#eee6ff', color: '#6842ad' },
-  { field: 'posted', icon: IconClock, background: '#fff0cf', color: '#a66b13' },
-  { field: 'salary', icon: IconCash, background: '#dcf6e8', color: '#25835a' }
+   {
+    field: 'modality',
+    icon: IconBriefcase,
+    background: '#eee6ff',
+    color: '#6842ad'
+  },
+  {
+    field: 'salary',
+    icon: IconCash,
+    background: '#dcf6e8',
+    color: '#25835a'
+  }
 ];
+
+const modalityLabels = {
+  REMOTE: 'Remoto',
+  HYBRID: 'Híbrido',
+  ONSITE: 'Presencial'
+};
+
+const statusLabels = {
+  OPEN: 'Abierta',
+  PAUSED: 'Pausada',
+  CLOSE: 'Cerrada'
+};
+
 
 function DetailList({ items }) {
   return (
@@ -42,10 +67,83 @@ function DetailList({ items }) {
 
 export default function CandidateJobDetailPage() {
   const { jobId } = useParams();
-  const job = jobs.find((item) => item.id === jobId);
+  const [job, setJob] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [coverLetter, setCoverLetter] = useState('');
+  const [applying, setApplying] = useState(false);
+  const handleApply = async () => {
+    try {
+      
+      if (!coverLetter.trim()) {
+        setSnackbar({
+          open: true,
+          message: 'Debes ingresar una carta de presentación',
+          severity: 'warning'
+        });
+        return;
+      }
+      setApplying(true);
+
+      await createApplication({
+        vacancyId: job.id,
+        coverLetter
+      });
+
+      setApplicationSent(true);
+      setConfirmationOpen(false);
+      setCoverLetter('');
+      setSnackbar({
+        open: true,
+        message: 'Aplicación enviada correctamente',
+        severity: 'success'
+      });
+      
+    } catch (error) {
+      console.error(error);
+      setSnackbar({
+        open: true,
+        message:
+          error.response?.data?.message ||
+          'No se pudo enviar la aplicación',
+        severity: 'error'
+      });
+    } finally {
+      setApplying(false);
+    }
+  };
+
+
+  useEffect(() => {
+    const loadVacancy = async () => {
+      try {
+        const response = await getVacancyById(jobId);
+
+        setJob(response.data);
+      } catch (error) {
+        console.error(error);
+        setJob(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadVacancy();
+  }, [jobId]);
   const [applicationSent, setApplicationSent] = useState(false);
   const [confirmationOpen, setConfirmationOpen] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
 
+  if (loading) {
+    return (
+      <Typography>
+        Cargando vacante...
+      </Typography>
+    );
+  }
   if (!job) {
     return (
       <PageHeading
@@ -82,20 +180,19 @@ export default function CandidateJobDetailPage() {
           <Box sx={{ flexGrow: 1 }}>
             <Typography variant="h2">{job.title}</Typography>
             <Typography variant="h4" color="text.secondary" sx={{ mt: 0.5 }}>
-              {job.company}
+              {job.companyName}
             </Typography>
           </Box>
           <Button
             variant="contained"
             color="secondary"
             sx={buttonSX}
-            onClick={() => {
-              setApplicationSent(true);
-              setConfirmationOpen(true);
-            }}
+            onClick={() => setConfirmationOpen(true)}
             disabled={applicationSent}
           >
-            {applicationSent ? 'Postulación enviada' : 'Aplicar a esta oferta'}
+            {applicationSent
+              ? 'Postulación enviada'
+              : 'Aplicar a esta oferta'}
           </Button>
         </Stack>
 
@@ -106,7 +203,11 @@ export default function CandidateJobDetailPage() {
                 <Icon size={17} />
               </Avatar>
               <Typography variant="body2" sx={{ color, fontWeight: 600 }}>
-                {job[field]}
+                {field === 'salary'
+                  ? `$${job.salary}`
+                  : field === 'modality'
+                    ? modalityLabels[job.modality] || job.modality
+                    : job[field]}
               </Typography>
             </Stack>
           ))}
@@ -119,14 +220,8 @@ export default function CandidateJobDetailPage() {
             <MainCard title="Descripción del empleo" border>
               <Typography variant="body2">{job.description}</Typography>
             </MainCard>
-            <MainCard title="Responsabilidades" border>
-              <DetailList items={job.responsibilities} />
-            </MainCard>
             <MainCard title="Requisitos para aplicar" border>
               <DetailList items={job.requirements} />
-            </MainCard>
-            <MainCard title="Beneficios" border>
-              <DetailList items={job.benefits} />
             </MainCard>
           </Stack>
         </Grid>
@@ -138,16 +233,25 @@ export default function CandidateJobDetailPage() {
                 <Typography variant="caption" color="text.secondary">
                   Modalidad
                 </Typography>
-                <Typography variant="subtitle1">{job.modality}</Typography>
+                <Typography variant="subtitle1">{modalityLabels[job.modality] || job.modality}</Typography>
               </Box>
               <Divider />
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  Estado
+                </Typography>
+
+                <Typography variant="subtitle1">
+                  {statusLabels[job.status] || job.status}
+                </Typography>
+              </Box>
               <Box>
                 <Typography variant="caption" color="text.secondary">
                   Habilidades buscadas
                 </Typography>
                 <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 1 }}>
-                  {job.tags.map((tag) => (
-                    <Chip key={tag} label={tag} size="small" color="secondary" variant="outlined" />
+                  {job.requirements?.map((requirement) => (
+                    <Chip key={requirement} label={requirement} size="small" color="secondary" variant="outlined" />
                   ))}
                 </Stack>
               </Box>
@@ -156,24 +260,64 @@ export default function CandidateJobDetailPage() {
         </Grid>
       </Grid>
 
-      <Dialog open={confirmationOpen} onClose={() => setConfirmationOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ textAlign: 'center', pt: 4 }}>
-          <Avatar sx={{ bgcolor: '#dcf6e8', color: '#25835a', height: 58, mx: 'auto', mb: 2, width: 58 }}>
-            <IconCheck size={30} />
-          </Avatar>
-          Postulación enviada
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center' }}>
-            Tu postulación para {job.title} fue enviada correctamente a {job.company}.
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
-          <Button variant="contained" color="secondary" sx={buttonSX} onClick={() => setConfirmationOpen(false)}>
-            Entendido
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <Dialog open={confirmationOpen} onClose={() => setConfirmationOpen(false)} maxWidth="md" fullWidth>
+          <DialogTitle>Aplicar a la vacante</DialogTitle>
+
+          <DialogContent>
+            <TextField
+              fullWidth
+              multiline
+              rows={5}
+              label="Carta de presentación"
+              value={coverLetter}
+              onChange={(e) => setCoverLetter(e.target.value)}
+              sx={{ mt: 1 }}
+            />
+          </DialogContent>
+
+          <DialogActions>
+            <Button onClick={() => setConfirmationOpen(false)}>
+              Cancelar
+            </Button>
+
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={handleApply}
+              disabled={applying}
+            >
+              {applying ? 'Enviando...' : 'Enviar aplicación'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={4000}
+           anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right'
+            }}
+          onClose={() =>
+            setSnackbar((prev) => ({
+              ...prev,
+              open: false
+            }))
+          }
+        >
+          <Alert
+            severity={snackbar.severity}
+            variant="filled"
+            onClose={() =>
+              setSnackbar((prev) => ({
+                ...prev,
+                open: false
+              }))
+            }
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
     </>
   );
 }

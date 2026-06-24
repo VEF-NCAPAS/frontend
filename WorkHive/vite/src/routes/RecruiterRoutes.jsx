@@ -1,5 +1,5 @@
 import MainLayout from 'layout/MainLayout';
-
+import ProtectedRoute from './ProtectedRoute';
 import {
   RecruiterApplicantsPage,
   RecruiterCompanyProfilePage,
@@ -12,7 +12,11 @@ import {
 
 const RecruiterRoutes = {
   path: '/reclutador',
-  element: <MainLayout />,
+  element: (
+    <ProtectedRoute allowedRoles={['RECRUITER']}>
+      <MainLayout />
+    </ProtectedRoute>
+  ),
   children: [
     { index: true, element: <RecruiterDashboardPage /> },
     { path: 'publicar-oferta', element: <RecruiterPublishJobPage /> },

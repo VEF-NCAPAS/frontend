@@ -11,10 +11,15 @@ import {
   CandidateProfilePage,
   CandidateResumePage
 } from 'views/workhive/candidate';
+import ProtectedRoute from './ProtectedRoute';
 
 const CandidateRoutes = {
   path: '/candidato',
-  element: <MainLayout logoClickable={false} showSearch={false} />,
+  element: (
+    <ProtectedRoute allowedRoles={['CANDIDATE']} logoClickable={false} showSearch={false}>
+      <MainLayout />
+    </ProtectedRoute>
+  ),
   children: [
     { index: true, element: <CandidateJobsPage /> },
     { path: 'buscar-empleos', element: <CandidateJobsPage /> },

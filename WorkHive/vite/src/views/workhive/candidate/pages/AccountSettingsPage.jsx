@@ -13,13 +13,16 @@ import MainCard from 'ui-component/cards/MainCard';
 import PageHeading from '../components/PageHeading';
 import { buttonSX } from '../data/candidateData';
 
-import { IconKey, IconLogout, IconShieldCheck } from '@tabler/icons-react';
+import { IconKey, IconLogout } from '@tabler/icons-react';
+import { logout } from 'services/authService';
 
 export default function CandidateAccountSettingsPage() {
   const navigate = useNavigate();
-  const { state: settings, setState: setSettings } = useLocalStorage('candidate-account-settings', {
-    hideProfile: false
-  });
+  const { state: settings, setState: setSettings } = useLocalStorage('candidate-account-settings', {});
+
+  const handleLogout = () => {
+    logout({ navigate, redirectTo: '/pages/login' });
+  };
 
   const accountOptions = useMemo(
     () => [
@@ -39,36 +42,17 @@ export default function CandidateAccountSettingsPage() {
         )
       },
       {
-        title: 'Ocultar mi perfil',
-        description: 'Activa el modo privado para hacer tu perfil invisible temporalmente.',
-        icon: IconShieldCheck,
-        action: (
-          <Switch
-            checked={settings.hideProfile}
-            onChange={() => setSettings((prev) => ({ ...prev, hideProfile: !prev.hideProfile }))}
-            sx={{
-              '& .MuiSwitch-switchBase.Mui-checked': {
-                color: 'success.main'
-              },
-              '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                backgroundColor: 'success.main'
-              }
-            }}
-          />
-        )
-      },
-      {
         title: 'Cerrar sesión',
         description: 'Finaliza tu sesión actual en WorkHive.',
         icon: IconLogout,
         action: (
-          <Button variant="contained" color="secondary" sx={buttonSX} onClick={() => navigate('/')}>
+          <Button variant="contained" color="secondary" sx={buttonSX} onClick={handleLogout}>
             Cerrar sesión
           </Button>
         )
       }
     ],
-    [navigate, settings.hideProfile, setSettings]
+    [navigate]
   );
 
   return (

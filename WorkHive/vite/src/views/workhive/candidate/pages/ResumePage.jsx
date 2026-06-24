@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 
 import Alert from '@mui/material/Alert';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -19,105 +19,11 @@ import ActionResultDialog from '../components/ActionResultDialog';
 import PageHeading from '../components/PageHeading';
 import { buttonSX } from '../data/candidateData';
 
-import { IconBriefcase, IconDeviceFloppy, IconDownload, IconPlus, IconSchool, IconTrash, IconX } from '@tabler/icons-react';
+import { createCv, getCvByCandidate, updateCv } from 'services/cvService';
+import { getAllSkills } from 'services/skillService';
+import { getAllLanguages } from 'services/languageService';
 
-const skillOptions = {
-  'Tecnología y desarrollo': [
-    'JavaScript',
-    'React',
-    'TypeScript',
-    'Node.js',
-    'Python',
-    'SQL',
-    'Git',
-    'Desarrollo web',
-    'Soporte técnico',
-    'HTML',
-    'CSS',
-    'Next.js',
-    'Vue.js',
-    'Angular',
-    'Java',
-    'C#',
-    'PHP',
-    'Docker',
-    'AWS',
-    'Bases de datos',
-    'Pruebas de software',
-    'Metodologías ágiles'
-  ],
-  'Diseño y creatividad': [
-    'Figma',
-    'Diseño UX/UI',
-    'Adobe Photoshop',
-    'Adobe Illustrator',
-    'Diseño gráfico',
-    'Investigación UX',
-    'Branding',
-    'Canva',
-    'Diseño editorial',
-    'Fotografía',
-    'Edición de video',
-    'Prototipado',
-    'Ilustración digital'
-  ],
-  'Administración y finanzas': [
-    'Excel',
-    'Contabilidad',
-    'Análisis financiero',
-    'Facturación',
-    'Presupuestos',
-    'SAP',
-    'Auditoría',
-    'Power BI',
-    'Nómina',
-    'Gestión administrativa',
-    'Compras',
-    'Inventarios',
-    'Atención al cliente'
-  ],
-  'Marketing y ventas': [
-    'Ventas',
-    'Marketing digital',
-    'SEO',
-    'Redes sociales',
-    'Google Analytics',
-    'Negociación',
-    'Servicio al cliente',
-    'Publicidad',
-    'Email marketing',
-    'Creación de contenido',
-    'Copywriting',
-    'CRM',
-    'Investigación de mercado'
-  ],
-  'Ingeniería y operaciones': [
-    'Gestión de proyectos',
-    'AutoCAD',
-    'Control de calidad',
-    'Logística',
-    'Procesos',
-    'Seguridad industrial',
-    'Lean Manufacturing',
-    'Mantenimiento',
-    'Planificación',
-    'Gestión de proveedores',
-    'Mejora continua'
-  ],
-  'Educación y salud': [
-    'Docencia',
-    'Planificación educativa',
-    'Atención al paciente',
-    'Primeros auxilios',
-    'Investigación',
-    'Trabajo en equipo',
-    'Comunicación asertiva',
-    'Liderazgo',
-    'Resolución de problemas',
-    'Organización',
-    'Gestión del tiempo'
-  ]
-};
+import { IconBriefcase, IconDeviceFloppy, IconDownload, IconPlus, IconSchool, IconTrash, IconX } from '@tabler/icons-react';
 
 const actionButtonSX = {
   ...buttonSX,
@@ -142,22 +48,15 @@ const institutionOptions = [
   'Instituto Técnico de Exalumnos Salesianos ITEXSAL'
 ];
 
-const languageOptions = ['Español', 'Inglés', 'Francés', 'Portugués', 'Italiano', 'Alemán', 'Mandarín', 'Japonés', 'Coreano'];
-const languageLevelOptions = [
-  'A1 - Básico',
-  'A2 - Elemental',
-  'B1 - Intermedio',
-  'B2 - Intermedio alto',
-  'C1 - Avanzado',
-  'C2 - Experto',
-  'Nativo'
-];
+const languageLevelOptions = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'NATIVE'];
 const currentYear = new Date().getFullYear();
 const educationYearOptions = Array.from({ length: currentYear - 1949 }, (_, index) => String(currentYear - index));
 
 const emptyExperience = { position: '', company: '', startDate: '', endDate: '', description: '' };
-const emptyEducation = { institution: '', degree: '', startDate: '', endDate: '' };
-const emptyLanguage = { language: '', level: '' };
+const emptyEducation = { institution: '', major: '' };
+const emptyLanguage = { id: '', level: '' };
+
+const formatLanguageLevel = (level) => (level === 'NATIVE' ? 'Nativo' : level);
 
 const escapeHtml = (value = '') =>
   String(value)
@@ -168,18 +67,16 @@ const escapeHtml = (value = '') =>
     .replaceAll("'", '&#039;');
 
 const defaultResume = {
-  firstName: 'Ana',
-  lastName: 'Martínez',
+  name: '',
   email: '',
-  headline: 'Desarrolladora Frontend',
+  headline: '',
   summary: '',
-  country: 'El Salvador',
-  city: 'San Salvador, San Salvador',
-  careerArea: 'Tecnología y desarrollo',
-  skills: ['JavaScript', 'React'],
+  location: '',
+  city: '',
+  skills: [],
   experiences: [{ ...emptyExperience }],
   education: [{ ...emptyEducation }],
-  languages: [{ language: 'Español', level: 'Nativo' }]
+  languages: [{ ...emptyLanguage }]
 };
 
 const normalizeResume = (resume) => ({
@@ -196,9 +93,106 @@ export default function CandidateResumePage() {
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState(null);
   const [resultDialog, setResultDialog] = useState(null);
+  const [availableSkills, setAvailableSkills] = useState([]);
+  const [availableLanguages, setAvailableLanguages] = useState([]);
+  const [cvId, setCvId] = useState(null);
+  const [hasCv, setHasCv] = useState(false);
+  const [editMode, setEditMode] = useState(true);
+  const [originalResume, setOriginalResume] = useState(defaultResume);
+  const userName = localStorage.getItem('name');
+  const userEmail = localStorage.getItem('email');
 
-  const suggestedSkills = useMemo(() => skillOptions[resume.careerArea] || [], [resume.careerArea]);
-  const fullName = [resume.firstName, resume.lastName].filter(Boolean).join(' ');
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const languagesResponse = await getAllLanguages();
+        const languagePayload = languagesResponse?.data ?? languagesResponse;
+        const languages = Array.isArray(languagePayload)
+          ? languagePayload
+          : Array.isArray(languagePayload?.data)
+          ? languagePayload.data
+          : [];
+        setAvailableLanguages(languages);
+
+        const skillsResponse = await getAllSkills();
+        const skillPayload = skillsResponse?.data ?? skillsResponse;
+        const skills = Array.isArray(skillPayload)
+          ? skillPayload
+          : Array.isArray(skillPayload?.data)
+          ? skillPayload.data
+          : [];
+        setAvailableSkills(skills);
+
+        const cvResponse = await getCvByCandidate();
+        const cv = cvResponse?.data ?? cvResponse;
+        const existingCv = Boolean(
+          cv &&
+            (cv.id || cv.name || cv.experiences?.length > 0 || cv.education?.length > 0 || cv.skills?.length > 0 || cv.languages?.length > 0)
+        );
+        setCvId(cv?.id ?? null);
+        setHasCv(existingCv);
+        setEditMode(!existingCv);
+
+        const loadedResume = {
+          name: cv.name || '',
+          email: cv.email || '',
+          headline: '',
+          summary: cv.professionalSummary || cv.summary || '',
+          location: cv.location || cv.country || 'El Salvador',
+          city: cv.city || 'San Salvador',
+
+          experiences:
+            cv.experiences?.length > 0
+              ? cv.experiences.map((exp) => ({
+                company: exp.company || '',
+                position: exp.position || '',
+                description: exp.description || '',
+                startDate: exp.hireDate || '',
+                endDate: exp.endDate || ''
+              }))
+              : [{ ...emptyExperience }],
+
+          education:
+            cv.education?.length > 0
+              ? cv.education.map((edu) => ({
+                institution: edu.institution || '',
+                major: edu.major || ''
+              }))
+              : [{ ...emptyEducation }],
+
+          languages:
+            cv.languages?.length > 0
+              ? cv.languages.map((item) => ({
+                id: item?.id,
+                level: item?.level || '',
+                name: item?.name || ''
+              }))
+              : [{ ...emptyLanguage }],
+
+          skills:
+            cv.skills
+              ?.map((skillName) =>
+                skills.find(
+                  (skill) =>
+                    String(skill.name).trim().toLowerCase() ===
+                    String(skillName).trim().toLowerCase()
+                )
+              )
+              .filter(Boolean) || []
+        };
+
+        setResume(loadedResume);
+        setOriginalResume(loadedResume);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  const name = [resume.name].filter(Boolean).join(' ');
+  const disableForm = hasCv && !editMode;
 
   const handleFieldChange = (field) => (event) => {
     setResume((previous) => ({ ...previous, [field]: event.target.value }));
@@ -206,15 +200,17 @@ export default function CandidateResumePage() {
     setMessage(null);
   };
 
-  const handleCareerAreaChange = (event) => {
-    const careerArea = event.target.value;
-    const allowedSkills = skillOptions[careerArea];
-
+  const handleLanguageSelectionChange = (index, languageId) => {
+    const language = availableLanguages.find((item) => String(item.id) === String(languageId));
     setResume((previous) => ({
       ...previous,
-      careerArea,
-      skills: previous.skills.filter((skill) => allowedSkills.includes(skill))
+      languages: previous.languages.map((item, itemIndex) =>
+        itemIndex === index
+          ? { ...item, id: languageId, name: language?.name || '' }
+          : item
+      )
     }));
+    setErrors((previous) => ({ ...previous, languages: undefined }));
     setMessage(null);
   };
 
@@ -237,23 +233,50 @@ export default function CandidateResumePage() {
   const validate = () => {
     const validationErrors = {};
 
-    if (!resume.firstName.trim()) validationErrors.firstName = 'El nombre es obligatorio.';
-    if (!resume.lastName.trim()) validationErrors.lastName = 'Los apellidos son obligatorios.';
-    if (!resume.email.trim()) {
-      validationErrors.email = 'El correo electrónico es obligatorio.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(resume.email)) {
-      validationErrors.email = 'Ingresa un correo electrónico válido.';
-    }
-    if (!resume.headline.trim()) validationErrors.headline = 'El puesto o título profesional es obligatorio.';
-    if (!resume.country.trim()) validationErrors.country = 'El país es obligatorio.';
-    if (!resume.careerArea) validationErrors.careerArea = 'Selecciona un área profesional.';
+
+    if (!resume.location.trim()) validationErrors.location = 'El país o región es obligatorio.';
     if (resume.skills.length === 0) validationErrors.skills = 'Selecciona al menos una habilidad.';
+    const validLanguages = resume.languages.filter((item) => item.id && item.level);
+    if (validLanguages.length === 0) validationErrors.languages = 'Selecciona al menos un idioma y su nivel.';
 
     return validationErrors;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const validationErrors = validate();
+
+    const validLanguages = resume.languages.filter((language) => language.id && language.level);
+    const payload = {
+      professionalSummary: resume.summary,
+      location: resume.location,
+      city: resume.city,
+      experiences: resume.experiences
+        .filter((exp) => exp.company || exp.position)
+        .map((exp) => ({
+          company: exp.company,
+          position: exp.position,
+          description: exp.description,
+          hireDate: exp.startDate || null,
+          endDate: exp.endDate || null
+        })),
+
+      education: resume.education
+        .filter((edu) => edu.institution || edu.major)
+        .map((edu) => ({
+          institution: edu.institution,
+          major: edu.major
+        })),
+
+      languages: validLanguages.map((language) => ({
+        id: language.id,
+        level: language.level
+      })),
+
+      skills: resume.skills.map((skill) =>
+        typeof skill === 'object' ? { id: skill.id } : { id: skill }
+      )
+    };
+
 
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
@@ -261,20 +284,32 @@ export default function CandidateResumePage() {
       return;
     }
 
+    if (hasCv && cvId) {
+      await updateCv(cvId, payload);
+    } else {
+      const createdCv = await createCv(payload);
+      const createdId = createdCv?.data?.id ?? createdCv?.id;
+      if (createdId) setCvId(createdId);
+      setHasCv(true);
+    }
+
+    setOriginalResume(resume);
+    setEditMode(false);
     setStoredResume(resume);
     setErrors({});
     setMessage(null);
     setResultDialog({
-      title: 'CV guardado',
+      title: hasCv ? 'CV actualizado' : 'CV guardado',
       description: 'Tu CV digital fue guardado correctamente.',
       type: 'success'
     });
   };
 
   const handleCancel = () => {
-    setResume(normalizeResume(storedResume));
+    setResume(originalResume);
     setErrors({});
     setMessage(null);
+    setEditMode(hasCv);
     setResultDialog({
       title: 'Cambios cancelados',
       description: 'Los cambios sin guardar fueron cancelados correctamente.',
@@ -303,24 +338,26 @@ export default function CandidateResumePage() {
       )
       .join('');
     const printableEducation = resume.education
-      .filter((item) => item.institution || item.degree)
+      .filter((item) => item.institution || item.major)
       .map(
         (item) => `
           <article class="education-item">
-            <p class="education-title">${escapeHtml(item.degree || 'Título académico')} <span>${escapeHtml([item.startDate, item.endDate].filter(Boolean).join(' - '))}</span></p>
+            <p class="education-title">${escapeHtml(item.major || 'Título académico')} <span>${escapeHtml([item.startDate, item.endDate].filter(Boolean).join(' - '))}</span></p>
             <p><strong>${escapeHtml(item.institution)}</strong></p>
           </article>
         `
       )
       .join('');
+    // Idiomas quemados
     const printableLanguages = resume.languages
-      .filter((item) => item.language || item.level)
-      .map((item) => `<li>${escapeHtml([item.language, item.level].filter(Boolean).join(', '))}</li>`)
+      .filter((language) => language.name)
+      .map((language) => `<li>${escapeHtml(language.name)}${language.level ? ` - ${escapeHtml(formatLanguageLevel(language.level))}` : ''}</li>`)
       .join('');
-    const initials = [resume.firstName, resume.lastName]
-      .filter(Boolean)
-      .map((name) => name.trim().charAt(0).toUpperCase())
-      .join('');
+    const initials = (resume.name || '')
+      .split(' ')
+      .map((word) => word.charAt(0).toUpperCase())
+      .join('')
+      .slice(0, 2);
     const printWindow = window.open('', '_blank', 'width=900,height=700');
 
     if (!printWindow) {
@@ -332,7 +369,7 @@ export default function CandidateResumePage() {
       <!doctype html>
       <html lang="es">
         <head>
-          <title>CV - ${escapeHtml(fullName)}</title>
+          <title>CV - ${escapeHtml(resume.name)}</title>
           <style>
             * { box-sizing: border-box; }
             body { background: #111; color: #242424; font-family: Georgia, 'Times New Roman', serif; font-size: 14px; line-height: 1.35; margin: 0; }
@@ -360,20 +397,19 @@ export default function CandidateResumePage() {
           <div class="resume">
             <header class="header">
               <div class="initials">${escapeHtml(initials)}</div>
-              <h1>${escapeHtml(fullName)}</h1>
+              <h1>${escapeHtml(resume.name)}</h1>
               <div class="contact">
                 <p>${escapeHtml(resume.email)}</p>
-                <p>${escapeHtml(resume.city)}</p>
-                <p>${escapeHtml(resume.country)}</p>
+                <p>${escapeHtml([resume.city, resume.location].filter(Boolean).join(', '))}</p>
               </div>
             </header>
             <section class="section">
               <h2>Resumen profesional</h2>
-              <p>${escapeHtml(resume.summary || `${resume.headline}. Profesional de ${resume.careerArea} con interés en seguir desarrollando sus habilidades y experiencia.`)}</p>
+              <p>${escapeHtml(resume.summary || 'Describe brevemente tu experiencia, fortalezas y objetivos.')}</p>
             </section>
             <section class="section">
               <h2>Aptitudes</h2>
-              <ul class="skills">${resume.skills.map((skill) => `<li>${escapeHtml(skill)}</li>`).join('')}</ul>
+              <ul class="skills">${resume.skills.map((skill) => `<li>${escapeHtml(skill.name)}</li>`).join('')}</ul>
             </section>
             <section class="section">
               <h2>Formación académica</h2>
@@ -409,19 +445,31 @@ export default function CandidateResumePage() {
         description="Crea tu CV digital con tu experiencia, educación y habilidades profesionales."
         action={
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-            <Button
-              variant="contained"
-              startIcon={<IconDeviceFloppy size={18} />}
-              sx={{ ...actionButtonSX, bgcolor: '#bde9f7', color: '#15576b', '&:hover': { bgcolor: '#a8deef' } }}
-              onClick={handleSave}
-            >
-              Guardar CV
-            </Button>
+            {hasCv && !editMode ? (
+              <Button
+                variant="contained"
+                startIcon={<IconDeviceFloppy size={18} />}
+                sx={{ ...actionButtonSX, bgcolor: '#bde9f7', color: '#15576b', '&:hover': { bgcolor: '#a8deef' } }}
+                onClick={() => setEditMode(true)}
+              >
+                Actualizar CV
+              </Button>
+            ) : (
+              <Button
+                variant="contained"
+                startIcon={<IconDeviceFloppy size={18} />}
+                sx={{ ...actionButtonSX, bgcolor: '#bde9f7', color: '#15576b', '&:hover': { bgcolor: '#a8deef' } }}
+                onClick={handleSave}
+              >
+                {hasCv ? 'Guardar cambios' : 'Guardar CV'}
+              </Button>
+            )}
             <Button
               variant="contained"
               startIcon={<IconX size={18} />}
               sx={{ ...actionButtonSX, bgcolor: '#ffd6d6', color: '#9b3030', '&:hover': { bgcolor: '#ffc4c4' } }}
               onClick={handleCancel}
+              disabled={!editMode}
             >
               Cancelar
             </Button>
@@ -448,64 +496,18 @@ export default function CandidateResumePage() {
                   * El asterisco indica que el campo es obligatorio.
                 </Typography>
                 <Grid container spacing={2.5}>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField
-                      fullWidth
-                      required
-                      label="Nombre"
-                      value={resume.firstName}
-                      onChange={handleFieldChange('firstName')}
-                      error={Boolean(errors.firstName)}
-                      helperText={errors.firstName}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField
-                      fullWidth
-                      required
-                      label="Apellidos"
-                      value={resume.lastName}
-                      onChange={handleFieldChange('lastName')}
-                      error={Boolean(errors.lastName)}
-                      helperText={errors.lastName}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField
-                      fullWidth
-                      required
-                      type="email"
-                      label="Correo electrónico"
-                      placeholder="nombre@correo.com"
-                      value={resume.email}
-                      onChange={handleFieldChange('email')}
-                      error={Boolean(errors.email)}
-                      helperText={errors.email}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField
-                      fullWidth
-                      required
-                      label="Puesto actual o título profesional"
-                      placeholder="Ej. Desarrolladora Frontend"
-                      value={resume.headline}
-                      onChange={handleFieldChange('headline')}
-                      error={Boolean(errors.headline)}
-                      helperText={errors.headline}
-                    />
-                  </Grid>
-                  <Grid size={12}>
-                    <TextField
-                      fullWidth
-                      multiline
-                      minRows={3}
-                      label="Resumen profesional"
-                      placeholder="Describe brevemente tu experiencia, fortalezas y objetivos."
-                      value={resume.summary}
-                      onChange={handleFieldChange('summary')}
-                    />
-                  </Grid>
+                </Grid>
+                <Grid size={12}>
+                  <TextField
+                    fullWidth
+                    multiline
+                    minRows={3}
+                    label="Resumen profesional"
+                    placeholder="Describe brevemente tu experiencia, fortalezas y objetivos."
+                    value={resume.summary}
+                    onChange={handleFieldChange('summary')}
+                    disabled={disableForm}
+                  />
                 </Grid>
               </Stack>
             </MainCard>
@@ -517,14 +519,15 @@ export default function CandidateResumePage() {
                     fullWidth
                     required
                     label="País o región"
-                    value={resume.country}
-                    onChange={handleFieldChange('country')}
-                    error={Boolean(errors.country)}
-                    helperText={errors.country}
+                    value={resume.location}
+                    onChange={handleFieldChange('location')}
+                    error={Boolean(errors.location)}
+                    helperText={errors.location}
+                    disabled={disableForm}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField fullWidth label="Ciudad" value={resume.city} onChange={handleFieldChange('city')} />
+                  <TextField fullWidth label="Ciudad" value={resume.city} onChange={handleFieldChange('city')} disabled={disableForm} />
                 </Grid>
               </Grid>
             </MainCard>
@@ -538,6 +541,7 @@ export default function CandidateResumePage() {
                   startIcon={<IconPlus size={18} />}
                   sx={buttonSX}
                   onClick={() => addListItem('experiences', emptyExperience)}
+                  disabled={disableForm}
                 >
                   Añadir puesto
                 </Button>
@@ -553,6 +557,7 @@ export default function CandidateResumePage() {
                         placeholder="Ej. Desarrolladora Frontend"
                         value={experience.position}
                         onChange={(event) => handleListChange('experiences', index, 'position', event.target.value)}
+                        disabled={disableForm}
                       />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
@@ -561,6 +566,7 @@ export default function CandidateResumePage() {
                         label="Empresa"
                         value={experience.company}
                         onChange={(event) => handleListChange('experiences', index, 'company', event.target.value)}
+                        disabled={disableForm}
                       />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
@@ -571,6 +577,7 @@ export default function CandidateResumePage() {
                         value={experience.startDate}
                         onChange={(event) => handleListChange('experiences', index, 'startDate', event.target.value)}
                         slotProps={{ inputLabel: { shrink: true } }}
+                        disabled={disableForm}
                       />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
@@ -581,6 +588,7 @@ export default function CandidateResumePage() {
                         value={experience.endDate}
                         onChange={(event) => handleListChange('experiences', index, 'endDate', event.target.value)}
                         slotProps={{ inputLabel: { shrink: true } }}
+                        disabled={disableForm}
                       />
                     </Grid>
                     <Grid size={12}>
@@ -591,6 +599,7 @@ export default function CandidateResumePage() {
                         label="Funciones y logros"
                         value={experience.description}
                         onChange={(event) => handleListChange('experiences', index, 'description', event.target.value)}
+                        disabled={disableForm}
                       />
                     </Grid>
                     {resume.experiences.length > 1 && (
@@ -600,6 +609,7 @@ export default function CandidateResumePage() {
                           startIcon={<IconTrash size={17} />}
                           sx={buttonSX}
                           onClick={() => removeListItem('experiences', index)}
+                          disabled={disableForm}
                         >
                           Eliminar puesto
                         </Button>
@@ -619,6 +629,7 @@ export default function CandidateResumePage() {
                   startIcon={<IconPlus size={18} />}
                   sx={buttonSX}
                   onClick={() => addListItem('education', emptyEducation)}
+                  disabled={disableForm}
                 >
                   Añadir educación
                 </Button>
@@ -630,6 +641,7 @@ export default function CandidateResumePage() {
                     <Grid size={12}>
                       <Autocomplete
                         freeSolo
+                        disabled={disableForm}
                         options={institutionOptions}
                         value={education.institution}
                         onChange={(event, value) => handleListChange('education', index, 'institution', value || '')}
@@ -643,40 +655,12 @@ export default function CandidateResumePage() {
                       <TextField
                         fullWidth
                         label="Título o carrera"
-                        value={education.degree}
-                        onChange={(event) => handleListChange('education', index, 'degree', event.target.value)}
+                        value={education.major}
+                        onChange={(event) => handleListChange('education', index, 'major', event.target.value)}
+                        disabled={disableForm}
                       />
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 3 }}>
-                      <TextField
-                        select
-                        fullWidth
-                        label="Inicio"
-                        value={education.startDate}
-                        onChange={(event) => handleListChange('education', index, 'startDate', event.target.value)}
-                      >
-                        {educationYearOptions.map((year) => (
-                          <MenuItem key={year} value={year}>
-                            {year}
-                          </MenuItem>
-                        ))}
-                      </TextField>
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 3 }}>
-                      <TextField
-                        select
-                        fullWidth
-                        label="Finalización"
-                        value={education.endDate}
-                        onChange={(event) => handleListChange('education', index, 'endDate', event.target.value)}
-                      >
-                        {educationYearOptions.map((year) => (
-                          <MenuItem key={year} value={year}>
-                            {year}
-                          </MenuItem>
-                        ))}
-                      </TextField>
-                    </Grid>
+
                     {resume.education.length > 1 && (
                       <Grid size={12}>
                         <Button
@@ -684,6 +668,7 @@ export default function CandidateResumePage() {
                           startIcon={<IconTrash size={17} />}
                           sx={buttonSX}
                           onClick={() => removeListItem('education', index)}
+                          disabled={disableForm}
                         >
                           Eliminar educación
                         </Button>
@@ -703,6 +688,7 @@ export default function CandidateResumePage() {
                   startIcon={<IconPlus size={18} />}
                   sx={buttonSX}
                   onClick={() => addListItem('languages', emptyLanguage)}
+                  disabled={disableForm}
                 >
                   Añadir idioma
                 </Button>
@@ -716,12 +702,13 @@ export default function CandidateResumePage() {
                         select
                         fullWidth
                         label="Idioma"
-                        value={language.language}
-                        onChange={(event) => handleListChange('languages', index, 'language', event.target.value)}
+                        value={language.id}
+                        onChange={(event) => handleLanguageSelectionChange(index, event.target.value)}
+                        disabled={disableForm}
                       >
-                        {languageOptions.map((option) => (
-                          <MenuItem key={option} value={option}>
-                            {option}
+                        {availableLanguages.map((option) => (
+                          <MenuItem key={option.id} value={option.id}>
+                            {option.name}
                           </MenuItem>
                         ))}
                       </TextField>
@@ -733,10 +720,11 @@ export default function CandidateResumePage() {
                         label="Nivel del idioma"
                         value={language.level}
                         onChange={(event) => handleListChange('languages', index, 'level', event.target.value)}
+                        disabled={disableForm}
                       >
                         {languageLevelOptions.map((option) => (
                           <MenuItem key={option} value={option}>
-                            {option}
+                            {formatLanguageLevel(option)}
                           </MenuItem>
                         ))}
                       </TextField>
@@ -748,6 +736,7 @@ export default function CandidateResumePage() {
                           startIcon={<IconTrash size={17} />}
                           sx={buttonSX}
                           onClick={() => removeListItem('languages', index)}
+                          disabled={disableForm}
                         >
                           Eliminar idioma
                         </Button>
@@ -756,52 +745,44 @@ export default function CandidateResumePage() {
                   </Grid>
                 ))}
               </Stack>
+              {errors.languages && (
+                <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block' }}>
+                  {errors.languages}
+                </Typography>
+              )}
             </MainCard>
 
             <MainCard title="Habilidades" border>
-              <Stack spacing={2.5}>
-                <TextField
-                  select
-                  fullWidth
-                  required
-                  label="Área profesional o interés de carrera"
-                  value={resume.careerArea}
-                  onChange={handleCareerAreaChange}
-                  error={Boolean(errors.careerArea)}
-                  helperText={errors.careerArea || 'Las habilidades sugeridas cambiarán según el área seleccionada.'}
-                >
-                  {Object.keys(skillOptions).map((area) => (
-                    <MenuItem key={area} value={area}>
-                      {area}
-                    </MenuItem>
-                  ))}
-                </TextField>
-                <Autocomplete
-                  multiple
-                  options={suggestedSkills}
-                  value={resume.skills}
-                  onChange={(event, value) => {
-                    setResume((previous) => ({ ...previous, skills: value }));
-                    setErrors((previous) => ({ ...previous, skills: undefined }));
-                    setMessage(null);
-                  }}
-                  renderValue={(value, getItemProps) =>
-                    value.map((option, index) => (
-                      <Chip label={option} variant="outlined" sx={skillChipSX} {...getItemProps({ index })} key={option} />
-                    ))
-                  }
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      required
-                      label="Selecciona tus habilidades"
-                      placeholder="Busca una habilidad"
-                      error={Boolean(errors.skills)}
-                      helperText={errors.skills || 'Selecciona las habilidades que mejor representen tu perfil.'}
-                    />
-                  )}
-                />
-              </Stack>
+              <Autocomplete
+                multiple
+                disabled={disableForm}
+                options={availableSkills}
+                getOptionLabel={(option) => option.name}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                value={resume.skills}
+                onChange={(event, value) => {
+                  setResume((prev) => ({
+                    ...prev,
+                    skills: value
+                  }));
+
+                  setErrors((prev) => ({
+                    ...prev,
+                    skills: undefined
+                  }));
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Selecciona tus habilidades"
+                    error={Boolean(errors.skills)}
+                    helperText={
+                      errors.skills ||
+                      'Selecciona las habilidades que mejor representen tu perfil.'
+                    }
+                  />
+                )}
+              />
             </MainCard>
           </Stack>
         </Grid>
@@ -810,16 +791,13 @@ export default function CandidateResumePage() {
           <MainCard title="Vista previa" border sx={{ position: { lg: 'sticky' }, top: { lg: 88 } }}>
             <Stack spacing={2.5}>
               <Box>
-                <Typography variant="h2">{fullName || 'Tu nombre'}</Typography>
-                <Typography variant="h4" color="secondary.main" sx={{ mt: 0.75 }}>
-                  {resume.headline || 'Tu título profesional'}
-                </Typography>
+                <Typography variant="h2">{userName || 'Tu nombre'}</Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                  {[resume.city, resume.country].filter(Boolean).join(', ')}
+                  {[resume.city, resume.location].filter(Boolean).join(', ')}
                 </Typography>
-                {resume.email && (
+                {userEmail && (
                   <Typography variant="body2" color="text.secondary">
-                    {resume.email}
+                    {userEmail}
                   </Typography>
                 )}
               </Box>
@@ -858,12 +836,12 @@ export default function CandidateResumePage() {
                   <IconSchool size={19} />
                   <Typography variant="h4">Educación</Typography>
                 </Stack>
-                {resume.education.some((item) => item.institution || item.degree) ? (
+                {resume.education.some((item) => item.institution || item.major) ? (
                   resume.education.map(
                     (item, index) =>
-                      (item.institution || item.degree) && (
+                      (item.institution || item.major) && (
                         <Box key={`preview-education-${index}`}>
-                          <Typography variant="subtitle1">{item.degree || 'Título académico'}</Typography>
+                          <Typography variant="subtitle1">{item.major || 'Título académico'}</Typography>
                           <Typography variant="body2" color="text.secondary">
                             {[item.institution, [item.startDate, item.endDate].filter(Boolean).join(' - ')].filter(Boolean).join(' | ')}
                           </Typography>
@@ -886,10 +864,12 @@ export default function CandidateResumePage() {
                   {resume.languages.some((item) => item.language || item.level) ? (
                     resume.languages.map(
                       (item, index) =>
-                        (item.language || item.level) && (
+                        (item.id || item.level) && (
                           <Chip
                             key={`preview-language-${index}`}
-                            label={[item.language, item.level].filter(Boolean).join(' - ')}
+                            label={[item.name || availableLanguages.find((lang) => String(lang.id) === String(item.id))?.name, formatLanguageLevel(item.level)]
+                              .filter(Boolean)
+                              .join(' - ')}
                             size="small"
                             variant="outlined"
                             sx={skillChipSX}
@@ -911,7 +891,7 @@ export default function CandidateResumePage() {
                 </Typography>
                 <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
                   {resume.skills.length > 0 ? (
-                    resume.skills.map((skill) => <Chip key={skill} label={skill} size="small" variant="outlined" sx={skillChipSX} />)
+                    resume.skills.map((skill) => <Chip key={skill.id} label={skill.name} size="small" variant="outlined" sx={skillChipSX} />)
                   ) : (
                     <Typography variant="body2" color="text.secondary">
                       Selecciona tus habilidades.

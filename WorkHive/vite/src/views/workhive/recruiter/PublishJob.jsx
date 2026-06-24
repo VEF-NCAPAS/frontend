@@ -1,150 +1,221 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // material-ui
-import Grid from '@mui/material/Grid';
+import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
-import Chip from '@mui/material/Chip';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
+import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
+import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
+import Grid from '@mui/material/Grid';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 
 // assets
-import PostAddIcon from '@mui/icons-material/PostAdd';
-import SendIcon from '@mui/icons-material/Send';
 import CancelIcon from '@mui/icons-material/Cancel';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import PostAddIcon from '@mui/icons-material/PostAdd';
+import SendIcon from '@mui/icons-material/Send';
 
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
-import { recruiterService } from 'services/recruiterService';
+import ActionResultDialog from '../candidate/components/ActionResultDialog';
+import { getAllRequirements } from 'services/requirementService';
+import { createVacancy } from 'services/vacancyService';
 
-const MODALITIES = ['Remoto', 'Híbrido', 'Presencial'];
+const MODALITIES = [
+  { value: 'REMOTE', label: 'Remoto' },
+  { value: 'HYBRID', label: 'Hibrido' },
+  { value: 'ONSITE', label: 'Presencial' }
+];
+
+const getResponsePayload = (response) => response?.data ?? response;
+
+const normalizeRequirements = (response) => {
+  const payload = getResponsePayload(response);
+  const requirements = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload?.content)
+    ? payload.content
+    : Array.isArray(payload?.data)
+    ? payload.data
+    : Array.isArray(payload?.data?.content)
+    ? payload.data.content
+    : [];
+
+  return requirements.filter((requirement) => requirement?.id);
+};
+
+const getRequirementLabel = (requirement) => requirement.name || requirement.title || requirement.description || requirement.id;
 
 export default function PublishJob() {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     title: '',
-    requirements: '',
     salary: '',
-    modality: 'Remoto',
-    keywords: '',
+    modality: 'REMOTE',
     description: ''
   });
 
-  const [reqChips, setReqChips] = useState([]);
-  const [keywordChips, setKeywordChips] = useState([]);
-  const [currentReqInput, setCurrentReqInput] = useState('');
-  const [currentKeyInput, setCurrentKeyInput] = useState('');
+  const [availableRequirements, setAvailableRequirements] = useState([]);
+  const [selectedRequirements, setSelectedRequirements] = useState([]);
+  const [errors, setErrors] = useState({});
+  const [loadingRequirements, setLoadingRequirements] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [resultDialog, setResultDialog] = useState(null);
+  const [created, setCreated] = useState(false);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
+  useEffect(() => {
+    const loadRequirements = async () => {
+      setLoadingRequirements(true);
+
+      try {
+        const response = await getAllRequirements();
+        setAvailableRequirements(normalizeRequirements(response));
+      } catch (error) {
+        console.error('Error loading requirements:', error);
+        setResultDialog({
+          title: 'No se cargaron los requisitos',
+          description: 'Revisa que el backend este activo y vuelve a intentarlo.',
+          type: 'cancel'
+        });
+      } finally {
+        setLoadingRequirements(false);
+      }
+    };
+
+    loadRequirements();
+  }, []);
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value
     }));
+    setErrors((prev) => ({ ...prev, [name]: undefined }));
   };
 
-  // Add Requirement Chip
-  const handleAddRequirement = () => {
-    if (currentReqInput.trim()) {
-      const normalized = currentReqInput.trim();
-      if (!reqChips.includes(normalized)) {
-        const updated = [...reqChips, normalized];
-        setReqChips(updated);
-        setFormData((prev) => ({ ...prev, requirements: updated.join(', ') }));
-      }
-      setCurrentReqInput('');
-    }
+  const validateForm = () => {
+    const validationErrors = {};
+    const salary = Number(formData.salary);
+
+    if (!formData.title.trim()) validationErrors.title = 'Ingresa el titulo de la vacante.';
+    if (!formData.description.trim()) validationErrors.description = 'Ingresa la descripcion de la vacante.';
+    if (!formData.salary || Number.isNaN(salary) || salary <= 0) validationErrors.salary = 'Ingresa un salario numerico mayor a cero.';
+    if (!formData.modality) validationErrors.modality = 'Selecciona una modalidad.';
+    if (selectedRequirements.length === 0) validationErrors.requirements = 'Selecciona al menos un requisito.';
+
+    setErrors(validationErrors);
+    return Object.keys(validationErrors).length === 0;
   };
 
-  const handleRemoveRequirement = (chipToDelete) => {
-    const updated = reqChips.filter((chip) => chip !== chipToDelete);
-    setReqChips(updated);
-    setFormData((prev) => ({ ...prev, requirements: updated.join(', ') }));
-  };
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-  // Add Keyword Chip
-  const handleAddKeyword = () => {
-    if (currentKeyInput.trim()) {
-      const normalized = currentKeyInput.trim();
-      if (!keywordChips.includes(normalized)) {
-        const updated = [...keywordChips, normalized];
-        setKeywordChips(updated);
-        setFormData((prev) => ({ ...prev, keywords: updated.join(', ') }));
-      }
-      setCurrentKeyInput('');
-    }
-  };
-
-  const handleRemoveKeyword = (chipToDelete) => {
-    const updated = keywordChips.filter((chip) => chip !== chipToDelete);
-    setKeywordChips(updated);
-    setFormData((prev) => ({ ...prev, keywords: updated.join(', ') }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    // Fallback if chips were not used but they just typed in text field
-    const finalRequirements = formData.requirements || reqChips.join(', ');
-    const finalKeywords = formData.keywords || keywordChips.join(', ');
-
-    if (!formData.title || !formData.salary || !formData.description) {
-      alert('Por favor completa los campos requeridos.');
-      return;
-    }
+    if (!validateForm()) return;
 
     const payload = {
-      ...formData,
-      requirements: finalRequirements || 'Habilidades generales',
-      keywords: finalKeywords || formData.title
+      title: formData.title.trim(),
+      description: formData.description.trim(),
+      salary: Number(formData.salary),
+      modality: formData.modality,
+      status: 'OPEN',
+      requirements: selectedRequirements.map((requirement) => ({ id: requirement.id }))
     };
 
-    recruiterService.publishJob(payload);
-    navigate('/reclutador/mis-ofertas');
+    setSubmitting(true);
+
+    try {
+      await createVacancy(payload);
+      setCreated(true);
+      setResultDialog({
+        title: 'Vacante publicada',
+        description: 'La vacante fue creada correctamente y ya puede aparecer en tus ofertas.',
+        type: 'success'
+      });
+    } catch (error) {
+      console.error('Error creating vacancy:', error);
+      setResultDialog({
+        title: 'No se pudo publicar',
+        description: error?.response?.data?.message || 'Revisa los datos de la vacante e intenta nuevamente.',
+        type: 'cancel'
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleResultClose = () => {
+    setResultDialog(null);
+    if (created) {
+      navigate('/reclutador/mis-ofertas');
+    }
   };
 
   return (
-    <MainCard title="Crear y Publicar Oferta de Empleo">
-      <form onSubmit={handleSubmit}>
-        <Grid container spacing={3}>
+    <>
+      <MainCard title="Crear y Publicar Oferta de Empleo">
+        <form onSubmit={handleSubmit}>
+          <Grid container spacing={3}>
           <Grid item xs={12} md={8}>
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
+            <Box
+              sx={{
+                display: 'grid',
+                gap: 3,
+                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }
+              }}
+            >
+              <Box sx={{ gridColumn: '1 / -1' }}>
                 <Typography variant="h4" color="primary" fontWeight={600} mb={1}>
                   Nueva Oferta Laboral
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Ingresa los detalles técnicos, compensación y requisitos clave. Los candidatos serán evaluados automáticamente basados en las palabras clave que registres.
+                  Ingresa los detalles tecnicos, compensacion y requisitos clave para publicar la vacante.
                 </Typography>
-              </Grid>
+              </Box>
 
-              {/* Job Title */}
-              <Grid item xs={12} sm={8}>
+              <Box sx={{ gridColumn: '1 / -1' }}>
                 <TextField
                   fullWidth
                   required
-                  label="Título de la Vacante"
+                  label="Titulo de la Vacante"
                   name="title"
                   placeholder="Ej: Desarrollador Backend Senior"
                   value={formData.title}
                   onChange={handleInputChange}
+                  error={Boolean(errors.title)}
+                  helperText={errors.title}
                 />
-              </Grid>
+              </Box>
 
-              {/* Modality */}
-              <Grid item xs={12} sm={4}>
-                <FormControl fullWidth required>
+              <Box>
+                <TextField
+                  fullWidth
+                  required
+                  type="number"
+                  label="Salario"
+                  name="salary"
+                  placeholder="Ej: 3500"
+                  value={formData.salary}
+                  onChange={handleInputChange}
+                  error={Boolean(errors.salary)}
+                  helperText={errors.salary || 'Ingresa solo el monto numerico del salario para tu vacante.'}
+                  inputProps={{ min: 0, step: '0.01' }}
+                />
+              </Box>
+
+              <Box>
+                <FormControl fullWidth required error={Boolean(errors.modality)}>
                   <InputLabel id="modality-select-label">Modalidad</InputLabel>
                   <Select
                     labelId="modality-select-label"
@@ -153,136 +224,76 @@ export default function PublishJob() {
                     value={formData.modality}
                     onChange={handleInputChange}
                   >
-                    {MODALITIES.map((mod) => (
-                      <MenuItem key={mod} value={mod}>{mod}</MenuItem>
+                    {MODALITIES.map((modality) => (
+                      <MenuItem key={modality.value} value={modality.value}>
+                        {modality.label}
+                      </MenuItem>
                     ))}
                   </Select>
+                  {errors.modality && <FormHelperText>{errors.modality}</FormHelperText>}
                 </FormControl>
-              </Grid>
+              </Box>
 
-              {/* Salary Range */}
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  required
-                  label="Salario / Rango Salarial"
-                  name="salary"
-                  placeholder="Ej: $1800 - $2200 o Negociable"
-                  value={formData.salary}
-                  onChange={handleInputChange}
+              <Box sx={{ gridColumn: '1 / -1' }}>
+                <Autocomplete
+                  multiple
+                  loading={loadingRequirements}
+                  options={availableRequirements}
+                  getOptionLabel={getRequirementLabel}
+                  isOptionEqualToValue={(option, value) => option.id === value.id}
+                  value={selectedRequirements}
+                  onChange={(event, value) => {
+                    setSelectedRequirements(value);
+                    setErrors((prev) => ({ ...prev, requirements: undefined, submit: undefined }));
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Requisitos"
+                      placeholder="Selecciona requisitos"
+                      error={Boolean(errors.requirements)}
+                      helperText={errors.requirements || 'Selecciona los requisitos de tu vacante.'}
+                      InputProps={{
+                        ...params.InputProps,
+                        endAdornment: (
+                          <>
+                            {loadingRequirements ? <CircularProgress color="inherit" size={20} /> : null}
+                            {params.InputProps.endAdornment}
+                          </>
+                        )
+                      }}
+                    />
+                  )}
                 />
-              </Grid>
-
-              {/* Add Requirements (Skills Chips) */}
-              <Grid item xs={12}>
-                <Box>
-                  <Stack direction="row" spacing={1} mb={1}>
-                    <TextField
-                      fullWidth
-                      label="Requisitos / Habilidades técnicas (Ingresa uno a uno)"
-                      placeholder="Ej: React, Python, Git, Docker"
-                      value={currentReqInput}
-                      onChange={(e) => setCurrentReqInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAddRequirement();
-                        }
-                      }}
-                    />
-                    <Button 
-                      variant="contained" 
-                      color="secondary" 
-                      onClick={handleAddRequirement}
-                      sx={{ px: 3 }}
-                    >
-                      Agregar
-                    </Button>
-                  </Stack>
-                  <Box display="flex" flexWrap="wrap" gap={1} mt={1.5}>
-                    {reqChips.map((chip) => (
-                      <Chip
-                        key={chip}
-                        label={chip}
-                        onDelete={() => handleRemoveRequirement(chip)}
-                        color="primary"
-                        variant="outlined"
-                      />
-                    ))}
-                    {reqChips.length === 0 && (
-                      <Typography variant="caption" color="text.secondary">
-                        * Aún no has agregado requisitos específicos.
-                      </Typography>
-                    )}
-                  </Box>
-                  <FormHelperText>Estas son las habilidades técnicas requeridas para el puesto y que aparecerán descritas en la vacante.</FormHelperText>
+                <Box display="flex" flexWrap="wrap" gap={1} mt={1.5}>
+                  {selectedRequirements.map((requirement) => (
+                    <Chip key={requirement.id} label={getRequirementLabel(requirement)} color="primary" variant="outlined" />
+                  ))}
+                  {selectedRequirements.length === 0 && (
+                    <Typography variant="caption" color="text.secondary">
+                      * Aun no has seleccionado requisitos especificos.
+                    </Typography>
+                  )}
                 </Box>
-              </Grid>
+              </Box>
 
-              {/* Add Scoring Keywords (Skills Chips) */}
-              <Grid item xs={12}>
-                <Box>
-                  <Stack direction="row" spacing={1} mb={1}>
-                    <TextField
-                      fullWidth
-                      label="Palabras clave para evaluación (Keywords para Scoring automático)"
-                      placeholder="Ej: React, JavaScript, SQL"
-                      value={currentKeyInput}
-                      onChange={(e) => setCurrentKeyInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAddKeyword();
-                        }
-                      }}
-                    />
-                    <Button 
-                      variant="contained" 
-                      color="secondary" 
-                      onClick={handleAddKeyword}
-                      sx={{ px: 3 }}
-                    >
-                      Agregar
-                    </Button>
-                  </Stack>
-                  <Box display="flex" flexWrap="wrap" gap={1} mt={1.5}>
-                    {keywordChips.map((chip) => (
-                      <Chip
-                        key={chip}
-                        label={chip}
-                        onDelete={() => handleRemoveKeyword(chip)}
-                        color="success"
-                        variant="filled"
-                        sx={{ color: '#fff', fontWeight: 500 }}
-                      />
-                    ))}
-                    {keywordChips.length === 0 && (
-                      <Typography variant="caption" color="text.secondary">
-                        * Aún no has agregado palabras clave para el Score.
-                      </Typography>
-                    )}
-                  </Box>
-                  <FormHelperText>¡Muy Importante! El sistema buscará coincidencia exacta de estas palabras clave en las habilidades del candidato para calcular su puntuación final (Matching Score).</FormHelperText>
-                </Box>
-              </Grid>
-
-              {/* Description */}
-              <Grid item xs={12}>
+              <Box sx={{ gridColumn: '1 / -1' }}>
                 <TextField
                   fullWidth
                   required
                   multiline
                   rows={6}
-                  label="Descripción Detallada de la Vacante"
+                  label="Descripcion Detallada de la Vacante"
                   name="description"
-                  placeholder="Describe detalladamente las responsabilidades del puesto, la cultura del equipo, beneficios adicionales y perfil general del candidato ideal..."
+                  placeholder="Describe responsabilidades, cultura del equipo, beneficios y perfil ideal..."
                   value={formData.description}
                   onChange={handleInputChange}
+                  error={Boolean(errors.description)}
+                  helperText={errors.description}
                 />
-              </Grid>
+              </Box>
 
-              {/* Action Buttons */}
-              <Grid item xs={12}>
+              <Box sx={{ gridColumn: '1 / -1' }}>
                 <Stack direction="row" spacing={2} justifyContent="flex-end">
                   <Button
                     variant="outlined"
@@ -290,6 +301,7 @@ export default function PublishJob() {
                     startIcon={<CancelIcon />}
                     onClick={() => navigate('/reclutador/mis-ofertas')}
                     sx={{ borderRadius: 2 }}
+                    disabled={submitting}
                   >
                     Cancelar
                   </Button>
@@ -297,51 +309,51 @@ export default function PublishJob() {
                     type="submit"
                     variant="contained"
                     color="primary"
-                    startIcon={<SendIcon />}
+                    startIcon={submitting ? <CircularProgress color="inherit" size={18} /> : <SendIcon />}
                     sx={{ borderRadius: 2 }}
+                    disabled={submitting || loadingRequirements}
                   >
-                    Publicar Oferta
+                    {submitting ? 'Publicando...' : 'Publicar Oferta'}
                   </Button>
                 </Stack>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           </Grid>
 
-          {/* Guidelines Sidebar */}
           <Grid item xs={12} md={4}>
             <Card sx={{ bgcolor: 'grey.50', border: '1px solid', borderColor: 'grey.200', borderRadius: 3, height: '100%' }}>
               <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                 <Box display="flex" alignItems="center" gap={1} color="primary.main">
                   <HelpOutlineIcon />
                   <Typography variant="h4" fontWeight={600}>
-                    Guía de Publicación
+                    Guia de Publicacion
                   </Typography>
                 </Box>
 
                 <Box>
                   <Typography variant="subtitle1" fontWeight={600} mb={0.5}>
-                    1. Requisitos vs Palabras Clave
+                    1. Requisitos
                   </Typography>
                   <Typography variant="body2" color="text.secondary" lineHeight={1.6}>
-                    Los **Requisitos** se visualizan públicamente para los candidatos. Las **Palabras Clave** se utilizan para la lógica interna de la plataforma para ordenar a los candidatos de acuerdo a su nivel de afinidad con el perfil técnico.
+                    Indique los requisitos que necesita para este puesto de trabajo.
                   </Typography>
                 </Box>
 
                 <Box>
                   <Typography variant="subtitle1" fontWeight={600} mb={0.5}>
-                    2. Modalidad y Ubicación
+                    2. Modalidad
                   </Typography>
                   <Typography variant="body2" color="text.secondary" lineHeight={1.6}>
-                    Selecciona **Remoto** si tu vacante aplica para teletrabajo a nivel nacional o internacional, **Híbrido** si requiere algunos días presenciales, o **Presencial** para trabajo formal de oficina.
+                    Seleccione la modalidad que corresponde a esta vacante.
                   </Typography>
                 </Box>
 
                 <Box>
                   <Typography variant="subtitle1" fontWeight={600} mb={0.5}>
-                    3. Rango Salarial Transparente
+                    3. Salario
                   </Typography>
                   <Typography variant="body2" color="text.secondary" lineHeight={1.6}>
-                    Las vacantes que publican un rango salarial transparente reciben hasta un **40% más de postulaciones** de calidad de candidatos calificados.
+                   Indique un valor numerico, por ejemplo 3500.00.
                   </Typography>
                 </Box>
 
@@ -351,8 +363,17 @@ export default function PublishJob() {
               </CardContent>
             </Card>
           </Grid>
-        </Grid>
-      </form>
-    </MainCard>
+          </Grid>
+        </form>
+      </MainCard>
+
+      <ActionResultDialog
+        open={Boolean(resultDialog)}
+        onClose={handleResultClose}
+        title={resultDialog?.title}
+        description={resultDialog?.description}
+        type={resultDialog?.type}
+      />
+    </>
   );
 }

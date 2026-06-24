@@ -22,6 +22,7 @@ import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
 import useConfig from 'hooks/useConfig';
 import { getCurrentUserRole, USER_ROLES } from 'menu-items/roleMenus';
+import { logout } from 'services/authService';
 
 // assets
 import { IconLogout, IconSettings, IconUser } from '@tabler/icons-react';
@@ -39,7 +40,7 @@ export default function ProfileSection() {
   const [open, setOpen] = useState(false);
   const currentUserRole = getCurrentUserRole(pathname);
   const isCandidate = currentUserRole === USER_ROLES.CANDIDATE;
-  const logoutToLanding = [USER_ROLES.CANDIDATE, USER_ROLES.ADMIN].includes(currentUserRole);
+  const logoutToLanding = [USER_ROLES.CANDIDATE, USER_ROLES.ADMINISTRATOR].includes(currentUserRole);
 
   /**
    * anchorRef is used on different components and specifying one type leads to other components throwing an error
@@ -57,11 +58,11 @@ export default function ProfileSection() {
 
     setOpen(false);
   };
-
+  const userName = localStorage.getItem('name');
   const handleLogout = () => {
     setOpen(false);
-
-    if (logoutToLanding) navigate('/');
+    const redirectTo = logoutToLanding ? '/' : '/pages/login';
+    logout({ navigate, redirectTo });
   };
 
   const prevOpen = useRef(open);
@@ -129,9 +130,9 @@ export default function ProfileSection() {
                     <Box sx={{ p: 2, pb: 0 }}>
                       <Stack>
                         <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5 }}>
-                          <Typography variant="h4">Bienvenido,</Typography>
+                          <Typography variant="h4">Bienvenido/a,</Typography>
                           <Typography component="span" variant="h4" sx={{ fontWeight: 400 }}>
-                            WorkHive
+                              {userName || 'Usuario'}
                           </Typography>
                         </Stack>
                         <Typography variant="subtitle2">Panel de usuario</Typography>
