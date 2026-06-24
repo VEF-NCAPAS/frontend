@@ -109,7 +109,6 @@ export default function SearchCandidates() {
       setApplications(
         apps.map((app) => ({
           ...app,
-          score: app.score ?? 75,
           matchedSkills: selectedSkill ? [selectedSkill.name] : [],
 
           skills: app.cv?.skills ?? [],
@@ -144,12 +143,7 @@ export default function SearchCandidates() {
   };
 
 
-  const getScoreColor = (score) => {
-    if (score >= 80) return 'success';
-    if (score >= 50) return 'warning';
-    return 'info';
-  };
-
+ 
   const handleViewProfile = (app) => {
     navigate('/reclutador/postulantes', {
       state: {
@@ -264,7 +258,6 @@ export default function SearchCandidates() {
               {applications.map((app) => {
                 const candidateName = app.candidateName || 'Candidato';
                 const candidateEmail = app.candidateEmail || '';
-                const score = app.score ?? 75;
                 const matchedSkills = app.matchedSkills || [];
                 const candidateSkills = app.skills || [];
 
@@ -297,14 +290,7 @@ export default function SearchCandidates() {
                             </Box>
                           </Box>
 
-                          <Box textAlign="right">
-                            <Chip 
-                              label={`${score}% Match`} 
-                              color={getScoreColor(score)} 
-                              size="medium"
-                              sx={{ fontWeight: 700 }}
-                            />
-                          </Box>
+                          
                         </Box>
 
                         <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, lineHeight: 1.6 }}>
