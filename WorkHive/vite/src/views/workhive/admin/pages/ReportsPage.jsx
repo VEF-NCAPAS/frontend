@@ -208,7 +208,7 @@ export default function ReportsPage() {
   const [dbData, setDbData] = useState({
     companiesCount: 0,
     candidatesCount: 0,
-    gender: [0, 0],
+    gender: [0, 0, 0],
     areas: [0, 0, 0, 0, 0, 0]
   });
 
@@ -253,7 +253,7 @@ export default function ReportsPage() {
         setDbData({
           companiesCount,
           candidatesCount: m + f + o,
-          gender: [m, f],
+          gender: [m, f, o],
           areas: [0, 0, 0, 0, 0, 0]
         });
       } catch (err) {
