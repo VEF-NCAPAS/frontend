@@ -62,7 +62,7 @@ export default function CandidateAccountSettingsPage() {
         description: 'Finaliza tu sesión actual en WorkHive.',
         icon: IconLogout,
         action: (
-          <Button variant="contained" color="secondary" sx={buttonSX}>
+          <Button variant="contained" color="secondary" sx={buttonSX} onClick={() => navigate('/')}>
             Cerrar sesión
           </Button>
         )
