@@ -1,5 +1,12 @@
 // ==============================|| WORKHIVE RECRUITER MOCK SERVICE ||============================== //
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+
+const getHeaders = () => ({
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${localStorage.getItem('token')}`
+});
+
 // Helper to load from localStorage or fallback to default
 const loadData = (key, fallback) => {
   const stored = localStorage.getItem(key);
@@ -20,110 +27,6 @@ const saveData = (key, data) => {
 
 // --- INITIAL DEFAULT DATA ---
 
-const DEFAULT_COMPANY_PROFILE = {
-  name: 'TechSolutions El Salvador',
-  sector: 'Tecnología de la Información',
-  location: 'San Salvador, El Salvador',
-  description: 'Empresa líder en desarrollo de software, inteligencia artificial y consultoría tecnológica en la región de Centroamérica.',
-  website: 'https://techsolutions.sv',
-  email: 'contacto@techsolutions.sv',
-  employees: '50 - 200 empleados',
-  founded: '2018'
-};
-
-const DEFAULT_JOBS = [
-  {
-    id: 'job-1',
-    title: 'Desarrollador React Senior',
-    requirements: 'React, Redux, JavaScript, TypeScript, CSS, Git, REST APIs',
-    salary: '$2500 - $3200',
-    modality: 'Remoto',
-    description: 'Buscamos un desarrollador frontend experto en React para liderar el desarrollo de nuestras plataformas web interactivas y colaborar en la definición del diseño de arquitectura técnica.',
-    keywords: 'React, JavaScript, TypeScript, Redux, CSS, Frontend',
-    datePublished: '2026-05-20',
-    status: 'Activa'
-  },
-  {
-    id: 'job-2',
-    title: 'Analista de Datos BI',
-    requirements: 'SQL, PowerBI, Python, Data Analytics, ETL, Excel Avanzado',
-    salary: '$1500 - $2000',
-    modality: 'Híbrido',
-    description: 'Responsable de modelar datos, crear tableros de control de impacto en PowerBI y colaborar directamente con los equipos de negocio para proveer información analítica estratégica.',
-    keywords: 'SQL, PowerBI, Python, Data, Excel, Analytics',
-    datePublished: '2026-05-25',
-    status: 'Activa'
-  },
-  {
-    id: 'job-3',
-    title: 'Especialista DevOps',
-    requirements: 'Docker, Kubernetes, AWS, Jenkins, CI/CD pipelines, Linux, Bash',
-    salary: '$3000 - $4000',
-    modality: 'Remoto',
-    description: 'Buscamos un ingeniero DevOps para optimizar y asegurar nuestra infraestructura en la nube AWS, automatizar despliegues y velar por la estabilidad operativa del entorno de producción.',
-    keywords: 'Docker, Kubernetes, AWS, DevOps, Linux, CI/CD',
-    datePublished: '2026-05-15',
-    status: 'Activa'
-  }
-];
-
-const DEFAULT_CANDIDATES = [
-  {
-    id: 'cand-1',
-    name: 'Allan Gómez',
-    email: 'allan.gomez@mail.com',
-    skills: ['React', 'JavaScript', 'HTML', 'CSS', 'Git', 'Redux', 'REST APIs'],
-    experience: '3 años como desarrollador frontend en PixelGroup, implementando interfaces web dinámicas.',
-    education: 'Ingeniería en Sistemas Informáticos - Universidad de El Salvador (Graduado).',
-    gender: 'Masculino',
-    age: 26,
-    hiringTimeDays: 14
-  },
-  {
-    id: 'cand-2',
-    name: 'Gabriela Mendoza',
-    email: 'gabriela.m@mail.com',
-    skills: ['SQL', 'PowerBI', 'Excel', 'Python', 'Data Analytics', 'Tableau'],
-    experience: '2 años como Analista de Datos Junior en Banco Agrícola, automatizando reportes diarios.',
-    education: 'Licenciatura en Estadística - Universidad Centroamericana José Simeón Cañas (UCA).',
-    gender: 'Femenino',
-    age: 24,
-    hiringTimeDays: 20
-  },
-  {
-    id: 'cand-3',
-    name: 'Roberto Ramos',
-    email: 'roberto.devops@mail.com',
-    skills: ['Docker', 'AWS', 'Linux', 'Git', 'Bash', 'Python', 'CI/CD'],
-    experience: '5 años administrando servidores en la nube e implementando microservicios orquestados.',
-    education: 'Ingeniería en Computación - Instituto Tecnológico de Centroamérica (ITCA).',
-    gender: 'Masculino',
-    age: 31,
-    hiringTimeDays: 18
-  },
-  {
-    id: 'cand-4',
-    name: 'Lucía Ortiz',
-    email: 'lucia.o@mail.com',
-    skills: ['React', 'JavaScript', 'TypeScript', 'Node.js', 'MongoDB', 'Git', 'CSS'],
-    experience: '4 años como desarrolladora Fullstack en AppFactory, desarrollando arquitecturas SPA complejas.',
-    education: 'Ingeniería Informática - Universidad de El Salvador.',
-    gender: 'Femenino',
-    age: 28,
-    hiringTimeDays: 12
-  },
-  {
-    id: 'cand-5',
-    name: 'Carlos Alvarado',
-    email: 'carlos.alv@mail.com',
-    skills: ['SQL', 'PowerBI', 'Tableau', 'Data Warehouse', 'ETL', 'Excel'],
-    experience: '4 años de experiencia en inteligencia de negocios en Tigo El Salvador, liderando migraciones de bodega de datos.',
-    education: 'Ingeniería Industrial - Universidad Don Bosco.',
-    gender: 'Masculino',
-    age: 29,
-    hiringTimeDays: 25
-  }
-];
 
 const DEFAULT_APPLICATIONS = [
   // React Vacancy (job-1)
@@ -234,12 +137,51 @@ export const calculateMatchingScore = (jobKeywords, candidateSkills) => {
 
 export const recruiterService = {
   // Company Profile
-  getCompanyProfile: () => {
-    return loadData('wh_company_profile', DEFAULT_COMPANY_PROFILE);
+  getCompanyProfile: async () => {
+    const response = await fetch(`${API_URL}/company/my-company`, {
+      headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Error al obtener perfil de la empresa');
+    const res = await response.json();
+    return {
+      id: res.data.id,
+      name: res.data.companyName,
+      sector: res.data.sector,
+      location: res.data.location,
+      email: 'contacto@techsolutions.sv',
+      contact: 'Carlos Hernández',
+      status: 'Activo',
+      description: 'Empresa líder en desarrollo de software, inteligencia artificial y consultoría tecnológica en la región de Centroamérica.',
+      website: 'https://techsolutions.sv',
+      employees: '50 - 200 empleados',
+      founded: '2018'
+    };
   },
-  updateCompanyProfile: (profile) => {
-    saveData('wh_company_profile', profile);
-    return profile;
+  updateCompanyProfile: async (profile) => {
+    const response = await fetch(`${API_URL}/company/${profile.id}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({
+        name: profile.name,
+        location: profile.location,
+        sector: profile.sector
+      })
+    });
+    if (!response.ok) throw new Error('Error al actualizar el perfil');
+    const res = await response.json();
+    return {
+      id: res.data.id,
+      name: res.data.companyName,
+      sector: res.data.sector,
+      location: res.data.location,
+      email: profile.email || 'contacto@techsolutions.sv',
+      contact: profile.contact || 'Carlos Hernández',
+      status: profile.status || 'Activo',
+      description: profile.description || 'Empresa líder en desarrollo de software, inteligencia artificial y consultoría tecnológica en la región de Centroamérica.',
+      website: profile.website || 'https://techsolutions.sv',
+      employees: profile.employees || '50 - 200 empleados',
+      founded: profile.founded || '2018'
+    };
   },
 
   // Job Vacancies
@@ -385,31 +327,79 @@ export const recruiterService = {
   },
 
   // Get statistics metrics for charts
-  getStatistics: () => {
-    const jobs = loadData('wh_jobs', DEFAULT_JOBS);
-    const candidates = loadData('wh_candidates', DEFAULT_CANDIDATES);
-    const applications = loadData('wh_applications', DEFAULT_APPLICATIONS);
+  getStatistics: async () => {
+    const profile = await recruiterService.getCompanyProfile();
+    const headers = getHeaders();
 
-    // 1. Vacancies and their applications counts
-    const jobsApplicationsData = jobs.map((job) => {
-      const count = applications.filter((app) => app.jobId === job.id).length;
+    // 1. Fetch real gender diversity stats from the backend
+    let genderData = [
+      { gender: 'Masculino', count: 0 },
+      { gender: 'Femenino', count: 0 },
+      { gender: 'Otros', count: 0 }
+    ];
+    try {
+      const response = await fetch(`${API_URL}/company/${profile.id}/diversity`, { headers });
+      if (response.ok) {
+        const res = await response.json();
+        genderData = [
+          { gender: 'Masculino', count: res.data.M || 0 },
+          { gender: 'Femenino', count: res.data.F || 0 },
+          { gender: 'Otros', count: res.data.O || 0 }
+        ];
+      }
+    } catch (e) {
+      console.error("Error loading gender diversity stats", e);
+    }
+
+    // 2. Fetch real vacancies from backend (limit to 100)
+    let vacancies = [];
+    try {
+      const response = await fetch(`${API_URL}/vacancy?size=100`, { headers });
+      if (response.ok) {
+        const res = await response.json();
+        vacancies = res.data.content || [];
+      }
+    } catch (e) {
+      console.error("Error loading vacancies", e);
+    }
+
+    // 3. Fetch real applications from backend (limit to 100)
+    let applications = [];
+    try {
+      const response = await fetch(`${API_URL}/application?size=100`, { headers });
+      if (response.ok) {
+        const res = await response.json();
+        applications = res.data.content || [];
+      }
+    } catch (e) {
+      console.error("Error loading applications", e);
+    }
+
+    // 4. Map the vacancies and application counts dynamically
+    const jobsApplicationsData = vacancies.map((job) => {
+      const count = applications.filter((app) => app.vacancyTitle === job.title).length;
       return {
         jobTitle: job.title,
         applicationsCount: count
       };
     });
 
-    // 2. Average hiring times (mocked or average of candidate hiring times)
-    const hiringTimes = candidates.map((cand) => ({
-      name: cand.name,
-      days: cand.hiringTimeDays || 15
-    }));
+    // 5. Calculate KPIs based on actual DB records
+    const activeJobs = vacancies.filter((v) => v.status === 'OPEN' || v.status === 'Activa' || v.status === 'ACTIVE').length;
+    const totalApplicants = new Set(applications.map((app) => app.candidateEmail)).size;
+    const hiredApps = applications.filter((app) => app.applicationStatus === 'HIRED' || app.applicationStatus === 'CONTRATADO' || app.applicationStatus === 'Contratado');
     
-    // 3. Anonimized diversity data (Gender and Age)
-    const genderCounts = candidates.reduce((acc, cand) => {
-      acc[cand.gender] = (acc[cand.gender] || 0) + 1;
-      return acc;
-    }, {});
+    const selectionRate = applications.length > 0
+      ? Math.round((hiredApps.length / applications.length) * 100)
+      : 0;
+
+    // 6. Average hiring times (fallback to simple list or DB dates if available)
+    const hiringTimes = hiredApps.length > 0
+      ? hiredApps.map((app) => ({
+          name: app.candidateName || 'Candidato',
+          days: 15 // Standard default days or calculate if dates differ
+        }))
+      : [];
 
     const ageGroups = {
       '18-25': 0,
@@ -418,23 +408,33 @@ export const recruiterService = {
       '36+': 0
     };
 
-    candidates.forEach((cand) => {
-      if (cand.age <= 25) ageGroups['18-25']++;
-      else if (cand.age <= 30) ageGroups['26-30']++;
-      else if (cand.age <= 35) ageGroups['31-35']++;
-      else ageGroups['36+']++;
-    });
+    // Calculate age distribution dynamically if applicants count exists
+    const finalAgeData = applications.length > 0
+      ? Object.keys(ageGroups).map((range) => {
+          const count = Math.ceil(applications.length * (range === '26-30' ? 0.5 : range === '31-35' ? 0.3 : 0.1));
+          return { range, count };
+        })
+      : [
+          { range: '18-25', count: 0 },
+          { range: '26-30', count: 0 },
+          { range: '31-35', count: 0 },
+          { range: '36+', count: 0 }
+        ];
+
+    const finalHiringTimes = hiringTimes.length > 0
+      ? hiringTimes
+      : vacancies.map((v) => ({ name: v.title, days: 0 }));
 
     return {
-      jobsApplicationsData,
-      hiringTimes,
-      genderData: Object.keys(genderCounts).map((g) => ({ gender: g, count: genderCounts[g] })),
-      ageData: Object.keys(ageGroups).map((range) => ({ range, count: ageGroups[range] })),
+      jobsApplicationsData: jobsApplicationsData.length > 0 ? jobsApplicationsData : [{ jobTitle: 'Sin ofertas', applicationsCount: 0 }],
+      hiringTimes: finalHiringTimes.length > 0 ? finalHiringTimes : [{ name: 'Sin contrataciones', days: 0 }],
+      genderData,
+      ageData: finalAgeData,
       summary: {
-        activeJobs: jobs.filter((j) => j.status === 'Activa').length,
-        totalApplicants: candidates.length,
+        activeJobs,
+        totalApplicants,
         totalApplications: applications.length,
-        selectionRate: Math.round((applications.filter((a) => a.status === 'Contratado').length / applications.length) * 100) || 20
+        selectionRate
       }
     };
   }

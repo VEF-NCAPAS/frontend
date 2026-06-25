@@ -39,7 +39,6 @@ import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
 import ActionResultDialog from '../candidate/components/ActionResultDialog';
-import { recruiterService } from 'services/recruiterService';
 import { getAllRequirements } from 'services/requirementService';
 import { deleteVacancy, getVacancies, updateVacancy } from 'services/vacancyService';
 
@@ -142,8 +141,6 @@ export default function MyJobs() {
 
   const loadData = async () => {
     setLoading(true);
-    setApps(recruiterService.getApplications());
-
     try {
       const [vacanciesResponse, requirementsResponse] = await Promise.all([getVacancies(), getAllRequirements()]);
       setJobs(normalizeList(vacanciesResponse));
