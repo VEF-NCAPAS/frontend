@@ -415,7 +415,7 @@ export default function Applicants() {
     const technicalTestId = getTechnicalTestId(selectedApp.technicalTest);
     const payload = {
       applicationId: selectedApp.id,
-      link: technicalTestLink.trim(),
+      externalLink: technicalTestLink.trim(),
       deadline: toLocalDateTimePayload(technicalTestDeadline)
     };
 
