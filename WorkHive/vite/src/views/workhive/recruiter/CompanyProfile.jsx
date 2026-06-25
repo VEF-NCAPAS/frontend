@@ -20,15 +20,14 @@ import Divider from '@mui/material/Divider';
 // assets
 import BusinessIcon from '@mui/icons-material/Business';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import LanguageIcon from '@mui/icons-material/Language';
-import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
-import { recruiterService } from 'services/recruiterService';
+
+import {getMyCompany, updateCompany} from 'services/companyService';
 
 // sectors list
 const SECTORS = [
@@ -60,9 +59,13 @@ export default function CompanyProfile() {
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        const data = await recruiterService.getCompanyProfile();
-        setProfile(data);
-        setFormData(data);
+        const response = await getMyCompany();
+          setProfile(response.data);
+          setFormData({
+            name: response.data.companyName,
+            location: response.data.location,
+            sector: response.data.sector
+          });
       } catch (err) {
         console.error("Error loading profile", err);
       }
@@ -81,10 +84,18 @@ export default function CompanyProfile() {
   const handleSave = async (e) => {
     e.preventDefault();
     try {
-      const updated = await recruiterService.updateCompanyProfile(formData);
-      setProfile(updated);
+      await updateCompany(profile.id, formData);
+      const companyResponse = await getMyCompany();
+      setProfile(companyResponse.data);
+      setFormData({
+        name: companyResponse.data.companyName,
+        location: companyResponse.data.location,
+        sector: companyResponse.data.sector
+      });
       setIsEditing(false);
-      setSuccessMessage('¡Perfil de la empresa registrado y actualizado correctamente!');
+
+      setSuccessMessage('Perfil de empresa actualizado exitosamente.');
+
     } catch (err) {
       console.error("Error saving profile", err);
     }
@@ -96,7 +107,11 @@ export default function CompanyProfile() {
   };
 
   const handleCancel = () => {
-    setFormData(profile);
+    setFormData({
+      name: profile.companyName || '',
+      location: profile.location || '',
+      sector: profile.sector || ''
+    });
     setIsEditing(false);
   };
 
@@ -134,7 +149,7 @@ export default function CompanyProfile() {
                     <BusinessIcon sx={{ fontSize: 60 }} />
                   </Box>
                   <Typography variant="h3" sx={{ color: '#fff', fontWeight: 600 }}>
-                    {profile.name}
+                    {profile.companyName}
                   </Typography>
                   <Chip
                     label={profile.sector}
@@ -155,23 +170,12 @@ export default function CompanyProfile() {
 
             {/* Profile detail */}
             <Grid item xs={12} md={8}>
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+              <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
                 <Typography variant="h4" color="primary" fontWeight={600}>
                   Información Corporativa
                 </Typography>
-                <Button
-                  variant="outlined"
-                  startIcon={<EditIcon />}
-                  onClick={() => setIsEditing(true)}
-                  sx={{ borderRadius: 2 }}
-                >
-                  Registrar / Editar Perfil
-                </Button>
+                
               </Box>
-
-              <Typography variant="body1" sx={{ mb: 3, lineHeight: 1.7, color: 'text.secondary' }}>
-                {profile.description || 'Sin descripción todavía. Haz clic en Editar Perfil para registrar una descripción.'}
-              </Typography>
 
               <Divider sx={{ my: 2 }} />
 
@@ -194,183 +198,122 @@ export default function CompanyProfile() {
                     </Box>
                   </Stack>
                 </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Stack direction="row" alignItems="center" spacing={1.5}>
-                    <LanguageIcon color="action" />
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">Sitio Web</Typography>
-                      <Typography variant="body2" fontWeight={500} component="a" href={profile.website} target="_blank" rel="noreferrer" sx={{ textDecoration: 'none', color: 'primary.main' }}>
-                        {profile.website}
-                      </Typography>
-                    </Box>
-                  </Stack>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Stack direction="row" alignItems="center" spacing={1.5}>
-                    <MailOutlineIcon color="action" />
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">Email de Contacto</Typography>
-                      <Typography variant="body2" fontWeight={500}>{profile.email}</Typography>
-                    </Box>
-                  </Stack>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Stack direction="row" alignItems="center" spacing={1.5}>
-                    <BusinessIcon color="action" />
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">Tamaño / Fundación</Typography>
-                      <Typography variant="body2" fontWeight={500}>
-                        {profile.employees} (Fundada en {profile.founded})
-                      </Typography>
-                    </Box>
-                  </Stack>
-                </Grid>
+                <Button
+                  variant="outlined"
+                  startIcon={<EditIcon />}
+                  onClick={() => setIsEditing(true)}
+                  sx={{ borderRadius: 2 }}
+                >
+                  Registrar / Editar Perfil
+                </Button>
               </Grid>
             </Grid>
           </Grid>
+
+          
         ) : (
           // EDIT MODE FORM
           <form onSubmit={handleSave}>
             <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <Typography variant="h4" color="primary" fontWeight={600} mb={1}>
-                  Registrar Información de la Empresa
-                </Typography>
-                <Typography variant="body2" color="text.secondary" mb={3}>
-                  Completa los siguientes campos para registrar y publicar la información pública de tu empresa.
-                </Typography>
-              </Grid>
+  {/* Header */}
+  <Grid item xs={12}>
+    <Box mb={1}>
+      <Typography variant="h4" color="primary" fontWeight={700}>
+        Editar perfil de empresa
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+        Completa los siguientes campos para actualizar la información de tu empresa.
+      </Typography>
+    </Box>
+  </Grid>
 
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  required
-                  label="Nombre de la Empresa"
-                  name="name"
-                  value={formData.name || ''}
-                  onChange={handleInputChange}
-                />
-              </Grid>
+  {/* Form fields */}
+  <Grid item xs={12}>
+    <Grid container spacing={3}>
+      <Grid item xs={12} md={6}>
+        <TextField
+          fullWidth
+          required
+          label="Nombre de la Empresa"
+          name="name"
+          value={formData.name || ''}
+          onChange={handleInputChange}
+        />
+      </Grid>
 
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth required>
-                  <InputLabel id="sector-select-label">Sector Industrial</InputLabel>
-                  <Select
-                    labelId="sector-select-label"
-                    label="Sector Industrial"
-                    name="sector"
-                    value={formData.sector || ''}
-                    onChange={handleInputChange}
-                  >
-                    {SECTORS.map((s) => (
-                      <MenuItem key={s} value={s}>{s}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
+      <Grid item xs={12} sm={6}>
+      <FormControl fullWidth required>
+        <InputLabel id="sector-select-label">Sector Industrial</InputLabel>
+        <Select
+          labelId="sector-select-label"
+          label="Sector Industrial"
+          name="sector"
+          value={formData.sector || ''}
+          onChange={handleInputChange}
+          displayEmpty
+          renderValue={(selected) => {
+            if (!selected) {
+              return <span style={{ color: '#9e9e9e' }}>Selecciona un sector</span>;
+            }
+            return selected;
+          }}
+        >
+          <MenuItem value="" disabled>
+            Selecciona un sector
+          </MenuItem>
 
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  required
-                  label="Ubicación"
-                  name="location"
-                  placeholder="Ej: San Salvador, El Salvador"
-                  value={formData.location || ''}
-                  onChange={handleInputChange}
-                />
-              </Grid>
+          {SECTORS.map((s) => (
+            <MenuItem key={s} value={s}>
+              {s}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    </Grid>
 
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth required>
-                  <InputLabel id="size-select-label">Tamaño de la Empresa</InputLabel>
-                  <Select
-                    labelId="size-select-label"
-                    label="Tamaño de la Empresa"
-                    name="employees"
-                    value={formData.employees || ''}
-                    onChange={handleInputChange}
-                  >
-                    {COMPANY_SIZES.map((sz) => (
-                      <MenuItem key={sz} value={sz}>{sz}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
+      
 
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Sitio Web"
-                  name="website"
-                  placeholder="Ej: https://miempresa.com"
-                  value={formData.website || ''}
-                  onChange={handleInputChange}
-                />
-              </Grid>
+      <Grid item xs={12} md={6}>
+        <TextField
+          fullWidth
+          required
+          label="Ubicación"
+          name="location"
+          placeholder="Ej: San Salvador, El Salvador"
+          value={formData.location || ''}
+          onChange={handleInputChange}
+        />
+      </Grid>
+      
+    </Grid>
+  </Grid>
 
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  required
-                  type="email"
-                  label="Email de Contacto"
-                  name="email"
-                  value={formData.email || ''}
-                  onChange={handleInputChange}
-                />
-              </Grid>
+  
 
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Año de Fundación"
-                  name="founded"
-                  type="number"
-                  placeholder="Ej: 2018"
-                  value={formData.founded || ''}
-                  onChange={handleInputChange}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  required
-                  multiline
-                  rows={4}
-                  label="Descripción de la Empresa"
-                  name="description"
-                  placeholder="Escribe una breve reseña sobre la empresa, cultura, misión y qué hacen..."
-                  value={formData.description || ''}
-                  onChange={handleInputChange}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <Stack direction="row" spacing={2} justifyContent="flex-end">
-                  <Button
-                    variant="outlined"
-                    color="secondary"
-                    startIcon={<CancelIcon />}
-                    onClick={handleCancel}
-                    sx={{ borderRadius: 2 }}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    startIcon={<SaveIcon />}
-                    sx={{ borderRadius: 2 }}
-                  >
-                    Guardar Perfil
-                  </Button>
-                </Stack>
-              </Grid>
-            </Grid>
+  {/* Buttons */}
+  <Grid item xs={12}>
+    <Stack direction="row" spacing={2} justifyContent="flex-end">
+      <Button
+        variant="outlined"
+        color="secondary"
+        startIcon={<CancelIcon />}
+        onClick={handleCancel}
+        sx={{ borderRadius: 2 }}
+      >
+        Cancelar
+      </Button>
+      <Button
+        type="submit"
+        variant="contained"
+        color="primary"
+        startIcon={<SaveIcon />}
+        sx={{ borderRadius: 2 }}
+      >
+        Guardar Perfil
+      </Button>
+    </Stack>
+  </Grid>
+</Grid>
           </form>
         )}
       </Stack>
