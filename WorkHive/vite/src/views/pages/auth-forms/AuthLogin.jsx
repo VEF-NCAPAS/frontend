@@ -95,10 +95,10 @@ export default function AuthLogin() {
 
       const data = response.data;
 
-      localStorage.setItem('name', data.name);
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('role', data.role);
-      localStorage.setItem('email', data.email);
+      localStorage.setItem('name', data.name || '');
+      localStorage.setItem('token', data.token || '');
+      localStorage.setItem('role', data.role || '');
+      localStorage.setItem('email', data.email || '');
 
       if (checked) {
         localStorage.setItem('rememberSession', 'true');
@@ -107,7 +107,6 @@ export default function AuthLogin() {
       }
 
       redirectByRole(data.role);
-
     } catch (err) {
         setError(
           err.response?.data?.message ||

@@ -17,3 +17,11 @@ export const changePassword = async (data) => {
 
   return response.data;
 };
+
+export const getGlobalDiversityStats = async () => {
+  const response = await api.get(
+    `${API_URL}/user/diversity`
+  );
+
+  return response.data;
+};

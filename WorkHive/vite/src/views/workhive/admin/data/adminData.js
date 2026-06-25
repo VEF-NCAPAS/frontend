@@ -21,32 +21,16 @@ export const users = [
 
 export const companyFields = [
   { name: 'name', label: 'Nombre de la empresa' },
-  { name: 'sector', label: 'Sector' },
-  { name: 'contact', label: 'Responsable' },
-  { name: 'email', label: 'Correo corporativo', type: 'email' },
-  { name: 'status', label: 'Estado', options: ['Activo', 'Pendiente', 'Suspendido'] }
+  { name: 'location', label: 'Ubicación' },
+  { name: 'sector', label: 'Sector' }
 ];
 
 export const companyColumns = [
-  { name: 'name', label: 'Empresa' },
-  { name: 'sector', label: 'Sector' },
-  { name: 'contact', label: 'Responsable' },
-  { name: 'email', label: 'Correo' },
-  { name: 'status', label: 'Estado' }
+  { name: 'companyName', label: 'Empresa' },
+  { name: 'location', label: 'Ubicación' },
+  { name: 'sector', label: 'Sector' }
 ];
 
-export const companies = [
-  {
-    id: 1,
-    name: 'Talento Hub',
-    sector: 'Recursos humanos',
-    contact: 'Carlos Hernández',
-    email: 'contacto@talentohub.com',
-    status: 'Activo'
-  },
-  { id: 2, name: 'Nova Tech', sector: 'Tecnología', contact: 'María Rivera', email: 'empleos@novatech.com', status: 'Activo' },
-  { id: 3, name: 'Grupo Horizonte', sector: 'Servicios', contact: 'José Aguilar', email: 'rrhh@horizonte.com', status: 'Pendiente' }
-];
 
 export const candidateFields = [
   { name: 'name', label: 'Nombre completo' },

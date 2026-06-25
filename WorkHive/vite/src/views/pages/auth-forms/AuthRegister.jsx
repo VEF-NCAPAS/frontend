@@ -311,9 +311,10 @@ export default function AuthRegister() {
         window.location.href = '/pages/login';
       }, 1000);
     } catch (err) {
+      const errorMessage = err.response?.data?.message || err.message || 'Ocurrió un error al registrar la cuenta.';
       setMessage({
         type: 'error',
-        text: err.message || 'Ocurrió un error al registrar la cuenta.'
+        text: errorMessage
       });
     } finally {
       setLoading(false);
