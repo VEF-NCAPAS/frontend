@@ -8,7 +8,7 @@ const getHeaders = () => ({
 export const adminService = {
   // Get all companies from PostgreSQL database
   getCompanies: async () => {
-    const response = await fetch(`${API_URL}/companies`, {
+    const response = await fetch(`${API_URL}/company`, {
       headers: getHeaders()
     });
     if (!response.ok) throw new Error('Error al obtener las empresas de la base de datos');

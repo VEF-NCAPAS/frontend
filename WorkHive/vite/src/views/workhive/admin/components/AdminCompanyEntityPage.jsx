@@ -28,8 +28,7 @@ import { IconEdit, IconPlus, IconSearch, IconTrash } from '@tabler/icons-react';
 
 import MainCard from 'ui-component/cards/MainCard';
 import PageHeading from '../../candidate/components/PageHeading';
-import { adminService } from '../../../../services/adminService';
-
+import * as companyService from '../../../../services/companyService';
 const statusColors = {
   Activo: 'success',
   Pendiente: 'warning',
@@ -59,8 +58,9 @@ export default function AdminCompanyEntityPage({ title, description, entityName,
     try {
       setLoading(true);
       setError('');
-      const data = await adminService.getCompanies();
-      setRecords(data);
+      const response = await companyService.getCompaniesAdmin();
+      const companies = response?.data?.content || [];
+      setRecords(companies);
     } catch (err) {
       setError(err.message || 'Error al conectar con la base de datos de pgAdmin.');
     } finally {
@@ -96,11 +96,12 @@ export default function AdminCompanyEntityPage({ title, description, entityName,
 
     try {
       if (editingId) {
-        const updated = await adminService.updateCompany(editingId, form);
+        const response = await companyService.updateCompany(editingId, form);
+        const updated = response.data;
         setRecords((prev) => prev.map((record) => (record.id === editingId ? updated : record)));
         setMessage(`${entityName} actualizado correctamente en la base de datos.`);
       } else {
-        const created = await adminService.createCompany(form);
+        const created = (await companyService.createCompany(form)).data;
         setRecords((prev) => [...prev, created]);
         setMessage(`${entityName} creado correctamente en la base de datos.`);
       }
@@ -113,7 +114,7 @@ export default function AdminCompanyEntityPage({ title, description, entityName,
   const handleDelete = async () => {
     setSubmitError('');
     try {
-      await adminService.deleteCompany(deleteRecord.id);
+      await companyService.deleteCompany(deleteRecord.id);
       setRecords((prev) => prev.filter((record) => record.id !== deleteRecord.id));
       setDeleteRecord(null);
       setMessage(`${entityName} eliminado correctamente de la base de datos.`);
@@ -276,7 +277,7 @@ export default function AdminCompanyEntityPage({ title, description, entityName,
         <DialogTitle>Eliminar {entityName.toLowerCase()}</DialogTitle>
         <DialogContent>
           <Alert severity="warning">
-            Esta acción eliminará a <strong>{deleteRecord?.name}</strong>. No se puede deshacer.
+            Esta acción eliminará a <strong>{deleteRecord?.companyName}</strong>. No se puede deshacer.
           </Alert>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5 }}>

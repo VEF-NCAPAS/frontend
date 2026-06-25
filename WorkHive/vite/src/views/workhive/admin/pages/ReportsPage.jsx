@@ -14,39 +14,14 @@ import Chart from 'react-apexcharts';
 import MainCard from 'ui-component/cards/MainCard';
 import PageHeading from '../../candidate/components/PageHeading';
 import useConfig from 'hooks/useConfig';
+import * as userService from 'services/userService';
 
-const reportData = {
-  2024: {
-    offers: [14, 18, 23, 21, 28, 31, 35, 38, 42, 47, 51, 56],
-    registrations: [32, 39, 44, 48, 55, 63, 68, 74, 81, 88, 96, 104],
-    companies: [4, 6, 5, 8, 7, 10, 9, 12, 11, 14, 13, 16],
-    candidates: [24, 29, 33, 36, 41, 47, 51, 56, 62, 68, 74, 81],
-    areas: [82, 64, 51, 43, 31, 24],
-    gender: [164, 142, 2]
-  },
-  2025: {
-    offers: [22, 26, 29, 35, 38, 44, 49, 53, 58, 64, 69, 75],
-    registrations: [54, 62, 70, 79, 88, 97, 106, 118, 129, 141, 154, 168],
-    companies: [7, 9, 8, 11, 13, 12, 15, 17, 16, 19, 21, 23],
-    candidates: [39, 46, 52, 59, 66, 73, 81, 89, 98, 108, 119, 131],
-    areas: [108, 83, 69, 57, 42, 35],
-    gender: [211, 189, 3]
-  },
-  2026: {
-    offers: [31, 36, 42, 48, 55, 61, 67, 72, 78, 84, 91, 98],
-    registrations: [71, 83, 94, 108, 122, 138, 151, 164, 179, 193, 207, 224],
-    companies: [10, 12, 15, 14, 18, 20, 22, 25, 27, 29, 32, 35],
-    candidates: [52, 61, 69, 79, 90, 102, 113, 125, 138, 151, 165, 180],
-    areas: [137, 105, 88, 73, 55, 46],
-    gender: [264, 238, 2]
-  }
-};
+
 
 const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 const areaLabels = ['Tecnología', 'Administración', 'Ventas', 'Servicio al cliente', 'Diseño', 'Otros'];
 const genderLabels = ['Masculino', 'Femenino', 'Otro'];
 const genderColors = ['#319795', '#f59aa0', '#7ee36b'];
-const areaColors = ['#2196f3', '#00cfa5', '#ffb020', '#ff4964', '#7c4dff', '#55c2da'];
 
 function total(values) {
   return values.reduce((sum, value) => sum + value, 0);
@@ -193,17 +168,7 @@ export default function ReportsPage() {
     }
   };
 
-  const areaOptions = {
-    ...donutBaseOptions,
-    labels: areaLabels,
-    colors: areaColors,
-    tooltip: {
-      y: {
-        formatter: (value) => `${value.toLocaleString('es-ES')} candidatos`,
-        title: { formatter: (seriesName) => `${seriesName}:` }
-      }
-    }
-  };
+
   
   const [dbData, setDbData] = useState({
     companiesCount: 0,
@@ -218,22 +183,14 @@ export default function ReportsPage() {
     const loadDbStats = async () => {
       try {
         setLoading(true);
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
-        const headers = {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        };
-
+        
         // 1. Fetch global gender diversity stats (counts all candidates by gender)
         let m = 0, f = 0, o = 0;
         try {
-          const res = await fetch(`${API_URL}/user/diversity`, { headers });
-          if (res.ok) {
-            const data = await res.json();
-            m = data.data.M || 0;
-            f = data.data.F || 0;
-            o = data.data.O || 0;
-          }
+          const response = await userService.getGlobalDiversityStats();
+          m = response.data.M || 0;
+          f = response.data.F || 0;
+          o = response.data.O || 0;
         } catch (e) {
           console.error("Error fetching diversity stats", e);
         }
@@ -241,7 +198,7 @@ export default function ReportsPage() {
         // 2. Fetch companies list
         let companiesCount = 0;
         try {
-          const res = await fetch(`${API_URL}/companies`, { headers });
+          const res = await fetch(`${API_URL}/company`, { headers });
           if (res.ok) {
             const data = await res.json();
             companiesCount = data.data ? data.data.length : 0;
@@ -387,11 +344,7 @@ export default function ReportsPage() {
           </ChartCard>
         </Grid>
 
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <ChartCard title="Candidatos por área" subtitle="Distribución de perfiles profesionales">
-            <Chart type="donut" height={390} series={dbData.areas} options={areaOptions} />
-          </ChartCard>
-        </Grid>
+       
 
         <Grid size={{ xs: 12, lg: 6 }}>
           <ChartCard title="Personas por género" subtitle="Cantidad de usuarios registrados por género">

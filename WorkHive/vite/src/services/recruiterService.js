@@ -1,4 +1,6 @@
-const API_URL = import.meta.env.VITE_API_URL;
+// ==============================|| WORKHIVE RECRUITER MOCK SERVICE ||============================== //
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 const getHeaders = () => ({
   'Content-Type': 'application/json',
@@ -23,8 +25,115 @@ const saveData = (key, data) => {
   localStorage.setItem(key, JSON.stringify(data));
 };
 
+// --- INITIAL DEFAULT DATA ---
 
-// - SERVICES EXPORTS ---
+
+const DEFAULT_APPLICATIONS = [
+  // React Vacancy (job-1)
+  {
+    id: 'app-1',
+    jobId: 'job-1',
+    candidateId: 'cand-1',
+    applicationDate: '2026-05-21',
+    status: 'Revisado',
+    presentationLetter: 'Estimado equipo de TechSolutions, me entusiasma mucho esta oportunidad. Cuento con 3 años de experiencia en desarrollo Frontend con React. Considero que mis conocimientos en UI dinámica y gestión de estado con Redux encajan muy bien en su equipo.',
+    comments: {
+      postulado: 'Aplicación recibida. Cumple con el stack básico de frontend.',
+      revisado: 'Se revisó su portafolio y tiene una base muy sólida de CSS y React hooks.'
+    },
+    technicalTest: 'https://coderbyte.com/test/react-senior-workhive-allan',
+    interview: { date: '2026-06-02', time: '10:00', link: 'https://meet.google.com/abc-defg-hij' }
+  },
+  {
+    id: 'app-2',
+    jobId: 'job-1',
+    candidateId: 'cand-4',
+    applicationDate: '2026-05-22',
+    status: 'Entrevista técnica',
+    presentationLetter: 'Hola. Me interesa la vacante de React Senior. Tengo experiencia liderando equipos pequeños de Frontend y desarrollando en TypeScript. Me gusta escribir código limpio y estructurado.',
+    comments: {
+      postulado: 'Interesante perfil fullstack, domina TypeScript y Node.js adicionalmente.',
+      revisado: 'Filtro telefónico aprobado. Demuestra excelente comunicación.',
+      'entrevista técnica': 'Se agenda entrevista técnica para evaluar la profundidad en patrones avanzados de React.'
+    },
+    technicalTest: 'https://codesandbox.io/s/workhive-react-eval-lucia',
+    interview: { date: '2026-06-03', time: '14:30', link: 'https://zoom.us/j/9876543210' }
+  },
+  // BI Vacancy (job-2)
+  {
+    id: 'app-3',
+    jobId: 'job-2',
+    candidateId: 'cand-2',
+    applicationDate: '2026-05-26',
+    status: 'Contratado',
+    presentationLetter: 'Buenos días. Adjunto mi postulación para Analista de Datos BI. Cuento con experiencia directa en dashboards analíticos en el sector financiero y automatización de reportes SQL que redujeron 15 horas de trabajo manual a la semana.',
+    comments: {
+      postulado: 'Candidato local muy calificado. Licenciada en estadística es un gran plus.',
+      revisado: 'Portafolio de PowerBI muy profesional.',
+      'entrevista técnica': 'Prueba técnica de SQL resuelta a la perfección.',
+      contratado: 'Contratación formalizada. Excelente perfil técnico y soft skills.'
+    },
+    technicalTest: 'https://github.com/gabriela-data/bi-challenge',
+    interview: null
+  },
+  {
+    id: 'app-4',
+    jobId: 'job-2',
+    candidateId: 'cand-5',
+    applicationDate: '2026-05-26',
+    status: 'Rechazado',
+    presentationLetter: 'Estimados señores, deseo postularme a la plaza de Analista BI. Tengo 4 años de experiencia trabajando con bases de datos grandes e integraciones de datos corporativas.',
+    comments: {
+      postulado: 'Buen CV en el área de telecomunicaciones.',
+      revisado: 'Se prefiere un perfil más orientado a visualización y PowerBI que a procesos de bodega tradicionales para esta vacante.'
+    },
+    technicalTest: '',
+    interview: null
+  },
+  // DevOps Vacancy (job-3)
+  {
+    id: 'app-5',
+    jobId: 'job-3',
+    candidateId: 'cand-3',
+    applicationDate: '2026-05-18',
+    status: 'Postulado',
+    presentationLetter: 'Estimados, me postulo como DevOps. Poseo certificaciones en AWS e implemento flujos automatizados con Docker y Jenkins de manera robusta y segura.',
+    comments: {
+      postulado: 'Perfil sólido de ITCA. 5 años de experiencia reales administrando servidores.'
+    },
+    technicalTest: '',
+    interview: null
+  }
+];
+
+// --- CORE UTILITY FUNCTIONS ---
+
+// Smart Skill Matching Score Calculator
+export const calculateMatchingScore = (jobKeywords, candidateSkills) => {
+  if (!jobKeywords) return 50;
+  
+  // Normalize keywords
+  const keywords = jobKeywords
+    .split(',')
+    .map((k) => k.trim().toLowerCase())
+    .filter(Boolean);
+    
+  if (keywords.length === 0) return 50;
+  
+  // Normalize skills
+  const skills = (candidateSkills || []).map((s) => s.trim().toLowerCase());
+  
+  let matches = 0;
+  keywords.forEach((kw) => {
+    // Check if keyword is part of candidate skills or vice-versa
+    const hasMatch = skills.some((sk) => sk.includes(kw) || kw.includes(sk));
+    if (hasMatch) matches++;
+  });
+  
+  return Math.round((matches / keywords.length) * 100);
+};
+
+// --- SERVICES EXPORTS ---
 
 export const recruiterService = {
   // Company Profile
@@ -38,8 +147,15 @@ export const recruiterService = {
       id: res.data.id,
       name: res.data.companyName,
       sector: res.data.sector,
-      location: res.data.location
-        };
+      location: res.data.location,
+      email: 'contacto@techsolutions.sv',
+      contact: 'Carlos Hernández',
+      status: 'Activo',
+      description: 'Empresa líder en desarrollo de software, inteligencia artificial y consultoría tecnológica en la región de Centroamérica.',
+      website: 'https://techsolutions.sv',
+      employees: '50 - 200 empleados',
+      founded: '2018'
+    };
   },
   updateCompanyProfile: async (profile) => {
     const response = await fetch(`${API_URL}/company/${profile.id}`, {
@@ -57,7 +173,14 @@ export const recruiterService = {
       id: res.data.id,
       name: res.data.companyName,
       sector: res.data.sector,
-      location: res.data.location
+      location: res.data.location,
+      email: profile.email || 'contacto@techsolutions.sv',
+      contact: profile.contact || 'Carlos Hernández',
+      status: profile.status || 'Activo',
+      description: profile.description || 'Empresa líder en desarrollo de software, inteligencia artificial y consultoría tecnológica en la región de Centroamérica.',
+      website: profile.website || 'https://techsolutions.sv',
+      employees: profile.employees || '50 - 200 empleados',
+      founded: profile.founded || '2018'
     };
   },
 
@@ -164,7 +287,17 @@ export const recruiterService = {
   },
 
   // Update Technical Test Link
-  
+  updateTechnicalTest: (appId, testLink) => {
+    const applications = loadData('wh_applications', DEFAULT_APPLICATIONS);
+    const updatedApps = applications.map((app) => {
+      if (app.id === appId) {
+        return { ...app, technicalTest: testLink };
+      }
+      return app;
+    });
+    saveData('wh_applications', updatedApps);
+    return updatedApps;
+  },
 
   // Apply candidate to job proactively
   applyCandidateToJob: (candidateId, jobId) => {

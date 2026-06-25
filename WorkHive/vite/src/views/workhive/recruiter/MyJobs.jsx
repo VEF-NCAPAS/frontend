@@ -141,7 +141,6 @@ export default function MyJobs() {
 
   const loadData = async () => {
     setLoading(true);
-
     try {
       const [vacanciesResponse, requirementsResponse] = await Promise.all([getVacancies(), getAllRequirements()]);
       setJobs(normalizeList(vacanciesResponse));

@@ -26,23 +26,11 @@ export const companyFields = [
 ];
 
 export const companyColumns = [
-  { name: 'name', label: 'Empresa' },
+  { name: 'companyName', label: 'Empresa' },
   { name: 'location', label: 'Ubicación' },
   { name: 'sector', label: 'Sector' }
 ];
 
-export const companies = [
-  {
-    id: 1,
-    name: 'Talento Hub',
-    sector: 'Recursos humanos',
-    contact: 'Carlos Hernández',
-    email: 'contacto@talentohub.com',
-    status: 'Activo'
-  },
-  { id: 2, name: 'Nova Tech', sector: 'Tecnología', contact: 'María Rivera', email: 'empleos@novatech.com', status: 'Activo' },
-  { id: 3, name: 'Grupo Horizonte', sector: 'Servicios', contact: 'José Aguilar', email: 'rrhh@horizonte.com', status: 'Pendiente' }
-];
 
 export const candidateFields = [
   { name: 'name', label: 'Nombre completo' },

@@ -28,7 +28,7 @@ export const updateCompany = async (companyId, companyData) => {
   return response.data;
 };
 
-export const getGenderDiversityStats = async (companyId) => {
+export const getCompanyGenderDiversity = async (companyId) => {
   const response = await api.get(
     `${API_URL}/company/${companyId}/diversity`
   );

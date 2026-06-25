@@ -25,25 +25,64 @@ import ShowChartIcon from '@mui/icons-material/ShowChart';
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
 import { recruiterService } from 'services/recruiterService';
+import * as companyService from 'services/companyService';
 
 export default function Statistics() {
-  const [stats, setStats] = useState(null);
+
+  const [stats, setStats] = useState({
+      jobsApplicationsData: [
+        { jobTitle: 'Frontend Developer', applicationsCount: 18 },
+        { jobTitle: 'Backend Developer', applicationsCount: 12 },
+        { jobTitle: 'UX/UI Designer', applicationsCount: 9 },
+        { jobTitle: 'QA Engineer', applicationsCount: 7 }
+      ],
+      hiringTimes: [
+        { name: 'Frontend Developer', days: 12 },
+        { name: 'Backend Developer', days: 18 },
+        { name: 'UX/UI Designer', days: 10 },
+        { name: 'QA Engineer', days: 15 }
+      ],
+      summary: {
+        activeJobs: 4,
+        totalApplicants: 22,
+        totalApplications: 46,
+        selectionRate: 18
+      }
+    });
+  const [genderData, setGenderData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadStats = async () => {
-      try {
-        const data = await recruiterService.getStatistics();
-        setStats(data);
-      } catch (err) {
-        console.error("Error loading statistics", err);
-      }
-    };
-    loadStats();
-  }, []);
+      const loadGenderStats = async () => {
+        try {
+          const myCompanyResponse = await companyService.getMyCompany();
+          const companyId = myCompanyResponse.data?.id;
+
+          if (!companyId) {
+            console.error('No se encontró el id de la empresa');
+            return;
+          }
+
+          const diversityResponse = await companyService.getCompanyGenderDiversity(companyId);
+          const diversity = diversityResponse.data;
+
+          setGenderData([
+            { gender: 'Femenino', count: diversity?.F ?? 0 },
+            { gender: 'Masculino', count: diversity?.M ?? 0 },
+            { gender: 'Otro', count: diversity?.O ?? 0 }
+          ]);
+        } catch (err) {
+          console.error('Error loading gender diversity stats', err);
+        }
+      };
+
+      loadGenderStats();
+    }, []);
+      
 
   if (!stats) return <Typography>Cargando estadísticas...</Typography>;
 
-  const { jobsApplicationsData, hiringTimes, genderData, ageData, summary } = stats;
+  const { jobsApplicationsData, hiringTimes, summary } = stats;
 
   // Chart 1: Vacancies Most Applied To (Bar Chart)
   const barChartOptions = {
@@ -119,7 +158,7 @@ export default function Statistics() {
       fontFamily: 'Inter, sans-serif'
     },
     labels: genderData.map((g) => g.gender),
-    colors: ['#1e88e5', '#e91e63', '#9e9e9e'],
+    colors: [ '#e91e63','#1e88e5', '#9e9e9e'],
     legend: { position: 'bottom', fontWeight: 600 },
     dataLabels: { enabled: true },
     plotOptions: {
@@ -132,18 +171,8 @@ export default function Statistics() {
   const genderChartSeries = genderData.map((g) => g.count);
 
   // Chart 4: Diversity Age Data (Pie Chart)
-  const ageChartOptions = {
-    chart: {
-      id: 'age-diversity-pie',
-      fontFamily: 'Inter, sans-serif'
-    },
-    labels: ageData.map((a) => `Edad: ${a.range}`),
-    colors: ['#ab47bc', '#26a69a', '#ffa726', '#ec407a'],
-    legend: { position: 'bottom', fontWeight: 600 },
-    dataLabels: { enabled: true }
-  };
+ 
 
-  const ageChartSeries = ageData.map((a) => a.count);
 
   return (
     <MainCard title="Reportes y Estadísticas de Contratación">
@@ -266,7 +295,7 @@ export default function Statistics() {
               <Card variant="outlined" sx={{ borderRadius: 3 }}>
                 <CardContent sx={{ textAlign: 'center' }}>
                   <Typography variant="h4" fontWeight={600} mb={3} textAlign="left">
-                    Distribución por Género
+                    Distribución por genero
                   </Typography>
                   <Box display="flex" justifyContent="center">
                     <Chart 
@@ -280,23 +309,7 @@ export default function Statistics() {
               </Card>
             </Grid>
 
-            <Grid item xs={12} md={6}>
-              <Card variant="outlined" sx={{ borderRadius: 3 }}>
-                <CardContent sx={{ textAlign: 'center' }}>
-                  <Typography variant="h4" fontWeight={600} mb={3} textAlign="left">
-                    Distribución por Rango de Edad
-                  </Typography>
-                  <Box display="flex" justifyContent="center">
-                    <Chart 
-                      options={ageChartOptions} 
-                      series={ageChartSeries} 
-                      type="pie" 
-                      width={360} 
-                    />
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
+            
           </Grid>
         </Box>
       </Stack>
