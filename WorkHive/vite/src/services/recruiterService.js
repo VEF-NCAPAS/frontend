@@ -1,5 +1,3 @@
-// ==============================|| WORKHIVE RECRUITER MOCK SERVICE ||============================== //
-
 const API_URL = import.meta.env.VITE_API_URL;
 
 const getHeaders = () => ({
@@ -166,17 +164,7 @@ export const recruiterService = {
   },
 
   // Update Technical Test Link
-  updateTechnicalTest: (appId, testLink) => {
-    const applications = loadData('wh_applications', DEFAULT_APPLICATIONS);
-    const updatedApps = applications.map((app) => {
-      if (app.id === appId) {
-        return { ...app, technicalTest: testLink };
-      }
-      return app;
-    });
-    saveData('wh_applications', updatedApps);
-    return updatedApps;
-  },
+  
 
   // Apply candidate to job proactively
   applyCandidateToJob: (candidateId, jobId) => {
