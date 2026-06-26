@@ -27,23 +27,32 @@ export default function CandidateJobsPage() {
   const [loading, setLoading] = useState(false);
 
   const handleSearch = async () => {
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const result = await getVacancies({
-      page: 0,
-      size: 10,
-      sortBy: 'title',
-      sortOrder: 'asc',
-      ...(title && { title }),
-      ...(modality && { modality })
-    });
+      let page = 0;
+      let last = false;
+      let allVacancies = [];
 
-      setVacancies(result.data.content);
-      setTotalElements(result.data.totalElements);
+      while (!last) {
+        const result = await getVacancies({
+          page,
+          size: 50,
+          sortBy: 'title',
+          sortOrder: 'asc',
+          ...(title && { title }),
+          ...(modality && { modality })
+        });
 
+        allVacancies.push(...result.data.content);
+
+        last = result.data.last;
+        page++;
+      }
+
+      setVacancies(allVacancies);
+      setTotalElements(allVacancies.length);
     } catch (error) {
-
       if (error.response?.status === 404) {
         setVacancies([]);
         setTotalElements(0);
@@ -51,7 +60,6 @@ export default function CandidateJobsPage() {
       }
 
       console.error(error);
-
     } finally {
       setLoading(false);
     }
