@@ -45,23 +45,45 @@ export default function SearchCandidates() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const vacanciesResponse = await getVacancies({ page: 0, size: 50 });
-        const vacancyPayload = vacanciesResponse?.data ?? vacanciesResponse;
-        const vacancies = Array.isArray(vacancyPayload)
-          ? vacancyPayload
-          : Array.isArray(vacancyPayload?.content)
-          ? vacancyPayload.content
-          : Array.isArray(vacancyPayload?.data)
-          ? vacancyPayload.data
-          : Array.isArray(vacancyPayload?.data?.content)
-          ? vacancyPayload.data.content
-          : [];
+        let page = 0;
+        let last = false;
+        let allVacancies = [];
 
-        const normalizedVacancies = vacancies.map((job) => ({
+        while (!last) {
+          const response = await getVacancies({
+            page,
+            size: 50
+          });
+
+          const payload = response?.data ?? response;
+
+          const vacancies = Array.isArray(payload)
+            ? payload
+            : Array.isArray(payload?.content)
+            ? payload.content
+            : Array.isArray(payload?.data)
+            ? payload.data
+            : Array.isArray(payload?.data?.content)
+            ? payload.data.content
+            : [];
+
+          allVacancies.push(...vacancies);
+
+          last = payload.last ?? payload.data?.last ?? true;
+          page++;
+        }
+
+        const normalizedVacancies = allVacancies.map((job) => ({
           ...job,
           id: job.id ?? job.vacancyId ?? job.uuid ?? job.jobId,
           title: job.title ?? job.name ?? job.position ?? job.role ?? 'Vacante sin título',
         }));
+
+        setJobs(normalizedVacancies);
+
+        if (normalizedVacancies.length > 0) {
+          setSelectedJobId(normalizedVacancies[0].id);
+        }
 
         setJobs(normalizedVacancies);
         if (normalizedVacancies.length > 0) {
