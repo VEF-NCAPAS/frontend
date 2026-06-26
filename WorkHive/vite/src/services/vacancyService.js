@@ -63,3 +63,16 @@ export const deleteVacancy = async (id) => {
   );
   return response.data;
 };
+
+export const getTopVacancies = async () => {
+  const response = await api.get(
+    `${API_URL}/vacancy/top-vacancies`,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    }
+  );
+
+  return response.data;
+};

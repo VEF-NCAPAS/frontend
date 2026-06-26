@@ -98,3 +98,16 @@ export const updateApplicationStatus = async (id, statusData) => {
 
   return response.data;
 };
+
+export const getSelectedTime = async () => {
+  const response = await api.get(
+    `${API_URL}/application/reports/selected-time`,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    }
+  );
+
+  return response.data;
+};
