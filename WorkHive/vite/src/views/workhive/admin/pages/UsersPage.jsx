@@ -1,16 +1,21 @@
 import AdminEntityPage from '../components/AdminEntityPage';
-import { userColumns, userFields, users } from '../data/adminData';
+import { candidateColumns, candidateFields, users } from '../data/adminData';
+import { adminService } from '../../../../services/adminService';
 
 export default function UsersPage() {
   return (
     <AdminEntityPage
-      title="Usuarios"
-      description="Crea y administra las cuentas de candidatos y reclutadores."
-      entityName="Usuario"
-      storageKey="workhive-admin-users"
-      fields={userFields}
-      columns={userColumns}
+      title="Candidatos"
+      description="Consulta, actualiza y elimina usuarios con rol candidato."
+      entityName="Candidato"
+      storageKey="workhive-admin-candidates"
+      fields={candidateFields}
+      columns={candidateColumns}
       initialRecords={users}
+      loadRemoteRecords={() => adminService.getCandidates()}
+      createRemoteRecord={(data) => adminService.createCandidate(data)}
+      updateRemoteRecord={(id, data) => adminService.updateCandidate(id, data)}
+      deleteRemoteRecord={(id) => adminService.deleteCandidate(id)}
     />
   );
 }

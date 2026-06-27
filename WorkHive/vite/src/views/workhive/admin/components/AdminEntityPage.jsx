@@ -1,9 +1,10 @@
 import PropTypes from 'prop-types';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -32,7 +33,11 @@ const statusColors = {
   Activo: 'success',
   Pendiente: 'warning',
   Inactivo: 'default',
-  Suspendido: 'error'
+  Suspendido: 'error',
+  ACTIVE: 'success',
+  PENDING: 'warning',
+  INACTIVE: 'default',
+  SUSPENDED: 'error'
 };
 
 function loadRecords(storageKey, initialRecords) {
@@ -44,55 +49,127 @@ function loadRecords(storageKey, initialRecords) {
   }
 }
 
-export default function AdminEntityPage({ title, description, entityName, storageKey, fields, columns, initialRecords }) {
+export default function AdminEntityPage({
+  title,
+  description,
+  entityName,
+  storageKey,
+  fields,
+  columns,
+  initialRecords,
+  loadRemoteRecords,
+  createRemoteRecord,
+  updateRemoteRecord,
+  deleteRemoteRecord,
+  fieldOptions = {}
+}) {
   const emptyRecord = useMemo(() => Object.fromEntries(fields.map((field) => [field.name, field.defaultValue || ''])), [fields]);
-  const [records, setRecords] = useState(() => loadRecords(storageKey, initialRecords));
+  const [records, setRecords] = useState(() => (loadRemoteRecords ? [] : loadRecords(storageKey, initialRecords)));
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteRecord, setDeleteRecord] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyRecord);
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(Boolean(loadRemoteRecords));
+  const [error, setError] = useState('');
+  const [submitError, setSubmitError] = useState('');
 
   const filteredRecords = records.filter((record) =>
     Object.values(record).some((value) => String(value).toLowerCase().includes(search.toLowerCase()))
   );
 
+  useEffect(() => {
+    if (!loadRemoteRecords) return undefined;
+
+    let ignore = false;
+
+    const fetchRecords = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const data = await loadRemoteRecords();
+        if (!ignore) setRecords(Array.isArray(data) ? data : []);
+      } catch (err) {
+        if (!ignore) setError(err.message || 'No se pudieron cargar los registros.');
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    };
+
+    fetchRecords();
+
+    return () => {
+      ignore = true;
+    };
+  }, [loadRemoteRecords]);
+
   const persistRecords = (nextRecords) => {
     setRecords(nextRecords);
-    localStorage.setItem(storageKey, JSON.stringify(nextRecords));
+    if (storageKey) {
+      localStorage.setItem(storageKey, JSON.stringify(nextRecords));
+    }
   };
 
   const openCreateDialog = () => {
     setEditingId(null);
     setForm(emptyRecord);
+    setSubmitError('');
     setDialogOpen(true);
   };
 
   const openEditDialog = (record) => {
     setEditingId(record.id);
-    setForm(Object.fromEntries(fields.map((field) => [field.name, record[field.name] || ''])));
+    setForm(Object.fromEntries(fields.map((field) => [field.name, record[field.name] ?? ''])));
+    setSubmitError('');
     setDialogOpen(true);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    setSubmitError('');
 
-    if (editingId) {
-      persistRecords(records.map((record) => (record.id === editingId ? { ...record, ...form } : record)));
-      setMessage(`${entityName} actualizado correctamente.`);
-    } else {
-      persistRecords([...records, { id: Date.now(), ...form }]);
-      setMessage(`${entityName} creado correctamente.`);
+    try {
+      if (editingId) {
+        if (updateRemoteRecord) {
+          const updated = await updateRemoteRecord(editingId, form);
+          setRecords((prev) => prev.map((record) => (record.id === editingId ? updated : record)));
+          setMessage(`${entityName} actualizado correctamente.`);
+        } else {
+          persistRecords(records.map((record) => (record.id === editingId ? { ...record, ...form } : record)));
+          setMessage(`${entityName} actualizado correctamente.`);
+        }
+      } else if (createRemoteRecord) {
+        const created = await createRemoteRecord(form);
+        setRecords((prev) => [created, ...prev]);
+        setMessage(`${entityName} creado correctamente.`);
+      } else {
+        persistRecords([...records, { id: Date.now(), ...form }]);
+        setMessage(`${entityName} creado correctamente.`);
+      }
+
+      setDialogOpen(false);
+    } catch (err) {
+      setSubmitError(err.message || 'Ocurrió un error al guardar el registro.');
     }
-
-    setDialogOpen(false);
   };
 
-  const handleDelete = () => {
-    persistRecords(records.filter((record) => record.id !== deleteRecord.id));
-    setDeleteRecord(null);
-    setMessage(`${entityName} eliminado correctamente.`);
+  const handleDelete = async () => {
+    setSubmitError('');
+
+    try {
+      if (deleteRemoteRecord) {
+        await deleteRemoteRecord(deleteRecord.id);
+        setRecords((prev) => prev.filter((record) => record.id !== deleteRecord.id));
+      } else {
+        persistRecords(records.filter((record) => record.id !== deleteRecord.id));
+      }
+
+      setDeleteRecord(null);
+      setMessage(`${entityName} eliminado correctamente.`);
+    } catch (err) {
+      setSubmitError(err.message || 'Error al eliminar el registro.');
+    }
   };
 
   return (
@@ -106,6 +183,12 @@ export default function AdminEntityPage({ title, description, entityName, storag
           </Button>
         }
       />
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+          {error}
+        </Alert>
+      )}
 
       <MainCard border sx={{ borderRadius: 3 }} contentSX={{ p: 0, '&:last-child': { pb: 0 } }}>
         <Stack
@@ -148,32 +231,43 @@ export default function AdminEntityPage({ title, description, entityName, storag
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredRecords.map((record) => (
-                <TableRow hover key={record.id}>
-                  {columns.map((column) => (
-                    <TableCell key={column.name}>
-                      {column.name === 'status' ? (
-                        <Chip size="small" label={record[column.name]} color={statusColors[record[column.name]] || 'default'} />
-                      ) : (
-                        record[column.name]
-                      )}
-                    </TableCell>
-                  ))}
-                  <TableCell align="right">
-                    <Tooltip title="Actualizar">
-                      <IconButton color="primary" onClick={() => openEditDialog(record)}>
-                        <IconEdit size={19} />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Eliminar">
-                      <IconButton color="error" onClick={() => setDeleteRecord(record)}>
-                        <IconTrash size={19} />
-                      </IconButton>
-                    </Tooltip>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={columns.length + 1} align="center" sx={{ py: 6 }}>
+                    <CircularProgress size={30} />
+                    <Typography sx={{ mt: 1.5 }} color="text.secondary">
+                      Cargando datos...
+                    </Typography>
                   </TableCell>
                 </TableRow>
-              ))}
-              {!filteredRecords.length && (
+              ) : (
+                filteredRecords.map((record) => (
+                  <TableRow hover key={record.id}>
+                    {columns.map((column) => (
+                      <TableCell key={column.name}>
+                        {column.name === 'status' ? (
+                          <Chip size="small" label={record[column.name]} color={statusColors[record[column.name]] || 'default'} />
+                        ) : (
+                          record[column.name]
+                        )}
+                      </TableCell>
+                    ))}
+                    <TableCell align="right">
+                      <Tooltip title="Actualizar">
+                        <IconButton color="primary" onClick={() => openEditDialog(record)}>
+                          <IconEdit size={19} />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Eliminar">
+                        <IconButton color="error" onClick={() => setDeleteRecord(record)}>
+                          <IconTrash size={19} />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+              {!loading && !filteredRecords.length && (
                 <TableRow>
                   <TableCell colSpan={columns.length + 1} align="center" sx={{ py: 6 }}>
                     <Typography color="text.secondary">No se encontraron registros.</Typography>
@@ -190,27 +284,39 @@ export default function AdminEntityPage({ title, description, entityName, storag
           <DialogTitle>{editingId ? `Actualizar ${entityName.toLowerCase()}` : `Crear ${entityName.toLowerCase()}`}</DialogTitle>
           <DialogContent>
             <Stack spacing={2} sx={{ mt: 1 }}>
-              {fields.map((field) => (
-                <TextField
-                  key={field.name}
-                  label={field.label}
-                  type={field.type || 'text'}
-                  select={Boolean(field.options)}
-                  required={field.required !== false}
-                  value={form[field.name]}
-                  onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.value }))}
-                  slotProps={{
-                    inputLabel: { shrink: true },
-                    ...(field.type === 'password' ? { htmlInput: { minLength: 6 } } : {})
-                  }}
-                >
-                  {field.options?.map((option) => (
-                    <MenuItem key={option} value={option}>
-                      {option}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              ))}
+              {submitError && (
+                <Alert severity="error" sx={{ mb: 1, borderRadius: 1.5 }}>
+                  {submitError}
+                </Alert>
+              )}
+              {fields
+                .filter((field) => !(field.name === 'password' && editingId))
+                .map((field) => (
+                  <TextField
+                    key={field.name}
+                    label={field.label}
+                    type={field.type || 'text'}
+                    select={Boolean(field.options || fieldOptions[field.name] || field.type === 'select')}
+                    required={field.name === 'password' ? !editingId && field.required !== false : field.required !== false}
+                    value={form[field.name] ?? ''}
+                    onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.value }))}
+                    slotProps={{
+                      inputLabel: { shrink: true },
+                      ...(field.type === 'password' ? { htmlInput: { minLength: 6 } } : {})
+                    }}
+                  >
+                    {(field.options || fieldOptions[field.name] || []).map((option) => {
+                      const value = typeof option === 'object' ? option.value : option;
+                      const label = typeof option === 'object' ? option.label : option;
+
+                      return (
+                        <MenuItem key={value} value={value}>
+                          {label}
+                        </MenuItem>
+                      );
+                    })}
+                  </TextField>
+                ))}
             </Stack>
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2.5 }}>
@@ -249,5 +355,10 @@ AdminEntityPage.propTypes = {
   storageKey: PropTypes.string.isRequired,
   fields: PropTypes.arrayOf(PropTypes.object).isRequired,
   columns: PropTypes.arrayOf(PropTypes.object).isRequired,
-  initialRecords: PropTypes.arrayOf(PropTypes.object).isRequired
+  initialRecords: PropTypes.arrayOf(PropTypes.object).isRequired,
+  loadRemoteRecords: PropTypes.func,
+  createRemoteRecord: PropTypes.func,
+  updateRemoteRecord: PropTypes.func,
+  deleteRemoteRecord: PropTypes.func,
+  fieldOptions: PropTypes.object
 };

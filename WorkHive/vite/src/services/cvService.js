@@ -12,16 +12,14 @@ export const createCv = async (data) => {
 };
 
 export const getCvByCandidate = async (id) => {
-  const response = await api.get(
-    `${API_URL}/cv/me`
-  );
+  const endpoint = id ? `${API_URL}/cv/${id}` : `${API_URL}/cv/me`;
+  const response = await api.get(endpoint);
 
   return response.data;
 };
+
 export const getCvById = async (id) => {
-  const response = await api.get(
-    `${API_URL}/cv/${id}`
-  );
+  const response = await api.get(`${API_URL}/cv/${id}`);
 
   return response.data;
 };
