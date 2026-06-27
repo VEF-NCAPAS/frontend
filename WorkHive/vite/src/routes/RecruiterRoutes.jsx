@@ -7,7 +7,8 @@ import {
   RecruiterJobsPage,
   RecruiterPublishJobPage,
   RecruiterStatisticsPage,
-  RecruiterSearchCandidatesPage
+  RecruiterSearchCandidatesPage,
+  RecruiterSearchCandidatesByScorePage
 } from 'views/workhive/recruiter';
 
 const RecruiterRoutes = {
@@ -24,7 +25,9 @@ const RecruiterRoutes = {
     { path: 'postulantes', element: <RecruiterApplicantsPage /> },
     { path: 'perfil-empresa', element: <RecruiterCompanyProfilePage /> },
     { path: 'estadisticas', element: <RecruiterStatisticsPage /> },
-    { path: 'buscar-candidatos', element: <RecruiterSearchCandidatesPage /> }
+    { path: 'buscar-candidatos', element: <RecruiterSearchCandidatesPage /> },
+    { path: 'buscar-candidatos-por-score', element: <RecruiterSearchCandidatesByScorePage /> }
+
   ]
 };
 

@@ -10,7 +10,8 @@ import {
   IconSquarePlus,
   IconUserCheck,
   IconUserCircle,
-  IconUsers
+  IconUsers,
+  IconRosette
 } from '@tabler/icons-react';
 
 // ==============================|| WORKHIVE ROLE MENU ITEMS ||============================== //
@@ -172,10 +173,18 @@ const workHiveMenus = {
       },
       {
         id: 'recruiter-search-candidates',
-        title: 'Buscar candidatos',
+        title: 'Buscar candidatos por Skill',
         type: 'item',
         url: '/reclutador/buscar-candidatos',
         icon: IconSearch,
+        breadcrumbs: false
+      },
+      {
+        id: 'recruiter-search-candidates-by-score',
+        title: 'Buscar candidatos por Score',
+        type: 'item',
+        url: '/reclutador/buscar-candidatos-por-score',
+        icon: IconRosette,
         breadcrumbs: false
       },
       {
