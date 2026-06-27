@@ -88,7 +88,10 @@ const normalizeResume = (resume) => ({
 });
 
 export default function CandidateResumePage() {
-  const { state: storedResume, setState: setStoredResume } = useLocalStorage('candidate-digital-resume', defaultResume);
+  const userName = localStorage.getItem('name');
+  const userEmail = localStorage.getItem('email');
+  const storageKey = userEmail ? `candidate-digital-resume-${userEmail}` : 'candidate-digital-resume';
+  const { state: storedResume, setState: setStoredResume } = useLocalStorage(storageKey, defaultResume);
   const [resume, setResume] = useState(() => normalizeResume(storedResume));
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState(null);
@@ -99,8 +102,6 @@ export default function CandidateResumePage() {
   const [hasCv, setHasCv] = useState(false);
   const [editMode, setEditMode] = useState(true);
   const [originalResume, setOriginalResume] = useState(defaultResume);
-  const userName = localStorage.getItem('name');
-  const userEmail = localStorage.getItem('email');
 
   useEffect(() => {
     const loadData = async () => {
