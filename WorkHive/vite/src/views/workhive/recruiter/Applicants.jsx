@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { IconDownload } from '@tabler/icons-react';
 
 // material-ui
 import Alert from '@mui/material/Alert';
@@ -52,6 +53,8 @@ import {
 } from 'services/privateCommentService';
 import { createTechnicalTest, updateTechnicalTest } from 'services/technicalTestService';
 import { getVacancies } from 'services/vacancyService';
+import { getCvById } from 'services/cvService';
+import { exportCvPdf } from 'utils/exportCvPdf';
 
 const APPLICATION_STAGES = [
   { value: 'REVIEWED', label: 'Revisado', action: 'review' },
@@ -299,6 +302,23 @@ export default function Applicants() {
     }
   };
 
+  const handleExport = async () => {
+ 
+  if (!selectedApp?.cv?.id) {
+    showNotification('error', 'El candidato no tiene un CV disponible.');
+    return;
+  }
+
+  try {
+  const response = await getCvById(selectedApp.cv.id);
+    exportCvPdf(
+      response.data || response
+    );
+  } catch (error) {
+    console.error(error);
+    showNotification('error', 'No se pudo exportar el CV.');
+  }
+};
   const handleStageChange = async (stage) => {
     if (!selectedApp || selectedApp.status === stage.value || !stage.action) return;
 
@@ -655,6 +675,24 @@ export default function Applicants() {
 
                     <Grid item xs={12} sm={4} textAlign={{ xs: 'left', sm: 'right' }}>
                       <Chip label={getStatusLabel(selectedApp.status)} color={getStageColor(selectedApp.status)} sx={{ fontWeight: 700 }} />
+                    </Grid>
+
+                    
+                    <Grid item xs={12} sm={4} textAlign={{ xs: 'left', sm: 'right' }}>
+                      
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        startIcon={<IconDownload size={18} />}
+                        onClick={handleExport}
+                        sx={{
+                          mt: 1,
+                          textTransform: 'none',
+                          borderRadius: 2
+                        }}
+                      >
+                        Exportar CV
+                      </Button>
                     </Grid>
                   </Grid>
                 </Box>
