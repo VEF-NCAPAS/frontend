@@ -142,9 +142,30 @@ export default function MyJobs() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [vacanciesResponse, requirementsResponse] = await Promise.all([getVacancies(), getAllRequirements()]);
-      setJobs(normalizeList(vacanciesResponse));
-      setAvailableRequirements(normalizeList(requirementsResponse).filter((requirement) => requirement?.id));
+      const requirementsResponse = await getAllRequirements();
+
+      let page = 0;
+      let last = false;
+      let allVacancies = [];
+
+      while (!last) {
+        const vacanciesResponse = await getVacancies({
+          page,
+          size: 50
+        });
+
+        const payload = vacanciesResponse.data;
+
+        allVacancies.push(...payload.content);
+
+        last = payload.last;
+        page++;
+      }
+
+      setJobs(allVacancies);
+      setAvailableRequirements(
+        normalizeList(requirementsResponse).filter((requirement) => requirement?.id)
+      );
     } catch (error) {
       console.error('Error loading vacancies:', error);
       setResultDialog({
@@ -286,7 +307,6 @@ export default function MyJobs() {
   };
 
   const activeJobsCount = jobs.filter((job) => job.status === 'OPEN').length;
-  const totalAppsCount = apps.length;
 
   return (
     <>
@@ -307,7 +327,6 @@ export default function MyJobs() {
         <Stack spacing={3}>
           <Grid container spacing={3}>
             <KpiCard title="Ofertas Abiertas" value={activeJobsCount} icon={<WorkOutlineIcon sx={{ fontSize: 40, opacity: 0.7 }} />} tone="primary" />
-            <KpiCard title="Postulaciones Totales" value={totalAppsCount} icon={<PeopleOutlineIcon sx={{ fontSize: 40, opacity: 0.7 }} />} tone="success" />
             <KpiCard title="Total de Vacantes" value={jobs.length} icon={<CheckCircleOutlineIcon sx={{ fontSize: 40, opacity: 0.6 }} />} />
           </Grid>
 

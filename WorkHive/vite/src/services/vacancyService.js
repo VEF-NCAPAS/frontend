@@ -79,3 +79,16 @@ export const getVacancyVolumeReport = async (params = {}) => {
   const response = await api.get(`${API_URL}/vacancy/reports`, { params });
   return extractPayload(response);
 };
+
+export const getTopVacancies = async () => {
+  const response = await api.get(
+    `${API_URL}/vacancy/top-vacancies`,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    }
+  );
+
+  return response.data;
+};

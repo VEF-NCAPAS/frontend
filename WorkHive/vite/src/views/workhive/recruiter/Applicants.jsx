@@ -228,12 +228,29 @@ export default function Applicants() {
       setLoadingJobs(true);
 
       try {
-        const response = await getVacancies({ page: 0, size: 50 });
-        const vacancies = normalizeVacancies(response);
+        let page = 0;
+        let allVacancies = [];
+        let last = false;
+
+        while (!last) {
+          const response = await getVacancies({
+            page,
+            size: 50
+          });
+
+          allVacancies.push(...response.data.content);
+
+          last = response.data.last;
+          page++;
+        }
+
+        const vacancies = normalizeVacancies(allVacancies);
+
         setJobs(vacancies);
 
         const initialJobId = location.state?.selectedJobId || vacancies[0]?.id || '';
         setSelectedJobId(initialJobId);
+
         if (initialJobId) {
           await loadApplications(initialJobId, location.state?.applicationId);
         }

@@ -114,3 +114,15 @@ export const getApplicationVolumeReport = async (params = {}) => {
   const response = await api.get(`${API_URL}/application/reports`, { params });
   return extractPayload(response);
 };
+export const getSelectedTime = async () => {
+  const response = await api.get(
+    `${API_URL}/application/reports/selected-time`,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    }
+  );
+
+  return response.data;
+};

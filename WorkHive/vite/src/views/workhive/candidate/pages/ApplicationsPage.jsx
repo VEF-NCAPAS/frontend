@@ -35,8 +35,23 @@ export default function CandidateApplicationsPage() {
   useEffect(() => {
     const loadApplications = async () => {
       try {
-        const response = await getApplications();
-        setApplications(response.data.content);
+        let page = 0;
+        let last = false;
+        let allApplications = [];
+
+        while (!last) {
+          const response = await getApplications({
+            page,
+            size: 10
+          });
+
+          allApplications.push(...response.data.content);
+
+          last = response.data.last;
+          page++;
+        }
+
+        setApplications(allApplications);
       } catch (error) {
         console.error(error);
       } finally {
