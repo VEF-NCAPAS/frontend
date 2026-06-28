@@ -16,14 +16,14 @@ import { ThemeProvider } from '@mui/material/styles';
 // assets
 import globalStyles from 'styles/style.css';
 import scrollBarStyle from 'react-perfect-scrollbar/dist/css/styles.css';
-import favicon from '../public/favicon.svg';
+import favicon from '../public/favicon.png';
 
 // export links
 export const links = () => [
     {
         rel: 'icon',
         href: favicon,
-        type: 'image/svg'
+        type: 'image/png'
     },
     {
         rel: 'stylesheet',

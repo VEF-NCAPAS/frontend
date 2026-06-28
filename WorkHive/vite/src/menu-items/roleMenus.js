@@ -1,25 +1,22 @@
 // assets
 import {
-  IconBell,
-  IconBriefcase,
   IconBuilding,
   IconChartBar,
   IconClipboardList,
-  IconDashboard,
   IconFileText,
   IconListDetails,
   IconSearch,
-  IconSettings,
   IconSquarePlus,
   IconUserCheck,
   IconUserCircle,
-  IconUsers
+  IconUsers,
+  IconRosette
 } from '@tabler/icons-react';
 
 // ==============================|| WORKHIVE ROLE MENU ITEMS ||============================== //
 
 export const USER_ROLES = {
-  ADMIN: 'ADMIN',
+  ADMINISTRATOR: 'ADMINISTRATOR',
   CANDIDATE: 'CANDIDATE',
   RECRUITER: 'RECRUITER'
 };
@@ -29,44 +26,45 @@ const normalizeRole = (role) => {
     .trim()
     .toUpperCase();
 
-  if (['ADMIN', 'ADMINISTRADOR', 'ADMINISTRATOR'].includes(normalizedRole)) return USER_ROLES.ADMIN;
+  if (['ADMIN', 'ADMINISTRADOR', 'ADMINISTRATOR'].includes(normalizedRole)) return USER_ROLES.ADMINISTRATOR;
   if (['CANDIDATE', 'CANDIDATO'].includes(normalizedRole)) return USER_ROLES.CANDIDATE;
   if (['RECRUITER', 'RECLUTADOR', 'EMPRESA', 'COMPANY'].includes(normalizedRole)) return USER_ROLES.RECRUITER;
 
   return USER_ROLES.CANDIDATE;
 };
 
-export const getCurrentUserRole = () => {
+export const getRoleByPathname = (pathname = '') => {
+  const normalizedPath = String(pathname).toLowerCase();
+
+  if (normalizedPath === '/admin' || normalizedPath.startsWith('/admin/')) return USER_ROLES.ADMINISTRATOR;
+  if (normalizedPath === '/candidato' || normalizedPath.startsWith('/candidato/')) return USER_ROLES.CANDIDATE;
+  if (normalizedPath === '/reclutador' || normalizedPath.startsWith('/reclutador/')) return USER_ROLES.RECRUITER;
+
+  return null;
+};
+
+export const getCurrentUserRole = (pathname = window.location.pathname) => {
+  const routeRole = getRoleByPathname(pathname);
+  if (routeRole) return routeRole;
+
   const storedRole = localStorage.getItem('role');
 
-  // Mock temporal para probar el sidebar mientras el backend no entregue rol.
-  // Cambia VITE_MOCK_ROLE en .env o localStorage.role por: ADMIN, CANDIDATE o RECRUITER.
   const mockRole = import.meta.env.VITE_MOCK_ROLE || USER_ROLES.CANDIDATE;
 
   return normalizeRole(storedRole || mockRole);
 };
 
-const dashboardItem = {
-  id: 'dashboard',
-  title: 'Dashboard',
-  type: 'item',
-  url: '/dashboard/default',
-  icon: IconDashboard,
-  breadcrumbs: false
-};
-
 const workHiveMenus = {
-  [USER_ROLES.ADMIN]: {
+  [USER_ROLES.ADMINISTRATOR]: {
     id: 'workhive-admin',
     title: 'WorkHive',
     type: 'group',
     children: [
-      dashboardItem,
       {
-        id: 'admin-users',
-        title: 'Usuarios',
+        id: 'admin-candidates',
+        title: 'Candidatos',
         type: 'item',
-        url: '/usuarios',
+        url: '/admin/candidatos',
         icon: IconUsers,
         breadcrumbs: false
       },
@@ -74,23 +72,15 @@ const workHiveMenus = {
         id: 'admin-companies',
         title: 'Empresas',
         type: 'item',
-        url: '/empresas',
+        url: '/admin/empresas',
         icon: IconBuilding,
         breadcrumbs: false
       },
       {
-        id: 'admin-jobs',
-        title: 'Ofertas de empleo',
+        id: 'admin-recruiters',
+        title: 'Reclutadores',
         type: 'item',
-        url: '/ofertas-empleo',
-        icon: IconBriefcase,
-        breadcrumbs: false
-      },
-      {
-        id: 'admin-candidates',
-        title: 'Candidatos',
-        type: 'item',
-        url: '/candidatos',
+        url: '/admin/reclutadores',
         icon: IconUserCheck,
         breadcrumbs: false
       },
@@ -98,16 +88,8 @@ const workHiveMenus = {
         id: 'admin-reports',
         title: 'Reportes / Estadisticas',
         type: 'item',
-        url: '/reportes-estadisticas',
+        url: '/admin/reportes-estadisticas',
         icon: IconChartBar,
-        breadcrumbs: false
-      },
-      {
-        id: 'admin-settings',
-        title: 'Configuracion',
-        type: 'item',
-        url: '/configuracion',
-        icon: IconSettings,
         breadcrumbs: false
       }
     ]
@@ -117,12 +99,11 @@ const workHiveMenus = {
     title: 'WorkHive',
     type: 'group',
     children: [
-      dashboardItem,
       {
         id: 'candidate-search-jobs',
         title: 'Buscar empleos',
         type: 'item',
-        url: '/buscar-empleos',
+        url: '/candidato/buscar-empleos',
         icon: IconSearch,
         breadcrumbs: false
       },
@@ -130,7 +111,7 @@ const workHiveMenus = {
         id: 'candidate-applications',
         title: 'Mis postulaciones',
         type: 'item',
-        url: '/mis-postulaciones',
+        url: '/candidato/mis-postulaciones',
         icon: IconClipboardList,
         breadcrumbs: false
       },
@@ -138,7 +119,7 @@ const workHiveMenus = {
         id: 'candidate-profile',
         title: 'Mi perfil',
         type: 'item',
-        url: '/mi-perfil',
+        url: '/candidato/mi-perfil',
         icon: IconUserCircle,
         breadcrumbs: false
       },
@@ -146,16 +127,8 @@ const workHiveMenus = {
         id: 'candidate-cv',
         title: 'CV / Hoja de vida',
         type: 'item',
-        url: '/cv-hoja-de-vida',
+        url: '/candidato/cv-hoja-de-vida',
         icon: IconFileText,
-        breadcrumbs: false
-      },
-      {
-        id: 'candidate-notifications',
-        title: 'Notificaciones',
-        type: 'item',
-        url: '/notificaciones',
-        icon: IconBell,
         breadcrumbs: false
       }
     ]
@@ -165,12 +138,11 @@ const workHiveMenus = {
     title: 'WorkHive',
     type: 'group',
     children: [
-      dashboardItem,
       {
         id: 'recruiter-publish-job',
         title: 'Publicar oferta',
         type: 'item',
-        url: '/publicar-oferta',
+        url: '/reclutador/publicar-oferta',
         icon: IconSquarePlus,
         breadcrumbs: false
       },
@@ -178,7 +150,7 @@ const workHiveMenus = {
         id: 'recruiter-jobs',
         title: 'Mis ofertas',
         type: 'item',
-        url: '/mis-ofertas',
+        url: '/reclutador/mis-ofertas',
         icon: IconListDetails,
         breadcrumbs: false
       },
@@ -186,15 +158,31 @@ const workHiveMenus = {
         id: 'recruiter-applicants',
         title: 'Postulantes',
         type: 'item',
-        url: '/postulantes',
+        url: '/reclutador/postulantes',
         icon: IconUsers,
+        breadcrumbs: false
+      },
+      {
+        id: 'recruiter-search-candidates',
+        title: 'Buscar candidatos por Skill',
+        type: 'item',
+        url: '/reclutador/buscar-candidatos',
+        icon: IconSearch,
+        breadcrumbs: false
+      },
+      {
+        id: 'recruiter-search-candidates-by-score',
+        title: 'Buscar candidatos por Score',
+        type: 'item',
+        url: '/reclutador/buscar-candidatos-por-score',
+        icon: IconRosette,
         breadcrumbs: false
       },
       {
         id: 'recruiter-company-profile',
         title: 'Perfil de empresa',
         type: 'item',
-        url: '/perfil-empresa',
+        url: '/reclutador/perfil-empresa',
         icon: IconBuilding,
         breadcrumbs: false
       },
@@ -202,7 +190,7 @@ const workHiveMenus = {
         id: 'recruiter-statistics',
         title: 'Estadisticas',
         type: 'item',
-        url: '/estadisticas',
+        url: '/reclutador/estadisticas',
         icon: IconChartBar,
         breadcrumbs: false
       }

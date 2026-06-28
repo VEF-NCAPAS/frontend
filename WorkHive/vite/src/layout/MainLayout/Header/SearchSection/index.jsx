@@ -18,7 +18,7 @@ import PopupState, { bindPopper, bindToggle } from 'material-ui-popup-state';
 import Transitions from 'ui-component/extended/Transitions';
 
 // assets
-import { IconAdjustmentsHorizontal, IconSearch, IconX } from '@tabler/icons-react';
+import { IconSearch, IconX } from '@tabler/icons-react';
 
 function HeaderAvatar({ children, ref, ...others }) {
   const theme = useTheme();
@@ -54,7 +54,7 @@ function MobileSearch({ value, setValue, popupState }) {
       id="input-search-header"
       value={value}
       onChange={(e) => setValue(e.target.value)}
-      placeholder="Search"
+      placeholder="Buscar"
       startAdornment={
         <InputAdornment position="start">
           <IconSearch stroke={1.5} size="16px" />
@@ -62,10 +62,7 @@ function MobileSearch({ value, setValue, popupState }) {
       }
       endAdornment={
         <InputAdornment position="end">
-          <HeaderAvatar>
-            <IconAdjustmentsHorizontal stroke={1.5} size="20px" />
-          </HeaderAvatar>
-          <Box sx={{ ml: 2 }}>
+          <Box>
             <Avatar
               variant="rounded"
               sx={{
@@ -135,18 +132,14 @@ export default function SearchSection() {
           id="input-search-header"
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          placeholder="Search"
+          placeholder="Buscar"
           startAdornment={
             <InputAdornment position="start">
               <IconSearch stroke={1.5} size="16px" />
             </InputAdornment>
           }
           endAdornment={
-            <InputAdornment position="end">
-              <HeaderAvatar>
-                <IconAdjustmentsHorizontal stroke={1.5} size="20px" />
-              </HeaderAvatar>
-            </InputAdornment>
+            null
           }
           aria-describedby="search-helper-text"
           slotProps={{ input: { 'aria-label': 'weight', sx: { bgcolor: 'transparent', pl: 0.5 } } }}

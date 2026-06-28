@@ -1,0 +1,9 @@
+export { default as CandidateAccountSettingsPage } from './pages/AccountSettingsPage';
+export { default as CandidateApplicationDetailPage } from './pages/ApplicationDetailPage';
+export { default as CandidateApplicationsPage } from './pages/ApplicationsPage';
+export { default as CandidateChangePasswordPage } from './pages/ChangePasswordPage';
+export { default as CandidateJobsPage } from './pages/JobsPage';
+export { default as CandidateJobDetailPage } from './pages/JobDetailPage';
+export { default as CandidateProfilePage } from './pages/ProfilePage';
+export { default as CandidateProfileEditPage } from './pages/ProfileEditPage';
+export { default as CandidateResumePage } from './pages/ResumePage';
