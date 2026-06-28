@@ -4,8 +4,8 @@ import {
   AdminCandidatesPage,
   AdminCompaniesPage,
   AdminDashboardPage,
+  AdminRecruitersPage,
   AdminReportsPage,
-  AdminUsersPage
 } from 'views/workhive/admin';
 
 const AdminRoutes = {
@@ -17,9 +17,9 @@ const AdminRoutes = {
   ),
   children: [
     { index: true, element: <AdminDashboardPage /> },
-    { path: 'usuarios', element: <AdminUsersPage /> },
-    { path: 'empresas', element: <AdminCompaniesPage /> },
     { path: 'candidatos', element: <AdminCandidatesPage /> },
+    { path: 'empresas', element: <AdminCompaniesPage /> },
+    { path: 'reclutadores', element: <AdminRecruitersPage /> },
     { path: 'reportes-estadisticas', element: <AdminReportsPage /> }
   ]
 };

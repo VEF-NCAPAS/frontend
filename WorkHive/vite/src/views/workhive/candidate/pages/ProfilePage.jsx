@@ -95,7 +95,7 @@ export default function CandidateProfilePage() {
         }
       } catch (err) {
         if (!ignore) {
-          setError(err.response?.data?.message || err.message || 'No se pudo cargar tu informacion profesional.');
+          setError(err.response?.data?.message || err.message || 'No se pudo cargar tu información profesional.');
         }
       } finally {
         if (!ignore) {
@@ -111,12 +111,12 @@ export default function CandidateProfilePage() {
     };
   }, []);
 
-  const location = [resume.city, resume.location].filter(Boolean).join(', ') || 'Sin ubicacion registrada';
+  const location = [resume.city, resume.location].filter(Boolean).join(', ') || 'Sin ubicación registrada';
 
   const professionalInfo = [
     ['Correo', profile.email || 'Sin correo registrado'],
-    ['Genero', getGenderLabel(profile.gender) || 'Sin genero registrado'],
-    ['Ubicacion', location]
+    ['Género', getGenderLabel(profile.gender) || 'Sin género registrado'],
+    ['Ubicación', location]
   ];
 
   const experiences = useMemo(
@@ -133,7 +133,7 @@ export default function CandidateProfilePage() {
     <>
       <PageHeading
         title="Mi perfil"
-        description="Manten actualizada tu informacion personal para que WorkHive use tus datos correctos."
+        description="Manten actualizada tu información personal para que WorkHive use tus datos correctos."
         action={
           <Button
             variant="contained"
@@ -173,7 +173,7 @@ export default function CandidateProfilePage() {
         </Grid>
         <Grid size={{ xs: 12, md: 8 }}>
           <Stack spacing={3}>
-            <MainCard title="Informacion profesional" border>
+            <MainCard title="Información profesional" border>
               {loading ? (
                 <Stack direction="row" spacing={1.5} alignItems="center">
                   <CircularProgress color="secondary" size={22} />

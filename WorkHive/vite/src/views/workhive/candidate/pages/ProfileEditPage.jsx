@@ -124,7 +124,7 @@ export default function CandidateProfileEditPage() {
     }
 
     if (!values.gender) {
-      validationErrors.gender = 'Selecciona un genero.';
+      validationErrors.gender = 'Selecciona un género.';
     }
 
     return validationErrors;
@@ -209,14 +209,14 @@ export default function CandidateProfileEditPage() {
                 </Typography>
               </Box>
               <Chip
-                label={getGenderLabel(values.gender) || 'Genero pendiente'}
+                label={getGenderLabel(values.gender) || 'Género pendiente'}
                 color={values.gender ? 'success' : 'warning'}
                 variant="outlined"
                 sx={{ px: 1.5, py: 0.75, fontWeight: 600 }}
               />
               <Divider flexItem />
               <Typography variant="body2" color="text.secondary">
-                Estos datos se guardaran directamente en tu perfil de WorkHive.
+                Estos datos se guardarán directamente en tu perfil de WorkHive.
               </Typography>
             </Stack>
           </MainCard>
@@ -248,7 +248,7 @@ export default function CandidateProfileEditPage() {
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <TextField
                       fullWidth
-                      label="Correo electronico"
+                      label="Correo electrónico"
                       type="email"
                       value={values.email}
                       onChange={handleChange('email')}
@@ -258,11 +258,11 @@ export default function CandidateProfileEditPage() {
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <FormControl fullWidth error={Boolean(errors.gender)}>
-                      <InputLabel id="candidate-profile-gender-label">Genero</InputLabel>
+                      <InputLabel id="candidate-profile-gender-label">Género</InputLabel>
                       <Select
                         labelId="candidate-profile-gender-label"
                         value={values.gender}
-                        label="Genero"
+                        label="Género"
                         onChange={handleChange('gender')}
                       >
                         {genderOptions.map((option) => (
@@ -283,7 +283,7 @@ export default function CandidateProfileEditPage() {
                 <Box>
                   <Typography variant="h4">Perfil del candidato</Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Se enviaran nombre, correo y genero al backend.
+                    Se enviaran nombre, correo y género al backend.
                   </Typography>
                 </Box>
                 <Button

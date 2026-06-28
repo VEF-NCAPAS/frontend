@@ -1,6 +1,5 @@
 // assets
 import {
-  IconBriefcase,
   IconBuilding,
   IconChartBar,
   IconClipboardList,
@@ -62,10 +61,10 @@ const workHiveMenus = {
     type: 'group',
     children: [
       {
-        id: 'admin-users',
-        title: 'Usuarios',
+        id: 'admin-candidates',
+        title: 'Candidatos',
         type: 'item',
-        url: '/admin/usuarios',
+        url: '/admin/candidatos',
         icon: IconUsers,
         breadcrumbs: false
       },
@@ -78,18 +77,10 @@ const workHiveMenus = {
         breadcrumbs: false
       },
       {
-        id: 'admin-jobs',
-        title: 'Ofertas de empleo',
+        id: 'admin-recruiters',
+        title: 'Reclutadores',
         type: 'item',
-        url: '/admin/ofertas-empleo',
-        icon: IconBriefcase,
-        breadcrumbs: false
-      },
-      {
-        id: 'admin-candidates',
-        title: 'Candidatos',
-        type: 'item',
-        url: '/admin/candidatos',
+        url: '/admin/reclutadores',
         icon: IconUserCheck,
         breadcrumbs: false
       },

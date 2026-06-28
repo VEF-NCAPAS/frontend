@@ -93,7 +93,7 @@ export default function CandidateApplicationsPage() {
           <StatCard value={interviewApplications} label="Entrevista pendiente" color="primary" />
         </Grid>
       </Grid>
-      <MainCard title="Actividad reciente" border contentSX={{ p: { xs: 1.5, sm: 2.5 } }}>
+      <MainCard title="Historial de postulaciones" border contentSX={{ p: { xs: 1.5, sm: 2.5 } }}>
         <Stack divider={<Divider flexItem />}>
           {applications.map((application) => (
             <Stack
