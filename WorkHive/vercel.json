@@ -5,7 +5,7 @@
       "destination": "https://api.workhive.me/api/:path*"
     },
     {
-      "source": "/((?!api/|_next/|static/|.+\\..+).*)",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
