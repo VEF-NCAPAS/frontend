@@ -548,15 +548,6 @@ export default function AuthRegister() {
         />
       </FormControl>
 
-      <FormControlLabel
-        control={<Checkbox checked={acceptedTerms} onChange={(event) => setAcceptedTerms(event.target.checked)} color="primary" />}
-        label={
-          <Typography variant="body2" color="text.secondary">
-            Acepto los términos y condiciones de uso.
-          </Typography>
-        }
-      />
-
       <AnimateButton>
         <Button
           disableElevation
