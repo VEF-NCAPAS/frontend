@@ -69,7 +69,7 @@ export default function SearchCandidateByScore() {
 
                 const vacanciesResponse = await getVacancies({
                     page: 0,
-                    size: 50
+                    size: 100
                 });
 
                 const vacancyPayload =
