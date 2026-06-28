@@ -30,6 +30,7 @@ import { getVacancies } from 'services/vacancyService';
 import { getAllSkills } from 'services/skillService';
 import { getAllLanguages } from 'services/languageService';
 import { getCandidatesByVacancy } from 'services/candidateService';
+import PremiumGuard from 'ui-component/PremiumGuard';
 
 export default function SearchCandidateByScore() {
     const navigate = useNavigate();
@@ -233,6 +234,7 @@ export default function SearchCandidateByScore() {
     const selectedJob = jobs.find((job) => job.id === selectedJobId);
 
     return (
+    <PremiumGuard>
         <MainCard title="Búsqueda Inteligente de Candidatos">
 
             <Stack spacing={3}>
@@ -785,5 +787,7 @@ export default function SearchCandidateByScore() {
 
         </MainCard >
 
+    </PremiumGuard>
     );
+
 }

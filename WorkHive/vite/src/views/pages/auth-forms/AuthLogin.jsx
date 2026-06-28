@@ -187,17 +187,6 @@ export default function AuthLogin() {
         />
       </FormControl>
 
-      <Stack direction="row" alignItems="center" justifyContent="space-between">
-        <FormControlLabel
-          control={<Checkbox checked={checked} onChange={(event) => setChecked(event.target.checked)} color="primary" />}
-          label="Mantener sesión iniciada"
-        />
-
-        <Typography variant="subtitle2" color="secondary" sx={{ cursor: 'pointer' }}>
-          ¿Olvidaste tu contraseña?
-        </Typography>
-      </Stack>
-
       <AnimateButton>
         <Button
           disableElevation

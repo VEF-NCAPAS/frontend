@@ -226,7 +226,7 @@ export default function LandingPage() {
             </Box>
             <Button
               component={RouterLink}
-              to="/publicar-oferta"
+              to="/pages/login"
               variant="outlined"
               color="primary"
               endIcon={<IconChevronRight size={18} />}
