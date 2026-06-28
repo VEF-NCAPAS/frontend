@@ -27,6 +27,11 @@ export function useLocalStorage(key, defaultValue) {
     }
   }, [key, state]);
 
+  // Reload state from localStorage when key changes
+  useEffect(() => {
+    setState(readValue);
+  }, [key]);
+
   // Update single field
   const setField = useCallback((key, value) => {
     setState((prev) => ({

@@ -21,7 +21,7 @@ import { handlerDrawerOpen, useGetMenuMaster } from 'api/menu';
 
 // ==============================|| MAIN LAYOUT ||============================== //
 
-export default function MainLayout() {
+export default function MainLayout({ logoClickable = true, showSearch = true }) {
   const theme = useTheme();
   const downMD = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -48,7 +48,7 @@ export default function MainLayout() {
       {/* header */}
       <AppBar enableColorOnDark position="fixed" color="inherit" elevation={0} sx={{ bgcolor: 'background.default' }}>
         <Toolbar sx={{ p: 2 }}>
-          <Header />
+          <Header logoClickable={logoClickable} showSearch={showSearch} />
         </Toolbar>
       </AppBar>
 

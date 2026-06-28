@@ -1,5 +1,8 @@
 import { useState } from 'react';
-
+import { useSearchParams } from 'react-router-dom';
+import { login } from 'services/authService';
+import { getMyProfile } from 'services/userService';
+import { findGender } from 'utils/genderUtils';
 // material-ui
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -22,9 +25,8 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
-
 export default function AuthLogin() {
+  const [searchParams] = useSearchParams();
   const [checked, setChecked] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -34,6 +36,8 @@ export default function AuthLogin() {
     email: '',
     password: ''
   });
+
+  const isExistingCompany = searchParams.get('tipo') === 'empresa';
 
   const handleChange = (event) => {
     setError('');
@@ -58,18 +62,24 @@ export default function AuthLogin() {
   };
 
   const redirectByRole = (role) => {
-    if (role === 'CANDIDATE') {
-      window.location.href = '/free/dashboard/default';
-      return;
-    }
+      switch (role) {
+        case 'CANDIDATE':
+          window.location.href = '/candidato';
+          break;
 
-    if (role === 'RECRUITER') {
-      window.location.href = '/free/dashboard/default';
-      return;
-    }
+        case 'RECRUITER':
+          window.location.href = '/reclutador';
+          break;
 
-    window.location.href = '/free/dashboard/default';
-  };
+        case 'ADMIN':
+        case 'ADMINISTRATOR':
+          window.location.href = '/admin';
+          break;
+
+        default:
+          window.location.href = '/';
+      }
+    };
 
   const handleLogin = async () => {
     if (!validateForm()) return;
@@ -78,29 +88,27 @@ export default function AuthLogin() {
       setLoading(true);
       setError('');
 
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: form.email,
-          password: form.password
-        })
+      const response = await login({
+        email: form.email,
+        password: form.password
       });
 
-      if (!response.ok) {
-        throw new Error('Correo o contraseña incorrectos.');
-      }
+      const data = response.data;
 
-      const data = await response.json();
+      localStorage.setItem('name', data.name || '');
+      localStorage.setItem('token', data.token || '');
+      localStorage.setItem('role', data.role || '');
+      localStorage.setItem('email', data.email || '');
+      localStorage.setItem('gender', findGender(data.gender, data.user?.gender, data.candidate?.gender));
 
-      if (data.token) {
-        localStorage.setItem('token', data.token);
-      }
+      try {
+        const userProfile = await getMyProfile();
 
-      if (data.role) {
-        localStorage.setItem('role', data.role);
+        localStorage.setItem('name', userProfile?.name || data.name || '');
+        localStorage.setItem('email', userProfile?.email || data.email || '');
+        localStorage.setItem('gender', findGender(userProfile?.gender, data.gender, data.user?.gender, data.candidate?.gender));
+      } catch {
+        localStorage.setItem('gender', findGender(data.gender, data.user?.gender, data.candidate?.gender));
       }
 
       if (checked) {
@@ -111,7 +119,11 @@ export default function AuthLogin() {
 
       redirectByRole(data.role);
     } catch (err) {
-      setError(err.message || 'No se pudo iniciar sesión.');
+        setError(
+          err.response?.data?.message ||
+          err.message ||
+          'Correo o contraseña incorrectos.'
+        );
     } finally {
       setLoading(false);
     }
@@ -133,11 +145,13 @@ export default function AuthLogin() {
 
           <Box>
             <Typography variant="subtitle1" color="primary.dark">
-              Plataforma de empleo y reclutamiento
+              {isExistingCompany ? 'Acceso para empresas existentes' : 'Plataforma de empleo y reclutamiento'}
             </Typography>
 
             <Typography variant="body2" color="text.secondary">
-              Ingresa para gestionar postulaciones, ofertas y perfiles.
+              {isExistingCompany
+                ? 'Inicia sesión con tu cuenta de reclutador para administrar ofertas y candidatos.'
+                : 'Ingresa para gestionar postulaciones, ofertas y perfiles.'}
             </Typography>
           </Box>
         </Stack>
@@ -184,17 +198,6 @@ export default function AuthLogin() {
         />
       </FormControl>
 
-      <Stack direction="row" alignItems="center" justifyContent="space-between">
-        <FormControlLabel
-          control={<Checkbox checked={checked} onChange={(event) => setChecked(event.target.checked)} color="primary" />}
-          label="Mantener sesión iniciada"
-        />
-
-        <Typography variant="subtitle2" color="secondary" sx={{ cursor: 'pointer' }}>
-          ¿Olvidaste tu contraseña?
-        </Typography>
-      </Stack>
-
       <AnimateButton>
         <Button
           disableElevation
@@ -204,6 +207,7 @@ export default function AuthLogin() {
           color="secondary"
           onClick={handleLogin}
           disabled={loading}
+          sx={{ textTransform: 'none' }}
         >
           {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
         </Button>

@@ -42,7 +42,7 @@ export default function Login() {
 
                 <Typography variant="body2" color="text.secondary" align="center">
                   ¿No tienes cuenta?{' '}
-                  <Typography component={Link} to="/free/pages/register" variant="subtitle2" color="primary" sx={{ textDecoration: 'none' }}>
+                  <Typography component={Link} to="/pages/register" variant="subtitle2" color="primary" sx={{ textDecoration: 'none' }}>
                     Regístrate aquí
                   </Typography>
                 </Typography>

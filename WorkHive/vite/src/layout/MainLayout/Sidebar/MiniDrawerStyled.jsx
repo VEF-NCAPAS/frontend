@@ -11,12 +11,9 @@ function openedMixin(theme) {
     borderRight: 'none',
     zIndex: 1099,
     background: theme.vars.palette.background.default,
-    overflowX: 'hidden',
+    overflow: 'visible',
     boxShadow: 'none',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen + 200
-    })
+    transition: 'none'
   };
 }
 
@@ -25,12 +22,9 @@ function closedMixin(theme) {
     borderRight: 'none',
     zIndex: 1099,
     background: theme.vars.palette.background.default,
-    overflowX: 'hidden',
+    overflow: 'visible',
     width: 72,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen + 200
-    })
+    transition: 'none'
   };
 }
 
@@ -42,6 +36,7 @@ const MiniDrawerStyled = styled(Drawer, { shouldForwardProp: (prop) => prop !== 
   flexShrink: 0,
   whiteSpace: 'nowrap',
   boxSizing: 'border-box',
+  transition: 'none',
   ...(open && {
     ...openedMixin(theme),
     '& .MuiDrawer-paper': openedMixin(theme)

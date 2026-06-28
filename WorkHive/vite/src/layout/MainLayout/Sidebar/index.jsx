@@ -6,12 +6,10 @@ import Box from '@mui/material/Box';
 
 // project imports
 import MenuList from '../MenuList';
-import LogoSection from '../LogoSection';
 import MiniDrawerStyled from './MiniDrawerStyled';
 
 import useConfig from 'hooks/useConfig';
 import { drawerWidth } from 'store/constant';
-import SimpleBar from 'ui-component/third-party/SimpleBar';
 
 import { handlerDrawerOpen, useGetMenuMaster } from 'api/menu';
 
@@ -27,63 +25,50 @@ function Sidebar() {
     state: { miniDrawer }
   } = useConfig();
 
-  const logo = useMemo(
-    () => (
-      <Box sx={{ display: 'flex', p: 2 }}>
-        <LogoSection />
-      </Box>
-    ),
-    []
-  );
+  const usesMuiDrawer = downMD || (miniDrawer && drawerOpen);
 
   const drawer = useMemo(() => {
-    let drawerSX = { paddingLeft: '0px', paddingRight: '0px', marginTop: '20px' };
-    if (drawerOpen) drawerSX = { paddingLeft: '16px', paddingRight: '16px', marginTop: '0px' };
+    const drawerTop = usesMuiDrawer ? '20px' : '148px';
+    let drawerSX = { paddingLeft: '0px', paddingRight: '0px', marginTop: drawerTop };
+    if (drawerOpen) drawerSX = { paddingLeft: '16px', paddingRight: '16px', marginTop: drawerTop };
 
     return (
-      <>
-        {downMD ? (
-          <Box sx={drawerSX}>
-            <MenuList />
-          </Box>
-        ) : (
-          <SimpleBar sx={{ height: 'calc(100vh - 90px)', ...drawerSX }}>
-            <MenuList />
-          </SimpleBar>
-        )}
-      </>
+      <Box sx={drawerSX}>
+        <MenuList />
+      </Box>
     );
-  }, [downMD, drawerOpen]);
+  }, [drawerOpen, usesMuiDrawer]);
 
   return (
     <Box component="nav" sx={{ flexShrink: { md: 0 }, width: { xs: 'auto', md: drawerWidth } }} aria-label="mailbox folders">
-      {downMD || (miniDrawer && drawerOpen) ? (
+      {usesMuiDrawer ? (
         <Drawer
           variant={downMD ? 'temporary' : 'persistent'}
           anchor="left"
           open={drawerOpen}
           onClose={() => handlerDrawerOpen(!drawerOpen)}
+          transitionDuration={0}
           slotProps={{
             paper: {
               sx: {
-                mt: downMD ? 0 : 11,
+                mt: downMD ? 0 : 16,
                 zIndex: 1099,
                 width: drawerWidth,
                 bgcolor: 'background.default',
                 color: 'text.primary',
-                borderRight: 'none'
+                borderRight: 'none',
+                overflow: 'visible',
+                transition: 'none'
               }
             }
           }}
           ModalProps={{ keepMounted: true }}
           color="inherit"
         >
-          {downMD && logo}
           {drawer}
         </Drawer>
       ) : (
         <MiniDrawerStyled variant="permanent" open={drawerOpen}>
-          {logo}
           {drawer}
         </MiniDrawerStyled>
       )}
