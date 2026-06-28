@@ -1,13 +1,12 @@
 import { createRoot } from 'react-dom/client';
 
-// project imports
-import App from 'App';
-import * as serviceWorker from 'serviceWorker';
-import reportWebVitals from 'reportWebVitals';
-import { ConfigProvider } from 'contexts/ConfigContext';
+import App from './App'; 
+import * as serviceWorker from './serviceWorker';
+import reportWebVitals from './reportWebVitals';
+import { ConfigProvider } from './contexts/ConfigContext';
 
-// style + assets
-import 'assets/scss/style.scss';
+// ESTILOS (Asegúrate de que la carpeta 'assets' esté en 'src')
+import './assets/scss/style.scss';
 
 // google-fonts
 import '@fontsource/roboto/400.css';
