@@ -33,6 +33,7 @@ export const logout = ({ navigate, redirectTo = '/pages/login' } = {}) => {
   localStorage.removeItem('role');
   localStorage.removeItem('name');
   localStorage.removeItem('email');
+  localStorage.removeItem('gender');
   localStorage.removeItem('rememberSession');
 
   if (api.defaults && api.defaults.headers && api.defaults.headers.common) {

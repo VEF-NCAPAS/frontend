@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { login } from 'services/authService';
+import { getMyProfile } from 'services/userService';
+import { findGender } from 'utils/genderUtils';
 // material-ui
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -22,8 +24,6 @@ import AnimateButton from 'ui-component/extended/AnimateButton';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
-
-const API_URL = import.meta.env.VITE_API_URL;
 
 export default function AuthLogin() {
   const [searchParams] = useSearchParams();
@@ -99,6 +99,17 @@ export default function AuthLogin() {
       localStorage.setItem('token', data.token || '');
       localStorage.setItem('role', data.role || '');
       localStorage.setItem('email', data.email || '');
+      localStorage.setItem('gender', findGender(data.gender, data.user?.gender, data.candidate?.gender));
+
+      try {
+        const userProfile = await getMyProfile();
+
+        localStorage.setItem('name', userProfile?.name || data.name || '');
+        localStorage.setItem('email', userProfile?.email || data.email || '');
+        localStorage.setItem('gender', findGender(userProfile?.gender, data.gender, data.user?.gender, data.candidate?.gender));
+      } catch {
+        localStorage.setItem('gender', findGender(data.gender, data.user?.gender, data.candidate?.gender));
+      }
 
       if (checked) {
         localStorage.setItem('rememberSession', 'true');

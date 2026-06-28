@@ -29,6 +29,30 @@ export const changePassword = async (data) => {
   return response.data;
 };
 
+export const getMyProfile = async () => {
+  const token = localStorage.getItem('token');
+
+  const response = await api.get(
+    `${API_URL}/user/me`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
+  );
+
+  return extractPayload(response);
+};
+
+export const updateMyProfile = async (data) => {
+  const response = await api.put(
+    `${API_URL}/user/me`,
+    data
+  );
+
+  return extractPayload(response);
+};
+
 export const getGlobalDiversityStats = async () => {
   const response = await api.get(
     `${API_URL}/user/diversity`
