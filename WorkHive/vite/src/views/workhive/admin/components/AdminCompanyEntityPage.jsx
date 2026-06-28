@@ -55,22 +55,44 @@ export default function AdminCompanyEntityPage({ title, description, entityName,
 
   // Load companies on mount
   const loadCompanies = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      const response = await companyService.getCompaniesAdmin();
-      const companies = response?.data?.content || [];
-      setRecords(companies);
-    } catch (err) {
-      setError(err.message || 'Error al conectar con la base de datos de pgAdmin.');
-    } finally {
-      setLoading(false);
-    }
-  };
+      try {
+        setLoading(true);
+        setError('');
 
-  useEffect(() => {
-    loadCompanies();
-  }, []);
+        let page = 0;
+        let last = false;
+        let allCompanies = [];
+
+        while (!last) {
+          const response = await companyService.getCompaniesAdmin({
+            page,
+            size: 50
+          });
+
+          const payload = response.data;
+
+          allCompanies.push(...payload.content);
+
+          last = payload.last;
+          page++;
+        }
+
+        setRecords(allCompanies);
+
+      } catch (err) {
+         setSubmitError(
+          err.response?.data?.message ||
+          err.message ||
+          'Ocurrió un error al guardar el registro.'
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    useEffect(() => {
+      loadCompanies();
+    }, []);
 
   const filteredRecords = records.filter((record) =>
     Object.values(record).some((value) => String(value).toLowerCase().includes(search.toLowerCase()))
@@ -107,7 +129,11 @@ export default function AdminCompanyEntityPage({ title, description, entityName,
       }
       setDialogOpen(false);
     } catch (err) {
-      setSubmitError(err.message || 'Ocurrió un error al guardar el registro en la base de datos.');
+       setSubmitError(
+        err.response?.data?.message ||
+        err.message ||
+        'Ocurrió un error al guardar el registro.'
+      );
     }
   };
 

@@ -182,21 +182,30 @@ export const adminService = {
     return true;
   },
 
-  getUsers: async ({ page = 0, size = 10, sortBy = 'createdAt', sortOrder = 'desc' } = {}) => {
-    const response = await api.get(`${API_URL}/user/all`, {
-      params: { page, size, sortBy, sortOrder }
-    });
+  getUsers: async () => {
+    let page = 0;
+    let last = false;
+    let allUsers = [];
 
-    const payload = extractPayload(response);
-    const users = Array.isArray(payload)
-      ? payload
-      : Array.isArray(payload?.content)
-        ? payload.content
-        : Array.isArray(payload?.data)
-          ? payload.data
-          : [];
+    while (!last) {
+      const response = await api.get(`${API_URL}/user/all`, {
+        params: {
+          page,
+          size: 50,
+          sortBy: 'createdAt',
+          sortOrder: 'desc'
+        }
+      });
 
-    return users.map(normalizeUser);
+      const payload = extractPayload(response);
+
+      allUsers.push(...payload.content);
+
+      last = payload.last;
+      page++;
+    }
+
+    return allUsers.map(normalizeUser);
   },
 
   getUserById: async (id) => {
@@ -205,18 +214,50 @@ export const adminService = {
   },
 
   createUser: async (userData) => {
-    const response = await api.post(`${API_URL}/user/register/candidate`, buildUserPayload(userData));
-    return normalizeUser(extractPayload(response));
-  },
+      try {
+        const response = await api.post(
+          `${API_URL}/user/register/candidate`,
+          buildUserPayload(userData)
+        );
+
+        return normalizeUser(extractPayload(response));
+      } catch (error) {
+        throw new Error(
+          error.response?.data?.message ||
+          error.message ||
+          'Error al crear el candidato'
+        );
+      }
+    },
 
   updateUser: async (id, userData) => {
-    const response = await api.put(`${API_URL}/user/admin/${id}`, buildUserPayload(userData));
-    return normalizeUser(extractPayload(response));
+    try {
+      const response = await api.put(
+        `${API_URL}/user/admin/${id}`,
+        buildUserPayload(userData)
+      );
+
+      return normalizeUser(extractPayload(response));
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.message ||
+        error.message ||
+        'Error al actualizar el usuario'
+      );
+    }
   },
 
   deleteUser: async (id) => {
-    const response = await api.delete(`${API_URL}/user/delete/${id}`);
-    return extractPayload(response) ?? true;
+    try {
+      const response = await api.delete(`${API_URL}/user/delete/${id}`);
+      return extractPayload(response) ?? true;
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.message ||
+        error.message ||
+        'Error al eliminar el usuario'
+      );
+    }
   },
 
   getCandidates: async () => {
@@ -232,8 +273,20 @@ export const adminService = {
   createCandidate: async (userData) => adminService.createUser(userData),
 
   createRecruiter: async (userData) => {
-    const response = await api.post(`${API_URL}/user/register/recruiter`, buildRecruiterPayload(userData));
-    return normalizeUser(extractPayload(response));
+    try {
+      const response = await api.post(
+        `${API_URL}/user/register/recruiter`,
+        buildRecruiterPayload(userData)
+      );
+
+      return normalizeUser(extractPayload(response));
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.message ||
+        error.message ||
+        'Error al crear el reclutador'
+      );
+    }
   },
 
   updateCandidate: async (id, userData) => adminService.updateUser(id, userData),

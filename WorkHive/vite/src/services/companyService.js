@@ -53,20 +53,16 @@ export const deleteCompany = async (companyId) => {
   return response.data;
 };
 
-export const getCompaniesAdmin = async (
-  page = 0,
-  size = 10,
-  sortBy = 'name',
-  sortOrder = 'asc'
-) => {
-  const response = await api.get(`${API_URL}/company/admin`, {
-    params: {
-      page,
-      size,
-      sortBy,
-      sortOrder
-    }
-  });
 
+export const getCompaniesAdmin = async (params) => {
+  const response = await api.get(
+    `${API_URL}/company/admin`,
+    {
+      params,
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    }
+  );
   return response.data;
 };
