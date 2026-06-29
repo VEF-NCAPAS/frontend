@@ -219,11 +219,8 @@ export default function SearchCandidateByScore() {
 
             state: {
 
-                candidateProfileId:
-                    candidate.candidateProfileId,
-
-                cvId:
-                    candidate.cvId
+                selectedJobId,
+                applicationId: candidate.applicationId
 
             }
 
