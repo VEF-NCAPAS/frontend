@@ -369,7 +369,7 @@ export default function MyJobs() {
                         borderRadius: 3,
                         display: 'flex',
                         flexDirection: 'column',
-                        minHeight: 280,
+                        minHeight: 300,
                         maxHeight: 390,
                         transition: 'transform 0.2s, box-shadow 0.2s',
                         width: '100%',
