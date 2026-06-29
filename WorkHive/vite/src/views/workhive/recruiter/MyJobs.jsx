@@ -369,7 +369,7 @@ export default function MyJobs() {
                         borderRadius: 3,
                         display: 'flex',
                         flexDirection: 'column',
-                        height: 250,
+                        minHeight: 280,
                         maxHeight: 390,
                         transition: 'transform 0.2s, box-shadow 0.2s',
                         width: '100%',
@@ -428,11 +428,10 @@ export default function MyJobs() {
                           sx={{
                             mb: 2,
                             display: '-webkit-box',
-                            WebkitLineClamp: 3,
+                            WebkitLineClamp: 5,
                             WebkitBoxOrient: 'vertical',
                             overflow: 'hidden',
                             lineHeight: 1.6,
-                            height: '4.8em'
                           }}
                         >
                           {job.description}
